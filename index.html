@@ -3,41 +3,188 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AV放送立願報名行事曆</title>
-    <!-- 引用 FullCalendar, SweetAlert2, Chart.js -->
+    <title>AV放送立願表</title>
+    <!-- 引用函式庫 -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- 全新設計的 CSS -->
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f4f7f9; margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.85); z-index: 9999; display: flex; justify-content: center; align-items: center; font-size: 1.5em; flex-direction: column; gap: 10px; transition: opacity 0.3s; }
-        .tabs { display: flex; border-bottom: 2px solid #dee2e6; margin-bottom: 20px; }
-        .tab-button { padding: 10px 20px; cursor: pointer; border: none; background: none; font-size: 16px; border-bottom: 2px solid transparent; }
-        .tab-button.active { color: #0d6efd; border-bottom-color: #0d6efd; font-weight: bold; }
-        .tab-content { display: none; }
+        /* --- 全局主題與變數 --- */
+        :root {
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
+            --danger-color: #dc3545;
+            --danger-hover: #c82333;
+            --secondary-color: #6c757d;
+            --secondary-hover: #5a6268;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-color: #212529;
+            --border-color: #dee2e6;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --border-radius: 8px;
+        }
+
+        /* --- 基礎樣式 --- */
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 15px;
+            line-height: 1.6;
+        }
+        
+        /* --- 標題與頁尾 --- */
+        .page-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .page-header h1 {
+            font-size: 2.5rem;
+            color: var(--text-color);
+            font-weight: 700;
+        }
+        .header-icon {
+            font-size: 2.2rem;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        .page-footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            color: var(--secondary-color);
+            font-size: 0.9em;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+        h2, h3, h4 { color: var(--text-color); }
+        hr { border: none; border-top: 1px solid #e9ecef; margin: 2rem 0; }
+        
+        /* --- 酷炫載入動畫 --- */
+        .loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.9); z-index: 9999;
+            display: flex; justify-content: center; align-items: center; flex-direction: column;
+            gap: 15px; transition: opacity 0.3s ease;
+        }
+        .spinner {
+            width: 50px; height: 50px;
+            border: 5px solid rgba(0, 123, 255, 0.2);
+            border-top-color: var(--primary-color);
+            border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- 頁籤樣式 --- */
+        .tabs { display: flex; border-bottom: 2px solid var(--border-color); margin-bottom: 25px; }
+        .tab-button {
+            padding: 12px 20px; cursor: pointer; border: none; background: none;
+            font-size: 16px; font-weight: 500; color: var(--secondary-color);
+            border-bottom: 3px solid transparent; transition: all 0.3s;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .tab-button:hover { color: var(--primary-color); background-color: #f8f9fa; }
+        .tab-button.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            font-weight: 600;
+        }
+        .tab-content { display: none; animation: fadeIn 0.5s; }
         .tab-content.active { display: block; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
-        .form-group input, .form-group select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
-        .btn { padding: 10px 15px; font-size: 16px; border-radius: 5px; border: none; cursor: pointer; background-color: #0d6efd; color: white; }
-        .btn-danger { background-color: #dc3545; }
-        .btn-secondary { background-color: #6c757d; }
-        #stats-details { margin-top: 20px; }
-        #signups-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        #signups-table th, #signups-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        #signups-table th { background-color: #f2f2f2; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- 表單與按鈕 --- */
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 10px 12px; box-sizing: border-box;
+            border: 1px solid #ced4da; border-radius: var(--border-radius);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none; border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+        }
+        .btn {
+            padding: 10px 20px; font-size: 16px; font-weight: 500;
+            border-radius: var(--border-radius); border: none; cursor: pointer; color: white;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn:active { transform: translateY(0); }
+        .btn-primary { background-color: var(--primary-color); }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-danger { background-color: var(--danger-color); }
+        .btn-danger:hover { background-color: var(--danger-hover); }
+
+        /* --- 表格樣式 --- */
+        .table-responsive { overflow-x: auto; }
+        #my-signups-result table {
+            width: 100%; border-collapse: collapse; margin-top: 1.5rem;
+        }
+        #my-signups-result th, #my-signups-result td {
+            border-bottom: 1px solid var(--border-color); padding: 12px 15px; text-align: left;
+        }
+        #my-signups-result th { background-color: #f8f9fa; font-weight: 600; }
+        #my-signups-result tr:hover { background-color: #f1f3f5; }
+
+        /* --- FullCalendar 樣式微調 --- */
+        .fc .fc-button-primary {
+            background-color: var(--primary-color); border-color: var(--primary-color);
+        }
+        .fc .fc-button-primary:hover {
+            background-color: var(--primary-hover); border-color: var(--primary-hover);
+        }
+
+        /* --- 手機瀏覽 CSS (響應式設計) --- */
+        @media (max-width: 768px) {
+            body { padding: 5px; }
+            .page-header h1 { font-size: 1.8rem; }
+            .header-icon { font-size: 1.6rem; }
+            .container { padding: 15px; }
+            .tabs { font-size: 14px; overflow-x: auto; white-space: nowrap; }
+            .tab-button { padding: 10px 12px; font-size: 15px; }
+            .fc .fc-toolbar { flex-direction: column; gap: 10px; }
+            .fc .fc-toolbar-chunk { display: flex; justify-content: space-around; width: 100%; }
+        }
     </style>
 </head>
 <body>
+    
+    <header class="page-header">
+        <h1><span class="header-icon">📡</span>AV放送立願表</h1>
+    </header>
 
     <div class="container">
         <!-- 分頁按鈕 -->
         <div class="tabs">
-            <button class="tab-button active" onclick="openTab(event, 'calendar-tab')">活動行事曆</button>
-            <button class="tab-button" onclick="openTab(event, 'my-signups-tab')">我的報名</button>
-            <button class="tab-button" onclick="openTab(event, 'stats-tab')">統計報表</button>
-            <button class="tab-button" onclick="openTab(event, 'admin-tab')">管理工具</button>
+            <button class="tab-button active" onclick="openTab(event, 'calendar-tab')">
+                <span class="tab-icon">📅</span>活動行事曆
+            </button>
+            <button class="tab-button" onclick="openTab(event, 'my-signups-tab')">
+                <span class="tab-icon">👤</span>我的報名
+            </button>
+            <button class="tab-button" onclick="openTab(event, 'stats-tab')">
+                <span class="tab-icon">📊</span>統計報表
+            </button>
+            <button class="tab-button" onclick="openTab(event, 'admin-tab')">
+                <span class="tab-icon">⚙️</span>管理工具
+            </button>
         </div>
 
         <!-- 1. 活動行事曆 -->
@@ -52,8 +199,8 @@
                 <label for="my-name-input">您的姓名</label>
                 <input type="text" id="my-name-input" placeholder="請輸入您報名時使用的姓名">
             </div>
-            <button id="search-my-signups" class="btn">查詢</button>
-            <div id="my-signups-result"></div>
+            <button id="search-my-signups" class="btn btn-primary">查詢</button>
+            <div id="my-signups-result" class="table-responsive"></div>
         </div>
 
         <!-- 3. 統計報表 -->
@@ -67,8 +214,8 @@
                 <label for="stats-end-date">結束日期</label>
                 <input type="date" id="stats-end-date">
             </div>
-            <button id="generate-stats" class="btn">產生報表</button>
-            <div style="margin-top: 20px;">
+            <button id="generate-stats" class="btn btn-primary">產生報表</button>
+            <div style="margin-top: 20px; position: relative; height:40vh;">
                 <canvas id="stats-chart"></canvas>
             </div>
             <div id="stats-details"></div>
@@ -88,7 +235,7 @@
                 <label for="export-end-date">結束日期 (留空為所有)</label>
                 <input type="date" id="export-end-date">
             </div>
-            <button id="export-excel-btn" class="btn">產生並下載 Excel</button>
+            <button id="export-excel-btn" class="btn btn-primary">產生並下載 Excel</button>
             <hr>
             <h4>郵寄報表</h4>
             <div class="form-group">
@@ -103,29 +250,33 @@
                 <label for="recipient-email">收件人 Email</label>
                 <input type="email" id="recipient-email" placeholder="請輸入完整的 Email 地址">
             </div>
-            <button id="email-report-btn" class="btn">產生並寄送報表</button>
+            <button id="email-report-btn" class="btn btn-primary">產生並寄送報表</button>
             <hr>
             <h4>系統維護</h4>
             <button id="delete-temp-sheets-btn" class="btn btn-danger">清除所有暫存報表</button>
             <p><small>此動作會刪除伺服器上所有已產生的報表連結，以釋放資源。</small></p>
         </div>
-
     </div>
+    
+    <footer class="page-footer">
+        <p>&copy; 2025 AV-Broadcasting Team. All Rights Reserved. | 版本號: <span id="version-number"></span></p>
+    </footer>
 
+    <!-- 載入動畫的 HTML 結構 -->
     <div id="loading" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
         <p id="loading-text">正在處理中...</p>
     </div>
 
     <script>
-        // --- 後端 API 網址 ---
+        // --- 後端 API 網址 (無需修改) ---
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1dCHAzjMNklN96jXKpWYcTv-NvzKoB8J6CcY30L55dAtaAf0bTRWTJTc20Fk2MZbgeQ/exec";
         
-        // --- 全域變數 ---
+        // --- 所有 JavaScript 邏輯 (完全無需修改) ---
         let calendar;
         let statsChart = null;
         let currentUserName = localStorage.getItem('av_signup_username') || '';
 
-        // --- 通用函式 ---
         function showLoading(text = '正在處理中...') {
             document.getElementById('loading-text').innerText = text;
             document.getElementById('loading').style.display = 'flex';
@@ -200,7 +351,6 @@
             return name;
         }
 
-        // --- 行事曆邏輯 ---
         function initializeCalendar() {
             const calendarEl = document.getElementById('calendar');
             calendar = new FullCalendar.Calendar(calendarEl, {
@@ -226,7 +376,7 @@
                     
                     if (!currentUserName) {
                         const name = await promptForName();
-                        if (!name) return; // 使用者取消輸入
+                        if (!name) return;
                     }
                     
                     const { extendedProps: props } = info.event;
@@ -305,7 +455,6 @@
             calendar.render();
         }
 
-        // --- 我的報名邏輯 ---
         document.getElementById('search-my-signups').addEventListener('click', async () => {
             const userName = document.getElementById('my-name-input').value.trim();
             if (!userName) {
@@ -321,17 +470,17 @@
                     resultDiv.innerHTML = '<p>找不到您的報名紀錄。</p>';
                     return;
                 }
-                let tableHtml = '<table id="signups-table"><tr><th>活動日期</th><th>活動名稱</th><th>崗位</th><th>報名時間</th><th>操作</th></tr>';
+                let tableHtml = '<table><thead><tr><th>活動日期</th><th>活動名稱</th><th>崗位</th><th>報名時間</th><th>操作</th></tr></thead><tbody>';
                 signups.forEach(s => {
                     tableHtml += `<tr>
                         <td>${s.eventDate}</td>
                         <td>${s.eventTitle}</td>
                         <td>${s.position}</td>
                         <td>${s.timestamp}</td>
-                        <td><button class="btn btn-danger btn-sm" onclick="removeSignup('${s.eventId}', '${s.user}')">取消報名</button></td>
+                        <td><button class="btn btn-danger" onclick="removeSignup('${s.eventId}', '${s.user}')">取消</button></td>
                     </tr>`;
                 });
-                tableHtml += '</table>';
+                tableHtml += '</tbody></table>';
                 resultDiv.innerHTML = tableHtml;
 
             } catch(error) {
@@ -356,7 +505,6 @@
                 try {
                     const result = await callAppsScript('removeSignup', { eventId, userName });
                     Swal.fire('操作成功', result.message, 'success');
-                    // 重新查詢以刷新列表
                     document.getElementById('search-my-signups').click();
                 } catch(error) {
                     Swal.fire('操作失敗', error.message, 'error');
@@ -366,7 +514,6 @@
             }
         }
         
-        // --- 統計報表邏輯 ---
         document.getElementById('generate-stats').addEventListener('click', async () => {
             const startDateStr = document.getElementById('stats-start-date').value;
             const endDateStr = document.getElementById('stats-end-date').value;
@@ -390,17 +537,19 @@
                         datasets: [{
                             label: '報名人數',
                             data: statsData.data,
-                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            borderWidth: 1
+                            backgroundColor: 'rgba(0, 123, 255, 0.6)',
+                            borderColor: 'rgba(0, 123, 255, 1)',
+                            borderWidth: 1,
+                            borderRadius: 4
                         }]
                     },
                     options: {
-                        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+                        responsive: true,
+                        maintainAspectRatio: false
                     }
                 });
 
-                // 顯示詳細資料
                 let detailsHtml = '<h3>詳細報名名單</h3>';
                 statsData.fullDetails.forEach(detail => {
                     detailsHtml += `<h4>${detail.eventInfo.title} (${detail.eventInfo.date})</h4><ul>`;
@@ -418,7 +567,6 @@
             }
         });
         
-        // --- 管理工具邏輯 ---
         document.getElementById('export-excel-btn').addEventListener('click', async () => {
             const startDateStr = document.getElementById('export-start-date').value;
             const endDateStr = document.getElementById('export-end-date').value;
@@ -431,14 +579,13 @@
                 }
                 Swal.fire({
                     title: '匯出連結已產生',
-                    text: '您的 Excel 報表已準備就緒，點擊下方按鈕下載。此連結將在 24 小時後失效。',
+                    html: '您的 Excel 報表已準備就緒。<br>此連結將在 24 小時後失效。',
                     icon: 'success',
                     showCancelButton: true,
                     confirmButtonText: '點此下載',
                 }).then((res) => {
                     if (res.isConfirmed) {
                         window.open(result.url, '_blank');
-                        // 排程刪除
                         callAppsScript('scheduleDeletion', { sheetName: result.sheetName });
                     }
                 });
@@ -493,13 +640,18 @@
             }
         });
 
-
         // --- 初始化 ---
         document.addEventListener('DOMContentLoaded', function() {
+            // 設定姓名輸入框的預設值
             if (currentUserName) {
                 document.getElementById('my-name-input').value = currentUserName;
             }
+            // 載入日曆
             initializeCalendar();
+            // 設定頁尾版本號
+            const today = new Date();
+            const versionDate = today.toISOString().slice(0, 10); // 格式為 YYYY-MM-DD
+            document.getElementById('version-number').textContent = versionDate;
         });
     </script>
 </body>

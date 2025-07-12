@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AV放送立願報名行事曆</title>
+    <!-- 引用 FullCalendar, SweetAlert2, Chart.js -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f4f7f9; margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.85); z-index: 9999; display: flex; justify-content: center; align-items: center; font-size: 1.5em; flex-direction: column; gap: 10px; transition: opacity 0.3s; }
+        .tabs { display: flex; border-bottom: 2px solid #dee2e6; margin-bottom: 20px; }
+        .tab-button { padding: 10px 20px; cursor: pointer; border: none; background: none; font-size: 16px; border-bottom: 2px solid transparent; }
+        .tab-button.active { color: #0d6efd; border-bottom-color: #0d6efd; font-weight: bold; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
+        .form-group input, .form-group select { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        .btn { padding: 10px 15px; font-size: 16px; border-radius: 5px; border: none; cursor: pointer; background-color: #0d6efd; color: white; }
+        .btn-danger { background-color: #dc3545; }
+        .btn-secondary { background-color: #6c757d; }
+        #stats-details { margin-top: 20px; }
+        #signups-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        #signups-table th, #signups-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        #signups-table th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 分頁按鈕 -->
+        <div class="tabs">
+            <button class="tab-button active" onclick="openTab(event, 'calendar-tab')">活動行事曆</button>
+            <button class="tab-button" onclick="openTab(event, 'my-signups-tab')">我的報名</button>
+            <button class="tab-button" onclick="openTab(event, 'stats-tab')">統計報表</button>
+            <button class="tab-button" onclick="openTab(event, 'admin-tab')">管理工具</button>
+        </div>
+
+        <!-- 1. 活動行事曆 -->
+        <div id="calendar-tab" class="tab-content active">
+            <div id="calendar"></div>
+        </div>
+
+        <!-- 2. 我的報名 -->
+        <div id="my-signups-tab" class="tab-content">
+            <h2>查詢我的報名紀錄</h2>
+            <div class="form-group">
+                <label for="my-name-input">您的姓名</label>
+                <input type="text" id="my-name-input" placeholder="請輸入您報名時使用的姓名">
+            </div>
+            <button id="search-my-signups" class="btn">查詢</button>
+            <div id="my-signups-result"></div>
+        </div>
+
+        <!-- 3. 統計報表 -->
+        <div id="stats-tab" class="tab-content">
+            <h2>統計報表</h2>
+            <div class="form-group">
+                <label for="stats-start-date">開始日期</label>
+                <input type="date" id="stats-start-date">
+            </div>
+            <div class="form-group">
+                <label for="stats-end-date">結束日期</label>
+                <input type="date" id="stats-end-date">
+            </div>
+            <button id="generate-stats" class="btn">產生報表</button>
+            <div style="margin-top: 20px;">
+                <canvas id="stats-chart"></canvas>
+            </div>
+            <div id="stats-details"></div>
+        </div>
+        
+        <!-- 4. 管理工具 -->
+        <div id="admin-tab" class="tab-content">
+            <h2>管理工具</h2>
+            <p>此處的功能主要用於匯出資料或系統維護。</p>
+            <hr>
+            <h4>匯出 Excel 報表</h4>
+            <div class="form-group">
+                <label for="export-start-date">開始日期 (留空為所有)</label>
+                <input type="date" id="export-start-date">
+            </div>
+            <div class="form-group">
+                <label for="export-end-date">結束日期 (留空為所有)</label>
+                <input type="date" id="export-end-date">
+            </div>
+            <button id="export-excel-btn" class="btn">產生並下載 Excel</button>
+            <hr>
+            <h4>郵寄報表</h4>
+            <div class="form-group">
+                <label for="email-start-date">開始日期 (留空為所有)</label>
+                <input type="date" id="email-start-date">
+            </div>
+             <div class="form-group">
+                <label for="email-end-date">結束日期 (留空為所有)</label>
+                <input type="date" id="email-end-date">
+            </div>
+            <div class="form-group">
+                <label for="recipient-email">收件人 Email</label>
+                <input type="email" id="recipient-email" placeholder="請輸入完整的 Email 地址">
+            </div>
+            <button id="email-report-btn" class="btn">產生並寄送報表</button>
+            <hr>
+            <h4>系統維護</h4>
+            <button id="delete-temp-sheets-btn" class="btn btn-danger">清除所有暫存報表</button>
+            <p><small>此動作會刪除伺服器上所有已產生的報表連結，以釋放資源。</small></p>
+        </div>
+
+    </div>
+
+    <div id="loading" class="loading-overlay" style="display: none;">
+        <p id="loading-text">正在處理中...</p>
+    </div>
+
+    <script>
+        // --- 後端 API 網址 ---
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1dCHAzjMNklN96jXKpWYcTv-NvzKoB8J6CcY30L55dAtaAf0bTRWTJTc20Fk2MZbgeQ/exec";
+        
+        // --- 全域變數 ---
+        let calendar;
+        let statsChart = null;
+        let currentUserName = localStorage.getItem('av_signup_username') || '';
+
+        // --- 通用函式 ---
+        function showLoading(text = '正在處理中...') {
+            document.getElementById('loading-text').innerText = text;
+            document.getElementById('loading').style.display = 'flex';
+        }
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function callAppsScript(functionName, params = {}) {
+            return new Promise((resolve, reject) => {
+                const callbackName = 'jsonpCallback_' + new Date().getTime() + Math.floor(Math.random() * 1000);
+                
+                window[callbackName] = (response) => {
+                    if (response.status === 'success') {
+                        resolve(response.data);
+                    } else {
+                        console.error('後端錯誤:', response.message);
+                        reject(new Error(response.message || '發生未知後端錯誤。'));
+                    }
+                    delete window[callbackName];
+                    document.body.removeChild(document.getElementById(callbackName));
+                };
+
+                const payload = { functionName, params };
+                const url = `${SCRIPT_URL}?callback=${callbackName}&payload=${encodeURIComponent(JSON.stringify(payload))}`;
+                
+                const script = document.createElement('script');
+                script.id = callbackName;
+                script.src = url;
+                script.onerror = () => {
+                    console.error('請求後端超時或網路錯誤。');
+                    reject(new Error('請求後端伺服器超時。後端可能正在忙碌或執行時間過長。'));
+                    delete window[callbackName];
+                    document.body.removeChild(script);
+                };
+                document.body.appendChild(script);
+            });
+        }
+
+        function openTab(evt, tabName) {
+            let i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+        
+        async function promptForName() {
+            const { value: name } = await Swal.fire({
+                title: "請輸入您的姓名",
+                input: "text",
+                inputValue: currentUserName,
+                inputLabel: "報名與查詢時將會使用此姓名",
+                inputPlaceholder: "請輸入姓名",
+                showCancelButton: true,
+                inputValidator: (value) => {
+                    if (!value) {
+                        return "姓名不能為空！";
+                    }
+                }
+            });
+            if (name) {
+                currentUserName = name;
+                localStorage.setItem('av_signup_username', name);
+            }
+            return name;
+        }
+
+        // --- 行事曆邏輯 ---
+        function initializeCalendar() {
+            const calendarEl = document.getElementById('calendar');
+            calendar = new FullCalendar.Calendar(calendarEl, {
+                locale: 'zh-tw',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek'
+                },
+                initialView: 'dayGridMonth',
+                events: function(fetchInfo, successCallback, failureCallback) {
+                    showLoading('正在載入活動資料...');
+                    callAppsScript('getEventsAndSignups')
+                        .then(events => successCallback(events))
+                        .catch(error => {
+                            Swal.fire('載入失敗', error.message, 'error');
+                            failureCallback(error);
+                        })
+                        .finally(() => hideLoading());
+                },
+                eventClick: async function(info) {
+                    info.jsEvent.preventDefault();
+                    
+                    if (!currentUserName) {
+                        const name = await promptForName();
+                        if (!name) return; // 使用者取消輸入
+                    }
+                    
+                    const { extendedProps: props } = info.event;
+                    const signedUpUsers = props.signups.map(s => s.user);
+                    const takenPositions = props.signups.map(s => s.position);
+                    const availablePositions = props.positions.filter(p => !takenPositions.includes(p));
+                    
+                    if (signedUpUsers.includes(currentUserName)) {
+                        Swal.fire('提示', '您已經報名過此活動了。', 'info');
+                        return;
+                    }
+                    
+                    if (availablePositions.length === 0) {
+                        Swal.fire('提示', '所有崗位皆已額滿。', 'warning');
+                        return;
+                    }
+                    
+                    const positionOptions = availablePositions.reduce((obj, pos) => {
+                        obj[pos] = pos;
+                        return obj;
+                    }, {});
+
+                    const { value: selectedPosition } = await Swal.fire({
+                        title: props.full_title,
+                        html: `<b>時間:</b> ${props.startTime}<br><b>說明:</b> ${props.description || '無'}<br><br><b>請選擇您要報名的崗位：</b>`,
+                        input: 'select',
+                        inputOptions: positionOptions,
+                        inputPlaceholder: '選擇崗位',
+                        showCancelButton: true,
+                        confirmButtonText: '確認報名',
+                        cancelButtonText: '取消',
+                        preConfirm: (position) => {
+                            if (!position) {
+                                Swal.showValidationMessage('請選擇一個崗位');
+                            }
+                            return position;
+                        }
+                    });
+
+                    if (selectedPosition) {
+                        showLoading('正在為您報名...');
+                        try {
+                            const result = await callAppsScript('addSignup', { eventId: info.event.id, userName: currentUserName, position: selectedPosition });
+                            
+                            if(result.status === 'success') {
+                                Swal.fire('報名成功！', result.message, 'success');
+                                calendar.refetchEvents();
+                            } else if (result.status === 'confirm_backup') {
+                                const backupConfirm = await Swal.fire({
+                                    title: '崗位已被報名',
+                                    text: result.message,
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#3085d6',
+                                    cancelButtonColor: '#d33',
+                                    confirmButtonText: '是的，報名備援',
+                                    cancelButtonText: '取消'
+                                });
+                                if (backupConfirm.isConfirmed) {
+                                    showLoading('正在報名備援...');
+                                    const backupResult = await callAppsScript('addBackupSignup', { eventId: info.event.id, userName: currentUserName, position: selectedPosition });
+                                    Swal.fire('備援報名成功！', backupResult.message, 'success');
+                                    calendar.refetchEvents();
+                                }
+                            } else {
+                                Swal.fire('報名失敗', result.message, 'error');
+                            }
+                        } catch(error) {
+                            Swal.fire('報名失敗', error.message, 'error');
+                        } finally {
+                            hideLoading();
+                        }
+                    }
+                }
+            });
+            calendar.render();
+        }
+
+        // --- 我的報名邏輯 ---
+        document.getElementById('search-my-signups').addEventListener('click', async () => {
+            const userName = document.getElementById('my-name-input').value.trim();
+            if (!userName) {
+                Swal.fire('提示', '請先輸入您的姓名', 'info');
+                return;
+            }
+            
+            showLoading('正在查詢您的報名紀錄...');
+            try {
+                const signups = await callAppsScript('getMySignups', { userName });
+                const resultDiv = document.getElementById('my-signups-result');
+                if (signups.length === 0) {
+                    resultDiv.innerHTML = '<p>找不到您的報名紀錄。</p>';
+                    return;
+                }
+                let tableHtml = '<table id="signups-table"><tr><th>活動日期</th><th>活動名稱</th><th>崗位</th><th>報名時間</th><th>操作</th></tr>';
+                signups.forEach(s => {
+                    tableHtml += `<tr>
+                        <td>${s.eventDate}</td>
+                        <td>${s.eventTitle}</td>
+                        <td>${s.position}</td>
+                        <td>${s.timestamp}</td>
+                        <td><button class="btn btn-danger btn-sm" onclick="removeSignup('${s.eventId}', '${s.user}')">取消報名</button></td>
+                    </tr>`;
+                });
+                tableHtml += '</table>';
+                resultDiv.innerHTML = tableHtml;
+
+            } catch(error) {
+                Swal.fire('查詢失敗', error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        });
+        
+        async function removeSignup(eventId, userName) {
+            const confirmResult = await Swal.fire({
+                title: '確定要取消報名嗎？',
+                text: "此操作無法復原！",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: '是的，取消它！',
+                cancelButtonText: '不，保留它'
+            });
+
+            if (confirmResult.isConfirmed) {
+                showLoading('正在為您取消報名...');
+                try {
+                    const result = await callAppsScript('removeSignup', { eventId, userName });
+                    Swal.fire('操作成功', result.message, 'success');
+                    // 重新查詢以刷新列表
+                    document.getElementById('search-my-signups').click();
+                } catch(error) {
+                    Swal.fire('操作失敗', error.message, 'error');
+                } finally {
+                    hideLoading();
+                }
+            }
+        }
+        
+        // --- 統計報表邏輯 ---
+        document.getElementById('generate-stats').addEventListener('click', async () => {
+            const startDateStr = document.getElementById('stats-start-date').value;
+            const endDateStr = document.getElementById('stats-end-date').value;
+            
+            showLoading('正在產生統計資料...');
+            try {
+                const statsData = await callAppsScript('getStatsData', { startDateStr, endDateStr });
+                const ctx = document.getElementById('stats-chart').getContext('2d');
+                if (statsChart) {
+                    statsChart.destroy();
+                }
+                if (statsData.labels.length === 0) {
+                    Swal.fire('提示', '在選定的日期範圍內沒有任何報名記錄。', 'info');
+                    document.getElementById('stats-details').innerHTML = '';
+                    return;
+                }
+                statsChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: statsData.labels,
+                        datasets: [{
+                            label: '報名人數',
+                            data: statsData.data,
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                    }
+                });
+
+                // 顯示詳細資料
+                let detailsHtml = '<h3>詳細報名名單</h3>';
+                statsData.fullDetails.forEach(detail => {
+                    detailsHtml += `<h4>${detail.eventInfo.title} (${detail.eventInfo.date})</h4><ul>`;
+                    detail.signups.forEach(signup => {
+                        detailsHtml += `<li>${signup.position}: ${signup.user}</li>`;
+                    });
+                    detailsHtml += `</ul>`;
+                });
+                document.getElementById('stats-details').innerHTML = detailsHtml;
+
+            } catch(error) {
+                Swal.fire('產生失敗', error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        });
+        
+        // --- 管理工具邏輯 ---
+        document.getElementById('export-excel-btn').addEventListener('click', async () => {
+            const startDateStr = document.getElementById('export-start-date').value;
+            const endDateStr = document.getElementById('export-end-date').value;
+            showLoading('正在產生匯出連結...');
+            try {
+                const result = await callAppsScript('createTempSheetAndExport', { startDateStr, endDateStr });
+                if (result.status === 'nodata') {
+                     Swal.fire('提示', result.message, 'info');
+                     return;
+                }
+                Swal.fire({
+                    title: '匯出連結已產生',
+                    text: '您的 Excel 報表已準備就緒，點擊下方按鈕下載。此連結將在 24 小時後失效。',
+                    icon: 'success',
+                    showCancelButton: true,
+                    confirmButtonText: '點此下載',
+                }).then((res) => {
+                    if (res.isConfirmed) {
+                        window.open(result.url, '_blank');
+                        // 排程刪除
+                        callAppsScript('scheduleDeletion', { sheetName: result.sheetName });
+                    }
+                });
+            } catch(error) {
+                Swal.fire('匯出失敗', error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        });
+        
+        document.getElementById('email-report-btn').addEventListener('click', async () => {
+            const startDateStr = document.getElementById('email-start-date').value;
+            const endDateStr = document.getElementById('email-end-date').value;
+            const recipientEmail = document.getElementById('recipient-email').value.trim();
+            if (!recipientEmail) {
+                Swal.fire('錯誤', '請輸入收件人 Email 地址。', 'error');
+                return;
+            }
+            showLoading('正在產生並郵寄報表...');
+            try {
+                const result = await callAppsScript('exportAndEmailReport', { startDateStr, endDateStr, recipientEmail });
+                if (result.status === 'nodata') {
+                     Swal.fire('提示', result.message, 'info');
+                } else {
+                     Swal.fire('寄送成功', result.message, 'success');
+                }
+            } catch(error) {
+                Swal.fire('寄送失敗', error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        });
+        
+        document.getElementById('delete-temp-sheets-btn').addEventListener('click', async () => {
+             const confirmResult = await Swal.fire({
+                title: '確定要清除所有暫存報表嗎？',
+                text: "這會刪除所有已產生的報表連結，此操作無法復原！",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: '是的，清除它！'
+            });
+            if (confirmResult.isConfirmed) {
+                showLoading('正在清除中...');
+                try {
+                    const result = await callAppsScript('deleteAllTempSheets');
+                    Swal.fire('操作完成', result.message, result.status === 'success' ? 'success' : 'info');
+                } catch(error) {
+                    Swal.fire('清除失敗', error.message, 'error');
+                } finally {
+                    hideLoading();
+                }
+            }
+        });
+
+
+        // --- 初始化 ---
+        document.addEventListener('DOMContentLoaded', function() {
+            if (currentUserName) {
+                document.getElementById('my-name-input').value = currentUserName;
+            }
+            initializeCalendar();
+        });
+    </script>
+</body>
+</html>

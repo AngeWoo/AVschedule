@@ -1,6 +1,6 @@
 // ====================================================================
 //  檔案：code.gs (AV放送立願報名行事曆 - 後端 API)
-//  版本：5.1 (最終修正版 - 將邏輯移至 doGet)
+//  版本：5.9 (修正版 - 修正單數位時間格式解析問題)
 // ====================================================================
 
 // --- 已填入您提供的 CSV 網址 ---
@@ -13,15 +13,12 @@ const SHEET_ID = '1gBIlhEKPQHBvslY29veTdMEJeg2eVcaJx_7A-8cTWIM';
 const EVENTS_SHEET_NAME = 'Events';
 const SIGNUPS_SHEET_NAME = 'Signups';
 
-// -------------------- API 核心路由函式 (已修正) --------------------
+// -------------------- API 核心路由函式 --------------------
 
 function doGet(e) {
-  // 【修正】所有 API 邏輯現在都在這裡處理，以回應前端的 GET 請求
   let responsePayload;
   try {
-    // 直接存取 GET 請求的參數
     if (!e || !e.parameter || !e.parameter.payload || !e.parameter.callback) {
-      // 如果是直接在瀏覽器打開，沒有帶參數，就顯示部署成功訊息
       return HtmlService.createHtmlOutput("API 後端已部署。");
     }
     
@@ -30,7 +27,6 @@ function doGet(e) {
     const params = request.params || {};
     let result;
 
-    // API 路由器
     switch (functionName) {
       case 'getEventsAndSignups': result = getEventsAndSignups(); break;
       case 'getAllSignups': result = getAllSignups(params.startDateStr, params.endDateStr); break;
@@ -48,26 +44,23 @@ function doGet(e) {
     }
 
     responsePayload = { status: 'success', data: result };
-
   } catch (err) {
     console.error(`doGet 執行失敗: ${err.message}\n${err.stack}`);
     responsePayload = { status: 'error', message: err.message };
   }
 
-  // 使用 JSONP 格式回傳資料
   const callbackFunctionName = e.parameter.callback;
   const jsonpResponse = `${callbackFunctionName}(${JSON.stringify(responsePayload)})`;
   
   return ContentService.createTextOutput(jsonpResponse).setMimeType(ContentService.MimeType.JAVASCRIPT);
 }
 
-// doPost 現在可以留空或指向 doGet
 function doPost(e) {
   return doGet(e);
 }
 
 
-// -------------------- 核心資料獲取函式 (CSV 讀取最終版) --------------------
+// -------------------- 核心資料獲取函式 --------------------
 function getMasterData() {
   if (EVENTS_CSV_URL.includes("在此貼上") || SIGNUPS_CSV_URL.includes("在此貼上")) {
     throw new Error("後端程式碼尚未設定 Events 和 Signups 的 CSV 網址。");
@@ -82,15 +75,14 @@ function getMasterData() {
     
     const eventsResponse = responses[0];
     const signupsResponse = responses[1];
-
     if (eventsResponse.getResponseCode() !== 200) throw new Error(`無法獲取 Events CSV 資料。錯誤碼: ${eventsResponse.getResponseCode()}`);
     if (signupsResponse.getResponseCode() !== 200) throw new Error(`無法獲取 Signups CSV 資料。錯誤碼: ${signupsResponse.getResponseCode()}`);
 
     const eventsData = Utilities.parseCsv(eventsResponse.getContentText());
     const signupsData = Utilities.parseCsv(signupsResponse.getContentText());
 
-    eventsData.shift();
-    signupsData.shift();
+    eventsData.shift(); // 移除標題行
+    signupsData.shift(); // 移除標題行
 
     const scriptTimeZone = Session.getScriptTimeZone();
     const eventsMap = new Map();
@@ -104,7 +96,6 @@ function getMasterData() {
         });
       }
     });
-
     return { eventsData, signupsData, eventsMap };
   } catch (err) {
     console.error(`getMasterData (CSV) 失敗: ${err.message}`, err.stack);
@@ -112,7 +103,8 @@ function getMasterData() {
   }
 }
 
-// -------------------- 其他所有功能函式 (無需修改) --------------------
+// -------------------- 主要功能函式 (已修正) --------------------
+
 function getEventsAndSignups() {
   try {
     const { eventsData, signupsData } = getMasterData();
@@ -127,23 +119,95 @@ function getEventsAndSignups() {
       }
       signupsByEventId.get(eventId).push({ user: row[2], position: row[4] });
     });
+    
+    // 輔助函式：格式化日期部分為 YYYY-MM-DD
+    const formatDatePart = (dateStr) => {
+        try {
+            return Utilities.formatDate(new Date(dateStr), scriptTimeZone, "yyyy-MM-dd");
+        } catch (e) {
+            console.error(`日期值 "${dateStr}" 無效，無法格式化。錯誤: ${e.message}`);
+            return null;
+        }
+    };
+    
+    // 輔助函式：從 Date 物件獲取 HH:mm 字串
+    const getHourMinuteString = (dateObject) => {
+        if (!dateObject || isNaN(dateObject.getTime())) return null;
+        return Utilities.formatDate(dateObject, scriptTimeZone, "HH:mm");
+    };
 
-    const formatDate = (date) => Utilities.formatDate(new Date(date), scriptTimeZone, "yyyy-MM-dd");
-    const formatTime = (time) => Utilities.formatDate(new Date(time), scriptTimeZone, "HH:mm");
+    // 【v5.9 修正】輔助函式：確保時間字串為 HH:mm 格式，為單數位小時補零
+    const padTime = (timeStr) => {
+      const trimmedTime = timeStr ? String(timeStr).trim() : null;
+      if (trimmedTime && /^\d:\d\d$/.test(trimmedTime)) {
+        return '0' + trimmedTime;
+      }
+      return trimmedTime;
+    };
 
     return eventsData.map(row => {
-      const eventId = row[0];
-      if (!eventId) return null;
+      // 明確地將 CSV 欄位對應到變數
+      const eventId        = row[0];
+      const title          = row[1];
+      const rawDateString  = row[2]; // C欄: 日期，例如 "2025/07/19"
+      const rawStartTime   = row[3]; // D欄: 開始時間，例如 "6:30" 或 "10:00"
+      const rawEndTime     = row[4]; // E欄: 結束時間，例如 "8:00" 或 "12:00"
+      const maxAttendees   = row[5];
+      const positions      = row[6];
+      const description    = row[7];
+
+      // 基本驗證
+      if (!eventId || !title || !rawDateString || !rawStartTime) {
+        console.warn(`跳過無效事件 (缺少必要欄位): ID=${eventId || 'N/A'}, Title=${title || 'N/A'}, Date=${rawDateString || 'N/A'}, StartTime=${rawStartTime || 'N/A'}`);
+        return null;
+      }
+
+      // 【v5.9 修正】使用 padTime 函式處理時間格式
+      const paddedStartTime = padTime(rawStartTime);
+      const paddedEndTime = padTime(rawEndTime);
       
-      const title = row[1], date = row[2], startTime = row[3], endTime = row[4];
-      const maxAttendees = parseInt(row[5], 10) || 999;
-      const positions = (row[6] || '').split(',').map(p => p.trim()).filter(p => p);
-      const description = row[7];
+      let eventStartDateTime = null;
+      let eventEndDateTime = null;
+
+      try {
+          const isoDatePart = rawDateString.replace(/\//g, '-');
+          
+          // 使用補零後的時間來組合字串
+          const startDateTimeString = `${isoDatePart}T${paddedStartTime}:00`;
+          eventStartDateTime = new Date(startDateTimeString);
+
+          if (isNaN(eventStartDateTime.getTime())) {
+              console.error(`無法解析活動開始日期/時間: "${startDateTimeString}". 事件ID: ${eventId}. 跳過此事件。`);
+              return null; 
+          }
+
+          // 處理結束時間
+          if (paddedEndTime) {
+              const endDateTimeString = `${isoDatePart}T${paddedEndTime}:00`;
+              eventEndDateTime = new Date(endDateTimeString);
+              if (isNaN(eventEndDateTime.getTime())) {
+                  console.warn(`無法解析活動結束日期/時間: "${endDateTimeString}". 事件ID: ${eventId}. 此事件將不設定結束時間。`);
+                  eventEndDateTime = null;
+              }
+          }
+      } catch (e) {
+          console.error(`處理事件日期/時間時發生未預期錯誤: ${e.message}. 事件ID: ${eventId}. 堆疊追蹤: ${e.stack}`);
+          return null; 
+      }
       
+      const formattedStartTime = getHourMinuteString(eventStartDateTime);
+      const formattedEndTime = getHourMinuteString(eventEndDateTime);
+
+      if (!formattedStartTime) {
+          console.error(`格式化後的開始時間為 null，跳過此事件: ID=${eventId}`);
+          return null;
+      }
+
+      // 計算報名狀態
       const signups = signupsByEventId.get(eventId) || [];
       const signupCount = signups.length;
-      const isFull = signupCount >= maxAttendees;
-      
+      const parsedMaxAttendees = parseInt(maxAttendees, 10) || 999;
+      const isFull = signupCount >= parsedMaxAttendees;
       let eventColor, textColor;
       if (isFull) { eventColor = '#6c757d'; textColor = 'white'; } 
       else if (signupCount > 0) { eventColor = '#0d6efd'; textColor = 'white'; } 
@@ -152,15 +216,26 @@ function getEventsAndSignups() {
       return {
         id: eventId,
         title: title,
-        start: `${formatDate(date)}T${formatTime(startTime)}`,
-        end: `${formatDate(date)}T${formatTime(endTime)}`,
+        start: `${formatDatePart(rawDateString)}T${formattedStartTime}`, 
+        end: formattedEndTime ? `${formatDatePart(rawDateString)}T${formattedEndTime}` : null,
         backgroundColor: eventColor,
         borderColor: eventColor,
         textColor: textColor,
-        extendedProps: { full_title: title, description, maxAttendees, signups, positions, startTime: formatTime(startTime) }
+        extendedProps: { 
+            full_title: title, 
+            description: description, 
+            maxAttendees: parsedMaxAttendees, 
+            signups, 
+            positions: (positions || '').split(',').map(p => p.trim()).filter(p => p), 
+            startTime: formattedStartTime,
+            endTime: formattedEndTime
+        }
       };
-    }).filter(e => e);
-  } catch(err) { console.error("getEventsAndSignups 失敗:", err.message, err.stack); throw err; }
+    }).filter(e => e !== null); // 過濾掉所有為 null 的無效事件
+  } catch(err) { 
+    console.error("getEventsAndSignups 失敗 (頂層捕獲):", err.message, err.stack);
+    throw err; 
+  }
 }
 
 function getAllSignups(startDateStr, endDateStr) {
@@ -243,16 +318,18 @@ function removeSignup(eventId, userName) {
     for (let i = signupsData.length - 1; i >= 1; i--) { if (signupsData[i][1] === eventId && signupsData[i][2] === userName) { signupsSheet.deleteRow(i + 1); found = true; break; } }
     if (found) { return { status: 'success', message: '已為您取消報名。' }; }
     return { status: 'error', message: '找不到您的報名紀錄。' };
-  } catch(err) { console.error("removeSignup 失敗:", err.message, err.stack); throw new Error('取消報名時發生未預期的錯誤。');
+  } catch(err) { console.error("removeSignup 失敗:", err.message, err.stack);
+    throw new Error('取消報名時發生未預期的錯誤。');
   } finally { lock.releaseLock(); }
 }
 
+// --- 其他輔助函式 (無需修改) ---
 function addBackupSignup(eventId, userName, position) { if (!eventId || !userName || !position) { return { status: 'error', message: '缺少必要資訊。' }; } const lock = LockService.getScriptLock(); lock.waitLock(15000); try { const ss = SpreadsheetApp.openById(SHEET_ID); const signupsSheet = ss.getSheetByName(SIGNUPS_SHEET_NAME); const finalPosition = `${position} (備援)`; const newSignupId = 'su' + new Date().getTime(); signupsSheet.appendRow([newSignupId, eventId, userName, new Date(), finalPosition]); return { status: 'success', message: '已成功為您報名備援！' }; } catch (err) { console.error("addBackupSignup 失敗:", err.message, err.stack); throw new Error('備援報名時發生錯誤。'); } finally { lock.releaseLock(); } }
 function getMySignups(userName, startDateStr, endDateStr) { if (!userName) return []; try { return getAllSignups(startDateStr, endDateStr).filter(signup => signup.user === userName); } catch (err) { console.error("getMySignups 失敗:", err.message, err.stack); throw err; } }
 function getStatsData(startDateStr, endDateStr) { try { const { eventsMap } = getMasterData(); const allSignups = getAllSignups(startDateStr, endDateStr); if (!allSignups || allSignups.length === 0) { return { labels: [], data: [], fullDetails: [] }; } const statsByEventId = {}; allSignups.forEach(signup => { const eventId = signup.eventId; if (!statsByEventId[eventId]) { const eventInfo = eventsMap.get(eventId) || { title: signup.eventTitle, date: signup.eventDate }; statsByEventId[eventId] = { count: 0, signups: [], eventInfo: { title: eventInfo.title, date: eventInfo.dateString }, label: `${eventInfo.title} (${eventInfo.dateString})` }; } statsByEventId[eventId].count++; statsByEventId[eventId].signups.push({ user: signup.user, position: signup.position }); }); const processedData = Object.values(statsByEventId); processedData.sort((a, b) => { const dateA = new Date(a.eventInfo.date).getTime(); const dateB = new Date(b.eventInfo.date).getTime(); return dateA - dateB; }); const labels = processedData.map(item => item.label); const data = processedData.map(item => item.count); const fullDetails = processedData.map(item => { item.signups.sort((a,b) => a.position.localeCompare(b.position)); return { eventInfo: item.eventInfo, signups: item.signups }; }); return { labels, data, fullDetails }; } catch (err) { console.error("getStatsData 失敗:", err.message, err.stack); throw err; } }
 function getUniqueSignupNames(startDateStr, endDateStr) { try { const signups = getAllSignups(startDateStr, endDateStr); if (!signups || signups.length === 0) { return []; } const nameSet = new Set(signups.map(s => s.user)); return Array.from(nameSet).sort((a, b) => a.localeCompare(b, 'zh-Hant')); } catch (err) { console.error("getUniqueSignupNames 失敗:", err.message, err.stack); throw err; } }
-function createTempSheetAndExport(startDateStr, endDateStr) { const ss = SpreadsheetApp.openById(SHEET_ID); const spreadsheetId = ss.getId(); let tempSheet; try { const file = DriveApp.getFileById(spreadsheetId); file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); const tempSheetName = "匯出報表_" + new Date().getTime(); tempSheet = ss.insertSheet(tempSheetName); const data = getAllSignups(startDateStr, endDateStr); if (!data || data.length === 0) { ss.deleteSheet(tempSheet); return { status: 'nodata', message: '在選定的日期範圍內沒有任何報名記錄。' }; } data.sort((a, b) => { const dateA = new Date(a.eventDate).getTime() || 0; const dateB = new Date(b.eventDate).getTime() || 0; if (dateA !== dateB) { return dateA - dateB; } const timeA = new Date(a.timestamp).getTime() || 0; const timeB = new Date(b.timestamp).getTime() || 0; return timeA - timeB; }); const dateRangeText = `(${startDateStr || '所有'} - ${endDateStr || '所有'})`; const title = `AV放送立願報名記錄 ${dateRangeText}`; tempSheet.getRange("A1:E1").merge().setValue(title).setFontWeight("bold").setFontSize(15).setHorizontalAlignment('center'); const headers = ["活動日期", "活動", "崗位", "報名者", "報名時間"]; const fields = ["eventDate", "eventTitle", "position", "user", "timestamp"]; const headerRange = tempSheet.getRange(2, 1, 1, headers.length); headerRange.setValues([headers]).setFontWeight("bold").setBackground("#d9ead3").setFontSize(15).setHorizontalAlignment('center'); const outputData = data.map(row => fields.map(field => row[field] || "")); if (outputData.length > 0) { const dataRange = tempSheet.getRange(3, 1, outputData.length, headers.length); dataRange.setValues(outputData).setFontSize(15).setHorizontalAlignment('left'); } tempSheet.setColumnWidth(1, 160); tempSheet.setColumnWidth(2, 420); tempSheet.setColumnWidth(3, 220); tempSheet.setColumnWidth(4, 160); tempSheet.setColumnWidth(5, 280); SpreadsheetApp.flush(); Utilities.sleep(5000); const gid = tempSheet.getSheetId(); const exportUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=xlsx&gid=${gid}`; return { status: 'success', url: exportUrl, sheetName: tempSheet.getName() }; } catch (e) { console.error("createTempSheetAndExport 失敗: " + e.toString()); if (tempSheet && ss.getSheetByName(tempSheet.getName())) { ss.deleteSheet(tempSheet); } throw new Error('匯出時發生錯誤: ' + e.toString()); } }
-function exportAndEmailReport(startDateStr, endDateStr, recipientEmail) { const ss = SpreadsheetApp.openById(SHEET_ID); const spreadsheetId = ss.getId(); let tempSheet; try { if (!recipientEmail) { return { status: 'error', message: '未提供收件人Email地址。' }; } const file = DriveApp.getFileById(spreadsheetId); file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); tempSheet = ss.insertSheet("郵寄報表_" + new Date().getTime()); const data = getAllSignups(startDateStr, endDateStr); if (!data || data.length === 0) { ss.deleteSheet(tempSheet); return { status: 'nodata', message: '在選定的日期範圍内沒有任何報名記錄。' }; } data.sort((a, b) => { const dateA = new Date(a.eventDate).getTime() || 0; const dateB = new Date(b.eventDate).getTime() || 0; if (dateA !== dateB) { return dateA - dateB; } const timeA = new Date(a.timestamp).getTime() || 0; const timeB = new Date(b.timestamp).getTime() || 0; return timeA - timeB; }); const dateRangeText = `(${startDateStr || '所有'} - ${endDateStr || '所有'})`; const title = `AV放送立願報名記錄 ${dateRangeText}`; tempSheet.getRange("A1:E1").merge().setValue(title).setFontWeight("bold").setFontSize(15).setHorizontalAlignment('center'); const headers = ["活動日期", "活動", "崗位", "報名者", "報名時間"]; const fields = ["eventDate", "eventTitle", "position", "user", "timestamp"]; const headerRange = tempSheet.getRange(2, 1, 1, headers.length); headerRange.setValues([headers]).setFontWeight("bold").setBackground("#d9ead3").setFontSize(15).setHorizontalAlignment('center'); const outputData = data.map(row => fields.map(field => row[field] || "")); if (outputData.length > 0) { const dataRange = tempSheet.getRange(3, 1, outputData.length, headers.length); dataRange.setValues(outputData).setFontSize(15).setHorizontalAlignment('left'); } tempSheet.setColumnWidth(1, 160); tempSheet.setColumnWidth(2, 420); tempSheet.setColumnWidth(3, 220); tempSheet.setColumnWidth(4, 160); tempSheet.setColumnWidth(5, 280); SpreadsheetApp.flush(); const gid = tempSheet.getSheetId(); const exportUrl = `https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=xlsx&gid=${gid}`; const token = ScriptApp.getOAuthToken(); const response = UrlFetchApp.fetch(exportUrl, { headers: { 'Authorization': 'Bearer ' + token } }); const blob = response.getBlob().setName(`AV立願報名記錄_${new Date().toISOString().slice(0,10)}.xlsx`); MailApp.sendEmail({ to: recipientEmail, subject: `AV放送立願報名記錄報表 ${dateRangeText}`, htmlBody: `您好：<br><br>附件是您所申請的 AV放送立願報名記錄報表，請查收。<br><br>日期範圍：${dateRangeText}<br><br>此為系統自動發送郵件，請勿直接回覆。`, attachments: [blob] }); ss.deleteSheet(tempSheet); return { status: 'success', message: `報表已成功寄送至 ${recipientEmail}` }; } catch (e) { console.error("exportAndEmailReport 失敗: " + e.toString()); if (tempSheet && ss.getSheetByName(tempSheet.getName())) { ss.deleteSheet(tempSheet); } throw new Error('郵件寄送時發生錯誤: ' + e.toString()); } }
+function createTempSheetAndExport(startDateStr, endDateStr) { const ss = SpreadsheetApp.openById(SHEET_ID); const spreadsheetId = ss.getId(); let tempSheet; try { const file = DriveApp.getFileById(spreadsheetId); file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); const tempSheetName = "匯出報表_" + new Date().getTime(); tempSheet = ss.insertSheet(tempSheetName); const data = getAllSignups(startDateStr, endDateStr); if (!data || data.length === 0) { ss.deleteSheet(tempSheet); return { status: 'nodata', message: '在選定的日期範圍內沒有任何報名記錄。' }; } data.sort((a, b) => { const dateA = new Date(a.eventDate).getTime() || 0; const dateB = new Date(b.eventDate).getTime() || 0; if (dateA !== dateB) { return dateA - dateB; } const timeA = new Date(a.timestamp).getTime() || 0; const timeB = new Date(b.timestamp).getTime() || 0; return timeA - timeB; }); const dateRangeText = `(${startDateStr || '所有'} - ${endDateStr || '所有'})`; const title = `AV放送立願報名記錄 ${dateRangeText}`; tempSheet.getRange("A1:E1").merge().setValue(title).setFontWeight("bold").setFontSize(15).setHorizontalAlignment('center'); const headers = ["活動日期", "活動", "崗位", "報名者", "報名時間"]; const fields = ["eventDate", "eventTitle", "position", "user", "timestamp"]; const headerRange = tempSheet.getRange(2, 1, 1, headers.length); headerRange.setValues([headers]).setFontWeight("bold").setBackground("#d9ead3").setFontSize(15).setHorizontalAlignment('center'); const outputData = data.map(row => fields.map(field => row[field] || "")); if (outputData.length > 0) { const dataRange = tempSheet.getRange(3, 1, outputData.length, headers.length); dataRange.setValues(outputData).setFontSize(15).setHorizontalAlignment('left'); } tempSheet.setColumnWidth(1, 160); tempSheet.setColumnWidth(2, 420); tempSheet.setColumnWidth(3, 220); tempSheet.setColumnWidth(4, 160); tempSheet.setColumnWidth(5, 280); SpreadsheetApp.flush(); Utilities.sleep(5000); const gid = tempSheet.getSheetId(); const exportUrl = `https://docs.google.com/sheets/d/${spreadsheetId}/export?format=xlsx&gid=${gid}`; return { status: 'success', url: exportUrl, sheetName: tempSheet.getName() }; } catch (e) { console.error("createTempSheetAndExport 失敗: " + e.toString()); if (tempSheet && ss.getSheetByName(tempSheet.getName())) { ss.deleteSheet(tempSheet); } throw new Error('匯出時發生錯誤: ' + e.toString()); } }
+function exportAndEmailReport(startDateStr, endDateStr, recipientEmail) { const ss = SpreadsheetApp.openById(SHEET_ID); const spreadsheetId = ss.getId(); let tempSheet; try { if (!recipientEmail) { return { status: 'error', message: '未提供收件人Email地址。' }; } const file = DriveApp.getFileById(spreadsheetId); file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); tempSheet = ss.insertSheet("郵寄報表_" + new Date().getTime()); const data = getAllSignups(startDateStr, endDateStr); if (!data || data.length === 0) { ss.deleteSheet(tempSheet); return { status: 'nodata', message: '在選定的日期範圍内沒有任何報名記錄。' }; } data.sort((a, b) => { const dateA = new Date(a.eventDate).getTime() || 0; const dateB = new Date(b.eventDate).getTime() || 0; if (dateA !== dateB) { return dateA - dateB; } const timeA = new Date(a.timestamp).getTime() || 0; const timeB = new Date(b.timestamp).getTime() || 0; return timeA - timeB; }); const dateRangeText = `(${startDateStr || '所有'} - ${endDateStr || '所有'})`; const title = `AV放送立願報名記錄 ${dateRangeText}`; tempSheet.getRange("A1:E1").merge().setValue(title).setFontWeight("bold").setFontSize(15).setHorizontalAlignment('center'); const headers = ["活動日期", "活動", "崗位", "報名者", "報名時間"]; const fields = ["eventDate", "eventTitle", "position", "user", "timestamp"]; const headerRange = tempSheet.getRange(2, 1, 1, headers.length); headerRange.setValues([headers]).setFontWeight("bold").setBackground("#d9ead3").setFontSize(15).setHorizontalAlignment('center'); const outputData = data.map(row => fields.map(field => row[field] || "")); if (outputData.length > 0) { const dataRange = tempSheet.getRange(3, 1, outputData.length, headers.length); dataRange.setValues(outputData).setFontSize(15).setHorizontalAlignment('left'); } tempSheet.setColumnWidth(1, 160); tempSheet.setColumnWidth(2, 420); tempSheet.setColumnWidth(3, 220); tempSheet.setColumnWidth(4, 160); tempSheet.setColumnWidth(5, 280); SpreadsheetApp.flush(); const gid = tempSheet.getSheetId(); const exportUrl = `https://docs.google.com/sheets/d/${spreadsheetId}/export?format=xlsx&gid=${gid}`; const token = ScriptApp.getOAuthToken(); const response = UrlFetchApp.fetch(exportUrl, { headers: { 'Authorization': 'Bearer ' + token } }); const blob = response.getBlob().setName(`AV立願報名記錄_${new Date().toISOString().slice(0,10)}.xlsx`); MailApp.sendEmail({ to: recipientEmail, subject: `AV放送立願報名記錄報表 ${dateRangeText}`, htmlBody: `您好：<br><br>附件是您所申請的 AV放送立願報名記錄報表，請查收。<br><br>日期範圍：${dateRangeText}<br><br>此為系統自動發送郵件，請勿直接回覆。`, attachments: [blob] }); ss.deleteSheet(tempSheet); return { status: 'success', message: `報表已成功寄送至 ${recipientEmail}` }; } catch (e) { console.error("exportAndEmailReport 失敗: " + e.toString()); if (tempSheet && ss.getSheetByName(tempSheet.getName())) { ss.deleteSheet(tempSheet); } throw new Error('郵件寄送時發生錯誤: ' + e.toString()); } }
 function scheduleDeletion(sheetName) { if (!sheetName) return; try { const trigger = ScriptApp.newTrigger('triggeredDeleteHandler').timeBased().after(24 * 60 * 60 * 1000).create(); PropertiesService.getScriptProperties().setProperty(trigger.getUniqueId(), sheetName); console.log(`已成功排程在 24 小時後刪除工作表 '${sheetName}'。觸發器ID: ${trigger.getUniqueId()}`); } catch (e) { console.error(`排程刪除工作表 '${sheetName}' 時失敗: ${e.toString()}`); } }
 function triggeredDeleteHandler(e) { const triggerId = e.triggerUid; const scriptProperties = PropertiesService.getScriptProperties(); const sheetName = scriptProperties.getProperty(triggerId); if (sheetName) { console.log(`觸發器 ${triggerId} 已啟動，準備刪除工作表: ${sheetName}`); deleteSheetByName(sheetName); scriptProperties.deleteProperty(triggerId); } else { console.log(`觸發器 ${triggerId} 已啟動，但找不到對應的工作表名稱屬性。`); } const allTriggers = ScriptApp.getProjectTriggers(); for (let i = 0; i < allTriggers.length; i++) { if (allTriggers[i].getUniqueId() === triggerId) { ScriptApp.deleteTrigger(allTriggers[i]); console.log(`已刪除一次性觸發器: ${triggerId}`); break; } } }
 function deleteAllTempSheets() { const lock = LockService.getScriptLock(); lock.waitLock(15000); try { const ss = SpreadsheetApp.openById(SHEET_ID); const allSheets = ss.getSheets(); const scriptProperties = PropertiesService.getScriptProperties(); const allTriggers = ScriptApp.getProjectTriggers(); let deletedSheetsCount = 0; allSheets.forEach(sheet => { const sheetName = sheet.getName(); if (sheetName.startsWith("匯出報表_") || sheetName.startsWith("郵寄報表_")) { ss.deleteSheet(sheet); deletedSheetsCount++; console.log(`已手動刪除工作表: ${sheetName}`); } }); allTriggers.forEach(trigger => { if (trigger.getHandlerFunction() === 'triggeredDeleteHandler') { const triggerId = trigger.getUniqueId(); scriptProperties.deleteProperty(triggerId); ScriptApp.deleteTrigger(trigger); console.log(`已刪除觸發器 ID: ${triggerId}`); } }); if (deletedSheetsCount > 0) { return { status: 'success', message: `已成功清除 ${deletedSheetsCount} 個報表連結及其排程。` }; } else { return { status: 'nodata', message: '目前沒有任何可清除的報表連結。' }; } } catch (e) { console.error("deleteAllTempSheets 失敗: " + e.toString()); throw new Error('清除過程中發生錯誤: ' + e.toString()); } finally { lock.releaseLock(); } }

@@ -1322,14 +1322,14 @@
                         return obj;
                     }, {});
 
-                    let timeText = `<b>時間:</b> ${props.startTime}`;
-                    if (props.endTime) {
-                         timeText += ` - ${props.endTime}`;
+                    let timeText = `<b>開始時間:</b> ${props.startTime}`;
+                    if (props.endTime && props.endTime !== props.startTime) {
+                         timeText += `<br><b>結束時間:</b> ${props.endTime}`;
                     }
 
                     const { value: selectedPosition } = await Swal.fire({
                         title: props.full_title,
-                        html: `${timeText}<br><b>說明:</b> ${props.description || '無'}<br><br><b>請選擇您要報名的崗位：</b><br><br><small style="color:red;">所有崗位有保障優先, 如果重複立願 Ex.在奉仕讀經結束後原立願者未到, 始可由備援人員遞補</small>`,
+                        html: `${timeText}<br><br><b>說明:</b> ${props.description || '無'}<br><br><b>請選擇您要報名的崗位：</b><br><br><small style="color:red;">所有崗位有保障優先, 如果重複立願 Ex.在奉仕讀經結束後原立願者未到, 始可由備援人員遞補</small>`,
                         input: 'select',
                         inputOptions: positionOptions,
                         inputPlaceholder: '選擇崗位',
@@ -1383,17 +1383,16 @@
                     const props = info.event.extendedProps;
                     const popoverEl = document.getElementById('event-popover');
                     const start = info.event.start;
-                    const end = info.event.end;
-
-                    let popoverContent = `<h5>${info.event.title}</h5>`;
+                    
+                    let popoverContent = `<h5>${props.full_title || info.event.title}</h5>`;
                     
                     popoverContent += `<p><b>日期:</b> ${start.toLocaleDateString('en-CA', { timeZone: 'Asia/Taipei' })}</p>`;
-
-                    let timeText = new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', hour: '2-digit', minute: '2-digit', hour12: false }).format(start);
-                    if (end) {
-                        timeText += ` - ${new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', hour: '2-digit', minute: '2-digit', hour12: false }).format(end)}`;
+                    
+                    let timeText = `<b>開始時間:</b> ${props.startTime}`;
+                    if (props.endTime && props.endTime !== props.startTime) {
+                        timeText += `<br><b>結束時間:</b> ${props.endTime}`;
                     }
-                    popoverContent += `<p><b>時間:</b> ${timeText}</p>`;
+                    popoverContent += `<p>${timeText}</p>`;
 
                     if (props.signups && props.signups.length > 0) {
                         popoverContent += '<ul style="margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 8px;">';
@@ -1449,21 +1448,13 @@
 
             try {
                 if (queryType === 'byDate') {
-                    const statsData = await callAppsScript('getStatsData', params);
-                    const allSignups = statsData.fullDetails.flatMap(detail => 
-                        detail.signups.map(signup => ({
-                            ...signup,
-                            eventDate: detail.eventInfo.date,
-                            eventTitle: detail.eventInfo.title,
-                        }))
-                    );
-
-                    if (allSignups.length === 0) {
+                    const allSignups = await callAppsScript('getAllSignups', params);
+                    if (!allSignups || allSignups.length === 0) {
                         Swal.fire('查詢結果', '在指定的日期範圍內找不到任何報名紀錄。', 'info');
                     } else {
                         renderMySignupsTable(allSignups, 'byDate');
                     }
-                } else { // byName
+                } else { 
                     const signups = await callAppsScript('getMySignups', params);
                     if (!signups || signups.length === 0) {
                         Swal.fire('查詢結果', '找不到相關的報名紀錄。', 'info');

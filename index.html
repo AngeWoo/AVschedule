@@ -7,6 +7,8 @@
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <style>
         /* --- 全新的單色淺色系立體主題變數 --- */
@@ -335,6 +337,20 @@
             transform: translateY(0);
             box-shadow: inset 0 3px 8px rgba(0,0,0,0.25), 0 1px 3px rgba(231, 76, 60, 0.2);
         }
+        /* 【新增】LINE 按鈕樣式 */
+        .btn-success {
+            background: #06C755;
+            color: white;
+            box-shadow: 0 5px 15px rgba(6, 199, 85, 0.4), 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(6, 199, 85, 0.5), 0 4px 10px rgba(0,0,0,0.18);
+        }
+        .btn-success:active {
+            transform: translateY(0);
+            box-shadow: inset 0 3px 8px rgba(0,0,0,0.25), 0 1px 3px rgba(6, 199, 85, 0.2);
+        }
         .toolbar-chunk .btn, .view-switcher-btn { 
             background: var(--card-bg-start); 
             color: var(--text-color); 
@@ -471,6 +487,47 @@
         }
         .event-popover strong {
             color: var(--primary-dark);
+        }
+        
+        /* 【新增】統計報表詳細資料區塊樣式 */
+        #stats-details-container {
+            margin-top: 40px;
+        }
+        #stats-details-container h2 {
+            font-size: 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .stats-event-block {
+            page-break-inside: avoid;
+            margin-bottom: 15px;
+            border: 1px solid #eee;
+            padding: 15px;
+            border-radius: 8px;
+            background: #fdfdfd;
+        }
+        .stats-event-block h3 {
+            font-size: 1.2rem;
+            margin: 0 0 10px 0;
+            color: var(--primary-dark);
+        }
+        .stats-event-block p {
+            margin: 0 0 5px 0;
+            font-size: 0.9rem;
+        }
+        .stats-event-block ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin: 10px 0 0 0;
+            font-size: 0.85rem;
+        }
+        .stats-event-block li {
+            background: #f8f9fa;
+            padding: 5px 10px;
+            border-radius: 3px;
+            margin-bottom: 3px;
         }
 
 
@@ -706,16 +763,18 @@
                 <div class="form-group"><label for="stats-end-date">結束日期</label><input type="date" id="stats-end-date"></div>
                 <button id="generate-stats" class="btn btn-primary">📈 產生報表</button>
                 <button id="export-stats-pdf-btn" class="btn btn-primary">輸出 PDF 報表</button> </div>
-            <div class="chart-container" style="position: relative; height:40vh;"><canvas id="stats-chart"></canvas></div>
+            <div class="chart-container" style="position: relative; height:40vh; margin-bottom: 20px;"><canvas id="stats-chart"></canvas></div>
+            <div id="stats-details-container"></div>
         </div>
         
         <div id="admin-tab" class="tab-content">
             <hr style="margin-top:0;">
-            <h4>📊 匯出 Excel 報表</h4>
+            <h4>📊 匯出 Excel / 分享資料</h4>
             <div class="inline-form">
                 <div class="form-group"><label for="export-start-date">開始日期</label><input type="date" id="export-start-date"></div>
                 <div class="form-group"><label for="export-end-date">結束日期</label><input type="date" id="export-end-date"></div>
                 <button id="export-excel-btn" class="btn btn-primary">產生並下載 Excel</button>
+                <button id="share-line-btn" class="btn btn-success">分享至 LINE</button>
             </div>
         </div>
     </div>
@@ -1064,7 +1123,7 @@
                 Swal.fire({
                     icon: 'info',
                     title: '查無資料',
-                    text: '在您指定的條件下，找不到相關的報名紀錄。'
+                    text: '在您指定的條件下，找不到相關の報名紀錄。'
                 });
                 return;
             }
@@ -1123,8 +1182,12 @@
             }
         }
 
+        // 【修改】產生統計報表與詳細資料
         async function generateStatsReport() {
             showLoading();
+            const detailsContainer = document.getElementById('stats-details-container');
+            detailsContainer.innerHTML = ''; // 清空舊資料
+            
             try {
                 const data = await callAppsScript('getStatsData', { 
                     startDateStr: document.getElementById('stats-start-date').value, 
@@ -1134,6 +1197,7 @@
 
                 const ctx = document.getElementById('stats-chart').getContext('2d');
                 if (statsChart) statsChart.destroy();
+
                 if (!data || data.labels.length === 0) {
                     document.getElementById('stats-chart').style.display = 'none';
                     Swal.fire('提示', '在選定的日期範圍內沒有任何報名記錄可供統計。', 'info');
@@ -1181,10 +1245,33 @@
                     }
                 });
                 
+                // 渲染詳細資料到畫面上
+                let detailsHtml = '<h2>詳細活動報名資訊</h2>';
+                data.fullDetails.forEach(eventData => {
+                    detailsHtml += `
+                        <div class="stats-event-block">
+                            <h3>${eventData.eventInfo.title}</h3>
+                            <p><strong>日期:</strong> ${eventData.eventInfo.date}</p>
+                            <p><strong>時間:</strong> ${eventData.eventInfo.startTime}${eventData.eventInfo.endTime ? ' - ' + eventData.eventInfo.endTime : ''}</p>
+                            <p><strong>報名狀況:</strong> ${eventData.signups.length} / ${eventData.eventInfo.maxAttendees}</p>`;
+                    if (eventData.signups && eventData.signups.length > 0) {
+                        detailsHtml += '<ul>';
+                        eventData.signups.forEach(signup => {
+                            detailsHtml += `<li><strong>${signup.position}:</strong> ${signup.user}</li>`;
+                        });
+                        detailsHtml += '</ul>';
+                    } else {
+                        detailsHtml += '<p>無人報名</p>';
+                    }
+                    detailsHtml += '</div>';
+                });
+                detailsContainer.innerHTML = detailsHtml;
+                
                 setTimeout(() => {
                     const canvas = document.getElementById('stats-chart');
                     if (canvas) canvas.style.backgroundColor = 'white';
                 }, 100);
+
             } catch(e) {
                 Swal.fire('產生失敗', e.message, 'error');
             } finally {
@@ -1264,25 +1351,138 @@
                 }
             });
 
+            // 【修改】分享至 LINE 按鈕的事件監聽
+            document.getElementById('share-line-btn').addEventListener('click', async () => {
+                showLoading();
+                const startDateStr = document.getElementById('export-start-date').value;
+                const endDateStr = document.getElementById('export-end-date').value;
+
+                if (!startDateStr || !endDateStr) {
+                    hideLoading();
+                    return Swal.fire('提示', '請選擇開始及結束日期。', 'info');
+                }
+
+                try {
+                    const data = await callAppsScript('getSignupsAsText', { startDateStr, endDateStr });
+                    
+                    // 檢查後端是否回傳資料過大的特定訊息
+                    if (data.text && data.text.includes("報名資料過於龐大")) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: '資料量過大',
+                            text: '您選擇的日期範圍過長，無法直接分享至LINE。請縮短日期範圍後再試一次，或改用Excel匯出功能。'
+                        });
+                        return; // 中斷執行，不開啟LINE
+                    }
+                    
+                    if (data.status === 'nodata') {
+                        Swal.fire('無資料', '在選定的日期範圍內沒有任何報名記錄可供分享。', 'info');
+                    } else if (data.text) {
+                        // 強力過濾掉所有可能的網址，避免產生預覽圖
+                        const cleanText = data.text.replace(/https?:\/\/\S+/gi, '').trim();
+                        
+                        const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(cleanText)}`;
+                        window.open(lineUrl, '_blank');
+                    } else {
+                        throw new Error("後端未回傳有效的文字資料。");
+                    }
+                } catch (e) {
+                    Swal.fire('分享失敗', e.message, 'error');
+                } finally {
+                    hideLoading();
+                }
+            });
+
+            // PDF匯出功能
             document.getElementById('export-stats-pdf-btn').addEventListener('click', async () => {
-                if (!statsChart || !lastStatsData) {
-                    return Swal.fire('提示', '請先點擊「產生報表」以生成統計圖表。', 'info');
+                if (!statsChart || !lastStatsData || lastStatsData.labels.length === 0) {
+                    return Swal.fire('提示', '請先點擊「產生報表」以生成統計圖表和數據。', 'info');
                 }
                 showLoading();
                 try {
-                    const chartImageData = statsChart.toBase64Image();
-                    const result = await callAppsScript('generateStatsPdfReport', {
-                        chartImageData,
-                        startDateStr: document.getElementById('stats-start-date').value,
-                        endDateStr: document.getElementById('stats-end-date').value,
-                        fullDetails: lastStatsData.fullDetails
+                    const { jsPDF } = window.jspdf;
+                    const reportElement = document.createElement('div');
+                    
+                    // 設定列印樣式
+                    reportElement.style.position = 'absolute';
+                    reportElement.style.left = '-9999px';
+                    reportElement.style.width = '210mm';
+                    reportElement.style.padding = '20mm';
+                    reportElement.style.backgroundColor = 'white';
+                    reportElement.style.fontFamily = `'Microsoft JhengHei', 'PingFang TC', sans-serif`;
+                    reportElement.style.fontSize = '12px';
+                    reportElement.style.color = '#333';
+                    reportElement.style.lineHeight = '1.6';
+
+                    const startDateStr = document.getElementById('stats-start-date').value;
+                    const endDateStr = document.getElementById('stats-end-date').value;
+                    const dateRangeText = `${startDateStr || '所有'} - ${endDateStr || '所有'}`;
+                    const docTitle = `AV放送立願統計報表 (${dateRangeText})`;
+                    const generateTime = new Date().toLocaleString('zh-TW');
+                    const chartImageData = statsChart.canvas.toDataURL('image/png', 1.0);
+
+                    let html = `
+                        <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 20px;">
+                            <h1 style="font-size: 24px; margin: 0; color: #FF8C42;">${docTitle}</h1>
+                            <p style="font-size: 12px; margin: 5px 0 0 0;">報表生成時間：${generateTime}</p>
+                        </div>
+                        <div style="text-align: center; margin: 30px 0;">
+                            <h2 style="font-size: 18px; text-align: left; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 15px;">統計圖表</h2>
+                            <img src="${chartImageData}" style="width: 100%; max-width: 170mm; border: 1px solid #eee;"/>
+                        </div>
+                        <div>
+                            <h2 style="font-size: 18px; text-align: left; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 15px;">詳細活動報名資訊</h2>`;
+
+                    lastStatsData.fullDetails.forEach(eventData => {
+                        html += `
+                            <div style="page-break-inside: avoid; margin-bottom: 15px; border: 1px solid #eee; padding: 15px; border-radius: 5px;">
+                                <h3 style="font-size: 16px; margin: 0 0 10px 0; color: #FF8C42;">${eventData.eventInfo.title}</h3>
+                                <p style="margin: 0 0 5px 0;"><strong>日期:</strong> ${eventData.eventInfo.date}</p>
+                                <p style="margin: 0 0 5px 0;"><strong>時間:</strong> ${eventData.eventInfo.startTime}${eventData.eventInfo.endTime ? ' - ' + eventData.eventInfo.endTime : ''}</p>
+                                <p style="margin: 0 0 10px 0;"><strong>報名狀況:</strong> ${eventData.signups.length} / ${eventData.eventInfo.maxAttendees}</p>`;
+                        if (eventData.signups && eventData.signups.length > 0) {
+                            html += '<ul style="list-style-type: none; padding-left: 0; margin: 0; font-size: 10px;">';
+                            eventData.signups.forEach(signup => {
+                                html += `<li style="background: #f9f9f9; padding: 5px 10px; border-radius: 3px; margin-bottom: 3px;"><strong>${signup.position}:</strong> ${signup.user}</li>`;
+                            });
+                            html += '</ul>';
+                        } else {
+                            html += '<p>無人報名</p>';
+                        }
+                        html += '</div>';
                     });
-                    if (result.url) {
-                        window.open(result.url, '_blank');
-                        Swal.fire('PDF 報表已生成', '報表已在新分頁中開啟。', 'success');
+
+                    html += '</div>';
+                    reportElement.innerHTML = html;
+                    document.body.appendChild(reportElement);
+
+                    const canvas = await html2canvas(reportElement, { scale: 2 });
+                    const imgData = canvas.toDataURL('image/png');
+                    
+                    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                    const pdfWidth = pdf.internal.pageSize.getWidth();
+                    const pdfHeight = pdf.internal.pageSize.getHeight();
+                    const imgProps = pdf.getImageProperties(imgData);
+                    const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                    let heightLeft = imgHeight;
+                    let position = 0;
+
+                    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+                    heightLeft -= pdfHeight;
+
+                    while (heightLeft > 0) {
+                        position = -heightLeft;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+                        heightLeft -= pdfHeight;
                     }
+                    
+                    pdf.save(`AV立願統計報表_${startDateStr}_${endDateStr}.pdf`);
+                    document.body.removeChild(reportElement);
+
                 } catch (e) {
-                    Swal.fire('PDF 匯出失敗', e.message, 'error');
+                    console.error("PDF generation failed:", e);
+                    Swal.fire('PDF 匯出失敗', `前端生成PDF時發生錯誤: ${e.message}`, 'error');
                 } finally {
                     hideLoading();
                 }

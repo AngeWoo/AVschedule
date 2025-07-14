@@ -3,6 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!--【***** START OF CACHE CONTROL MODIFICATION *****】-->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <!--【***** END OF CACHE CONTROL MODIFICATION *****】-->
+    
     <title>AV放送立願表</title>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -714,10 +721,10 @@
 
     <div class="container">
         <div class="tabs">
-            <button class="tab-button active" onclick="openTab(event, 'calendar-tab')">活動行事曆</button>
-            <button class="tab-button" onclick="openTab(event, 'my-signups-tab')">報名查詢</button>
-            <button class="tab-button" onclick="openTab(event, 'stats-tab')">統計報表</button>
-            <button class="tab-button" onclick="openTab(event, 'admin-tab')">管理工具</button>
+            <button class="tab-button active" onclick="openTab(event, 'calendar-tab')">📅 活動行事曆</button>
+            <button class="tab-button" onclick="openTab(event, 'my-signups-tab')">🔍 報名查詢</button>
+            <button class="tab-button" onclick="openTab(event, 'stats-tab')">📊 統計報表</button>
+            <button class="tab-button" onclick="openTab(event, 'admin-tab')">🛠️ 管理工具</button>
         </div>
 
         <div id="calendar-tab" class="tab-content active">
@@ -1404,6 +1411,10 @@
         }
         
         document.addEventListener('DOMContentLoaded', function() {
+            // 【***** START OF SCROLL-TO-TOP MODIFICATION *****】
+            window.scrollTo(0, 0);
+            // 【***** END OF SCROLL-TO-TOP MODIFICATION *****】
+
             Chart.register(ChartDataLabels);
 
             if (localStorage.getItem('av_signup_username')) document.getElementById('my-name-input').value = localStorage.getItem('av_signup_username');

@@ -218,7 +218,6 @@ function getEventsAndSignups() {
   } catch(err) { console.error("getEventsAndSignups 失敗:", err.message, err.stack); throw err; }
 }
 
-// 【***** 關鍵修改 *****】
 function getAllSignups(startDateStr, endDateStr) {
   try {
     const { signupsData, eventsMap } = getMasterData();

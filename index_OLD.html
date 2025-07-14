@@ -74,28 +74,7 @@
             font-weight: 800; 
             color: var(--primary-color); 
             letter-spacing: 1px;
-            /*【***** START OF H1 MODIFICATION *****】*/
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            /*【***** END OF H1 MODIFICATION *****】*/
         }
-        /*【***** START OF TOGGLE BUTTON STYLE *****】*/
-        #toggle-marquee-btn {
-            display: none; /* Default hidden on desktop */
-            font-size: 0.6em; /* Relative to h1 font size */
-            cursor: pointer;
-            transition: transform 0.2s ease, color 0.2s ease;
-            user-select: none; /* Prevent text selection */
-        }
-        #toggle-marquee-btn:hover {
-            transform: scale(1.1);
-        }
-        #toggle-marquee-btn.active {
-            color: var(--primary-dark);
-        }
-        /*【***** END OF TOGGLE BUTTON STYLE *****】*/
         
         .page-footer { 
             text-align: center; 
@@ -557,41 +536,6 @@
             margin-bottom: 3px;
         }
 
-        /* ---【***** START OF MARQUEE STYLES *****】--- */
-        #marquee-container {
-            height: 40px;
-            background: #fffaf5; /* A very light orange */
-            color: var(--primary-dark);
-            border-radius: var(--border-radius-sm);
-            margin-bottom: 25px;
-            padding: 0 20px;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
-            border: 1px solid var(--primary-light);
-            transition: max-height 0.4s ease-out, opacity 0.3s ease-out, margin-bottom 0.4s ease-out;
-        }
-        #marquee-text {
-            position: absolute;
-            width: calc(100% - 40px);
-            text-align: center;
-            font-weight: 600;
-            font-size: 1rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            /* Animation is applied via JS */
-        }
-        @keyframes marquee-scroll {
-            0%   { transform: translateY(120%); opacity: 0; }
-            15%  { transform: translateY(0); opacity: 1; }
-            85%  { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-120%); opacity: 0; }
-        }
-        /* ---【***** END OF MARQUEE STYLES *****】--- */
-
         @media (min-width: 769px) {
             .container {
                 width: 90vw;
@@ -617,12 +561,6 @@
                 flex-shrink: 0; 
             }
             .page-header h1 { font-size: 2rem; }
-            
-            /*【***** START OF TOGGLE BUTTON MOBILE STYLE *****】*/
-            #toggle-marquee-btn {
-                display: inline-block; /* Show on mobile */
-            }
-            /*【***** END OF TOGGLE BUTTON MOBILE STYLE *****】*/
             
             .container { 
                 padding: 15px; 
@@ -771,26 +709,6 @@
                 left: 2.5vw !important; 
                 transform: translateX(0) !important; 
             }
-            
-            /* ---【***** START OF MARQUEE MOBILE STYLES *****】--- */
-            #marquee-container {
-                margin-bottom: 20px;
-                padding: 10px 15px;
-                height: auto; /* 允許自動高度 */
-                min-height: 40px;
-                max-height: 200px; /* For transition */
-                opacity: 1;
-            }
-            #marquee-text {
-                position: relative; /* 改為相對定位以適應自動高度 */
-                width: 100%;
-                white-space: normal; /* 允許文字換行 */
-                text-align: center;
-                animation: none !important; /* 手機版停用滾動動畫 */
-                transition: opacity 0.4s ease-in-out;
-                opacity: 1;
-            }
-            /* ---【***** END OF MARQUEE MOBILE STYLES *****】--- */
         }
         /* -----【***** END OF MOBILE STYLES MODIFICATION *****】----- */
     </style>
@@ -798,22 +716,10 @@
 <body>
     
     <header class="page-header">
-        <!--【***** START OF H1 MODIFICATION *****】-->
-        <h1>
-            <span style="cursor: pointer;" onclick="reloadSystem()">🔄</span>
-            AV放送立願表
-            <span id="toggle-marquee-btn" title="切換公告欄顯示">📢</span>
-        </h1>
-        <!--【***** END OF H1 MODIFICATION *****】-->
+        <h1><span style="cursor: pointer;" onclick="reloadSystem()">🔄</span> AV放送立願表</h1>
     </header>
 
     <div class="container">
-        <!--【***** START OF MARQUEE MODIFICATION *****】-->
-        <div id="marquee-container">
-            <div id="marquee-text">載入中...</div>
-        </div>
-        <!--【***** END OF MARQUEE MODIFICATION *****】-->
-
         <div class="tabs">
             <button class="tab-button active" onclick="openTab(event, 'calendar-tab')">📅 活動行事曆</button>
             <button class="tab-button" onclick="openTab(event, 'my-signups-tab')">🔍 報名查詢</button>
@@ -1039,13 +945,18 @@
                 });
             }
             
+            // 【***** START OF POSITION FILTERING MODIFICATION *****】
+            // 根據使用者要求，顯示所有後台設定的崗位，而不篩選掉已被報名的崗位。
             const allBackendPositions = props.positions; 
 
+            // 檢查此活動是否有設定任何可報名的崗位。
             if (!allBackendPositions || allBackendPositions.length === 0) {
                 return Swal.fire('無可報名崗位', '此活動尚未設定任何可報名的崗位。', 'info');
             }
             
+            // 從完整的崗位列表中創建下拉選單的選項。
             const positionOptions = allBackendPositions.reduce((obj, pos) => ({...obj, [pos]: pos}), {});
+            // 【***** END OF POSITION FILTERING MODIFICATION *****】
             
             let timeText = `<b>開始時間:</b> ${props.startTime}${props.endTime ? '<br><b>結束時間:</b> ' + props.endTime : ''}`;
 
@@ -1268,11 +1179,12 @@
 
         async function executeSignupQuery(type, params) {
             showLoading();
+            // 在按姓名查詢時，清除日期參數，以確保匯出功能正常
             if (type === 'byName') {
                 params.startDateStr = '';
                 params.endDateStr = '';
             }
-            lastQuery = { type, params }; 
+            lastQuery = { type, params }; // 更新 lastQuery
             try {
                 const data = (type === 'byName') ? await callAppsScript('getMySignups', params) : await callAppsScript('getAllSignups', params);
                 renderMySignupsTable(data, type);
@@ -1455,6 +1367,7 @@
         async function exportDataToExcel(startDateStr, endDateStr) {
             showLoading();
             try {
+                // 如果是按姓名查詢，日期為空，後端會撈全部資料
                 const dataToExport = await callAppsScript('getAllSignups', { 
                     startDateStr: startDateStr || '', 
                     endDateStr: endDateStr || ''
@@ -1465,6 +1378,7 @@
                     return Swal.fire('無資料', '在選定的條件下沒有任何報名記錄可供匯出。', 'info');
                 }
 
+                // 如果是按姓名查詢，需要再過濾一次
                 let finalData = dataToExport;
                 if (lastQuery.type === 'byName' && lastQuery.params.userName) {
                     finalData = dataToExport.filter(signup => signup.user === lastQuery.params.userName);
@@ -1506,107 +1420,6 @@
 
             Chart.register(ChartDataLabels);
 
-            //【***** START OF MARQUEE LOGIC *****】
-            const marqueeUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRT5YNZcSXbE6ULGft15cba4Mx8kK1Eb7bLftucmkmUGmTxkrA8vw5uerAP2dYqptBHnbmq_3QNOOJx/pub?gid=464169196&single=true&output=csv';
-            let marqueeMessages = [];
-            let marqueeIndex = 0;
-            const marqueeTextEl = document.getElementById('marquee-text');
-            const isMarqueeMobile = window.innerWidth <= 768;
-
-            async function setupMarquee() {
-                if (!marqueeTextEl) return;
-                try {
-                    const response = await fetch(marqueeUrl);
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    
-                    const csvText = await response.text();
-                    marqueeMessages = csvText.trim().split('\n').slice(1).map(row => {
-                        const columns = row.split(',').map(c => c.trim().replace(/"/g, ''));
-                        if (columns.length >= 3 && columns[0] && columns[1]) {
-                            return `${columns[0]}：${columns[1]} - ${columns[2]}`;
-                        }
-                        return null;
-                    }).filter(Boolean);
-
-                    if (marqueeMessages.length > 0) {
-                        cycleMarquee();
-                        setInterval(cycleMarquee, 5000); 
-                    } else {
-                        marqueeTextEl.textContent = '目前沒有最新公告';
-                    }
-                } catch (error) {
-                    console.error('Failed to load marquee data:', error);
-                    if (marqueeTextEl) marqueeTextEl.textContent = '無法載入最新公告';
-                }
-            }
-
-            function cycleMarquee() {
-                if (marqueeMessages.length === 0 || !marqueeTextEl) return;
-
-                const nextMessage = marqueeMessages[marqueeIndex];
-                
-                if (isMarqueeMobile) {
-                    marqueeTextEl.style.opacity = 0;
-                    setTimeout(() => {
-                        marqueeTextEl.textContent = nextMessage;
-                        marqueeTextEl.style.opacity = 1;
-                    }, 400);
-                } else {
-                    marqueeTextEl.style.animation = 'none';
-                    void marqueeTextEl.offsetWidth;
-                    marqueeTextEl.textContent = nextMessage;
-                    marqueeTextEl.style.animation = 'marquee-scroll 5s ease-in-out';
-                }
-                
-                marqueeIndex = (marqueeIndex + 1) % marqueeMessages.length;
-            }
-
-            setupMarquee();
-            //【***** END OF MARQUEE LOGIC *****】
-            
-            //【***** START OF MARQUEE TOGGLE LOGIC *****】
-            function setupMarqueeToggle() {
-                const toggleBtn = document.getElementById('toggle-marquee-btn');
-                const marqueeContainer = document.getElementById('marquee-container');
-
-                if (!toggleBtn || !marqueeContainer || !isMobile) {
-                    if (toggleBtn) toggleBtn.style.display = 'none';
-                    return; 
-                }
-                
-                let isVisible = localStorage.getItem('av_marquee_visible') !== 'false';
-
-                const applyVisibility = () => {
-                    if (isVisible) {
-                        marqueeContainer.style.display = 'flex';
-                        marqueeContainer.style.maxHeight = '200px';
-                        marqueeContainer.style.opacity = '1';
-                        marqueeContainer.style.marginBottom = '20px';
-                    } else {
-                        marqueeContainer.style.maxHeight = '0';
-                        marqueeContainer.style.opacity = '0';
-                        marqueeContainer.style.marginBottom = '0';
-                        // Hide after transition
-                        setTimeout(() => {
-                            if (!isVisible) marqueeContainer.style.display = 'none';
-                        }, 400);
-                    }
-                };
-                
-                applyVisibility();
-
-                toggleBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    isVisible = !isVisible;
-                    localStorage.setItem('av_marquee_visible', isVisible);
-                    applyVisibility();
-                });
-            }
-            
-            setupMarqueeToggle();
-            //【***** END OF MARQUEE TOGGLE LOGIC *****】
-
-
             if (localStorage.getItem('av_signup_username')) document.getElementById('my-name-input').value = localStorage.getItem('av_signup_username');
             
             const today = new Date();
@@ -1647,8 +1460,10 @@
             document.getElementById('export-from-query-btn').addEventListener('click', () => {
                 const { type, params } = lastQuery;
                 if (type === 'byName') {
+                    // 按姓名查詢時，日期為空，讓後端撈取所有紀錄
                     exportDataToExcel('', '');
                 } else if (type === 'byDate') {
+                    // 按日期查詢時，使用儲存的日期
                     exportDataToExcel(params.startDateStr, params.endDateStr);
                 } else {
                     Swal.fire('錯誤', '沒有可匯出的查詢條件。', 'error');

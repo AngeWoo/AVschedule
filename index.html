@@ -840,12 +840,15 @@
 
         <div id="my-signups-tab" class="tab-content">
             <!-- 【***** START OF SIGNUP SEARCH MODIFICATION *****】 -->
-            <h4>📄 綜合報名查詢</h4>
+            <h4>📄 全文檢索查詢</h4>
             <div class="inline-form">
                 <div class="form-group"><label for="universal-search-input">關鍵字</label><input type="text" id="universal-search-input" placeholder="姓名/活動/崗位/描述"></div>
                 <div class="form-group"><label for="search-start-date">開始日期</label><input type="date" id="search-start-date"></div>
                 <div class="form-group"><label for="search-end-date">結束日期</label><input type="date" id="search-end-date"></div>
                 <button id="unified-search-btn" class="btn btn-primary">🔍 查詢</button>
+                <!-- 【***** START OF CLEAR BUTTON ADDITION *****】 -->
+                <button id="clear-search-btn" class="btn" style="background-color: #6c757d; color: white;">🧹 清除</button>
+                <!-- 【***** END OF CLEAR BUTTON ADDITION *****】 -->
             </div>
             <!-- 【***** END OF SIGNUP SEARCH MODIFICATION *****】 -->
             <div id="my-signups-result" class="table-responsive"></div>
@@ -948,7 +951,7 @@
                         const scriptEl = document.getElementById(callbackName);
                         if (scriptEl && scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
                         reject(new Error('請求超時，請檢查網路連線或稍後再試。'));
-                    }, 45000); 
+                    }, 90000); // 將超時時間從 45 秒延長到 90 秒
                     
                     window[callbackName] = (response) => {
                         clearTimeout(timeoutId);
@@ -1036,7 +1039,7 @@
             if (existingSignup) {
                 return Swal.fire({
                     icon: 'info', title: '您已報名過此活動',
-                    html: `<div style="text-align: left; padding: 0 1em;"><p><strong>活動：</strong> ${props.full_title}</p><p><strong>日期：</strong> ${new Date(eventObject.start).toLocaleDateString('en-CA')}</p><p><strong>您報名的崗位：</strong> ${existingSignup.position}</p></div>`
+                    html: `<div style="text-align: left; padding: 0 1em;"><p><strong>活動：</strong> ${props.full_title}</p><p><strong>日期：</strong> ${new Date(eventObject.start).toLocaleDateString('en-CA')}</p><p><strong>您報名的崗位：：</strong> ${existingSignup.position}</p></div>`
                 });
             }
             
@@ -1079,7 +1082,7 @@
                         successPayload.html = `<div style="text-align: left; padding: 0 1em;"><p><strong>姓名：</strong> ${name}</p><p><strong>活動：</strong> ${props.full_title}</p><p><strong>崗位：</strong> ${selectedPosition} (備援)</p></div>`;
                     } else {
                         successPayload.title = '報名成功！';
-                        successPayload.html = `<div style="text-align: left; padding: 0 1em;"><p><strong>姓名：</strong> ${name}</p><p><strong>活動：</strong> ${props.full_title}</p><p><strong>崗位：</strong> ${selectedPosition}</p></div>`;
+                        successPayload.html = `<div style="text-align: left; padding: 0 1em;"><p><strong>姓名：</strong> ${name}</p><p><strong>活動：：</strong> ${props.full_title}</p><p><strong>崗位：</strong> ${selectedPosition}</p></div>`;
                     }
                     await Swal.fire(successPayload);
                     setupCalendarTab(true); 
@@ -1428,22 +1431,22 @@
                 let detailsHtml = '<h2>詳細活動報名資訊</h2>';
                 data.fullDetails.forEach(eventData => {
                     const dayOfWeekText = eventData.eventInfo.dayOfWeek ? `(${eventData.eventInfo.dayOfWeek})` : '';
-                    detailsHtml += `
+                    html += `
                         <div class="stats-event-block">
                             <h3>${eventData.eventInfo.title}</h3>
                             <p><strong>日期:</strong> ${eventData.eventInfo.date} ${dayOfWeekText}</p>
                             <p><strong>時間:</strong> ${eventData.eventInfo.startTime}${eventData.eventInfo.endTime ? ' - ' + eventData.eventInfo.endTime : ''}</p>
                             <p><strong>報名狀況:</strong> ${eventData.signups.length} / ${eventData.eventInfo.maxAttendees}</p>`;
                     if (eventData.signups && eventData.signups.length > 0) {
-                        detailsHtml += '<ul>';
+                        html += '<ul>';
                         eventData.signups.forEach(signup => {
-                            detailsHtml += `<li><strong>${signup.position}:</strong> ${signup.user}</li>`;
+                            html += `<li style="background: #f9f9f9; padding: 5px 10px; border-radius: 3px; margin-bottom: 3px;"><strong>${signup.position}:</strong> ${signup.user}</li>`;
                         });
-                        detailsHtml += '</ul>';
+                        html += '</ul>';
                     } else {
-                        detailsHtml += '<p>無人報名</p>';
+                        html += '<p>無人報名</p>';
                     }
-                    detailsHtml += '</div>';
+                    html += '</div>';
                 });
                 detailsContainer.innerHTML = detailsHtml;
                 
@@ -1610,12 +1613,20 @@
             setupMarqueeToggle();
             //【***** END OF MARQUEE TOGGLE LOGIC *****】
 
-            // Initialize search date inputs
-            const today = new Date();
-            const firstDayStr = new Date(today.getFullYear(), today.getMonth(), 1).toLocaleDateString('en-CA');
-            const lastDayStr = new Date(today.getFullYear(), today.getMonth() + 1, 0).toLocaleDateString('en-CA');
+            // Helper function to get current month's first/last day
+            const getMonthDateRange = () => {
+                const today = new Date();
+                const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                return {
+                    firstDayStr: firstDayOfMonth.toLocaleDateString('en-CA'),
+                    lastDayStr: lastDayOfMonth.toLocaleDateString('en-CA')
+                };
+            };
 
-            // Apply default dates to ALL date inputs
+            // Initialize search date inputs and admin export dates
+            const { firstDayStr, lastDayStr } = getMonthDateRange();
+
             ['search-start-date', 'stats-start-date', 'export-start-date'].forEach(id => {
                 const el = document.getElementById(id); if(el) el.value = firstDayStr;
             });
@@ -1648,6 +1659,19 @@
                 executeUnifiedSignupQuery(searchText, startDateStr, endDateStr);
             });
             // 【***** END OF UNIFIED SEARCH EVENT LISTENER *****】
+
+            // 【***** START OF CLEAR BUTTON EVENT LISTENER *****】
+            document.getElementById('clear-search-btn').addEventListener('click', () => {
+                document.getElementById('universal-search-input').value = '';
+                const { firstDayStr, lastDayStr } = getMonthDateRange();
+                document.getElementById('search-start-date').value = firstDayStr;
+                document.getElementById('search-end-date').value = lastDayStr;
+                
+                // Optionally, clear the search results table as well
+                document.getElementById('my-signups-result').innerHTML = '';
+                document.getElementById('export-from-query-container').style.display = 'none';
+            });
+            // 【***** END OF CLEAR BUTTON EVENT LISTENER *****】
 
             document.getElementById('generate-stats').addEventListener('click', generateStatsReport);
             

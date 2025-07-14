@@ -1003,12 +1003,19 @@
                 });
             }
             
-            const availablePositions = props.positions.filter(p => !props.signups.some(s => s.position === p));
-            if (availablePositions.length === 0 && !props.signups.some(s => s.position.includes('備援'))) {
-                return Swal.fire('提示', '所有崗位皆已額滿。', 'warning');
+            // 【***** START OF POSITION FILTERING MODIFICATION *****】
+            // 根據使用者要求，顯示所有後台設定的崗位，而不篩選掉已被報名的崗位。
+            const allBackendPositions = props.positions; 
+
+            // 檢查此活動是否有設定任何可報名的崗位。
+            if (!allBackendPositions || allBackendPositions.length === 0) {
+                return Swal.fire('無可報名崗位', '此活動尚未設定任何可報名的崗位。', 'info');
             }
             
-            const positionOptions = availablePositions.reduce((obj, pos) => ({...obj, [pos]: pos}), {});
+            // 從完整的崗位列表中創建下拉選單的選項。
+            const positionOptions = allBackendPositions.reduce((obj, pos) => ({...obj, [pos]: pos}), {});
+            // 【***** END OF POSITION FILTERING MODIFICATION *****】
+            
             let timeText = `<b>開始時間:</b> ${props.startTime}${props.endTime ? '<br><b>結束時間:</b> ' + props.endTime : ''}`;
 
             const { value: selectedPosition } = await Swal.fire({
@@ -1228,7 +1235,6 @@
             exportContainer.style.display = 'block';
         }
 
-        // 【***** START OF MODIFICATION *****】
         async function executeSignupQuery(type, params) {
             showLoading();
             // 在按姓名查詢時，清除日期參數，以確保匯出功能正常
@@ -1244,7 +1250,6 @@
                 Swal.fire('查詢失敗', e.message, 'error');
             } finally { hideLoading(); }
         }
-        // 【***** END OF MODIFICATION *****】
         
         async function promptToDeleteSignup(signup) {
             const { value: password } = await Swal.fire({
@@ -1469,9 +1474,7 @@
         }
         
         document.addEventListener('DOMContentLoaded', function() {
-            // 【***** START OF SCROLL-TO-TOP MODIFICATION *****】
             window.scrollTo(0, 0);
-            // 【***** END OF SCROLL-TO-TOP MODIFICATION *****】
 
             Chart.register(ChartDataLabels);
 
@@ -1570,7 +1573,6 @@
                 exportDataToExcel(startDateStr, endDateStr);
             });
 
-            // 【***** START OF MODIFICATION *****】
             document.getElementById('export-from-query-btn').addEventListener('click', () => {
                 const { type, params } = lastQuery;
                 if (type === 'byName') {
@@ -1583,7 +1585,6 @@
                     Swal.fire('錯誤', '沒有可匯出的查詢條件。', 'error');
                 }
             });
-            // 【***** END OF MODIFICATION *****】
 
             document.getElementById('share-today-line-btn').addEventListener('click', async () => {
                 showLoading();

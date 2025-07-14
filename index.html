@@ -380,7 +380,6 @@
             overflow-x: auto; 
             border-radius: var(--border-radius-sm);
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            position: relative; /* 為了偽元素定位 */
         }
         .table-responsive table { 
             width: 100%; 
@@ -536,6 +535,7 @@
             }
         }
 
+        /* -----【***** START OF MOBILE STYLES MODIFICATION *****】----- */
         @media (max-width: 768px) {
             html { 
                 height: 100%; 
@@ -543,11 +543,10 @@
             body { 
                 padding: 10px; 
                 margin: 0; 
-                height: 100vh;
+                min-height: 100vh; /* 確保內容少時也能撐開 */
                 display: flex;
                 flex-direction: column;
-                overflow-x: hidden; 
-                overflow-y: hidden;
+                overflow-x: hidden; /* 頁面可以垂直滾動 */
             }
             .page-header { 
                 margin-bottom: 15px; 
@@ -559,16 +558,14 @@
                 padding: 15px; 
                 border-radius: var(--border-radius); 
                 box-shadow: 0 5px 15px var(--card-shadow-dark); 
-                flex: 1; 
+                /* 移除 flex: 1 和 overflow-y: auto，讓容器高度由內容決定 */
                 display: flex;
                 flex-direction: column;
-                overflow-y: auto;
                 overflow-x: hidden;
-                min-height: 0;
             }
             
             .page-footer { 
-                margin-top: 0;
+                margin-top: 15px; /* 改為固定間距 */
                 padding: 8px 10px;
                 flex-shrink: 0; 
                 text-align: center;
@@ -611,9 +608,7 @@
                 justify-content: center; 
             }
             .tab-content {
-                flex: 1;
-                overflow-y: auto;
-                min-height: 0;
+                /* 移除 flex: 1，讓內容自然撐開 */
             }
             .tab-button::before { 
                 bottom: 2px; height: 3px; width: 70%; border-radius: 1.5px;
@@ -649,14 +644,26 @@
             }
             .tab-button:not(.active):hover::after { opacity: 0.6; }
 
+            /* 優化手機版工具列佈局 */
             #custom-calendar-toolbar { 
-                flex-direction: column; gap: 15px; align-items: stretch; 
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: space-between;
+                align-items: center;
+                gap: 10px 15px;
             }
             #custom-calendar-title { 
-                order: 1; font-size: 1.5rem; text-align: center; 
+                order: 1; 
+                flex-basis: 100%;
+                font-size: 1.5rem; 
+                text-align: center; 
             } 
-            .toolbar-chunk:nth-of-type(1) { order: 2; justify-content: center; } 
-            .toolbar-chunk:nth-of-type(2) { order: 3; justify-content: center; } 
+            .toolbar-chunk {
+                flex-grow: 1;
+                justify-content: center;
+            }
+            .toolbar-chunk:nth-of-type(1) { order: 2; } 
+            .toolbar-chunk:nth-of-type(2) { order: 3; } 
             
             .inline-form {
                 display: flex;
@@ -694,42 +701,8 @@
                 left: 2.5vw !important; 
                 transform: translateX(0) !important; 
             }
-
-            /* 【***** 關鍵修改：橫向捲動提示 *****】 */
-            .table-responsive {
-                -webkit-overflow-scrolling: touch;
-                position: relative;
-            }
-            .table-responsive::before, .table-responsive::after {
-                content: '';
-                position: absolute;
-                top: 0;
-                bottom: 0;
-                width: 25px; /* 提示的寬度 */
-                pointer-events: none; /* 讓滑鼠可以穿透 */
-                transition: opacity 0.2s ease-in-out;
-            }
-            .table-responsive::before {
-                left: 0;
-                background: linear-gradient(to right, rgba(240, 244, 248, 1), rgba(240, 244, 248, 0)),
-                            radial-gradient(10px at 10px 50%, rgba(0,0,0,0.2), transparent 70%);
-                background-repeat: no-repeat;
-                background-size: 25px 100%, 15px 15px;
-                background-position: left, 5px center;
-            }
-            .table-responsive::after {
-                right: 0;
-                background: linear-gradient(to left, rgba(240, 244, 248, 1), rgba(240, 244, 248, 0)),
-                            radial-gradient(10px at 5px 50%, rgba(0,0,0,0.2), transparent 70%);
-                background-repeat: no-repeat;
-                background-size: 25px 100%, 15px 15px;
-                background-position: right, 5px center;
-            }
-            .table-responsive:hover::before, .table-responsive:hover::after {
-                opacity: 0.6; /* 滑鼠懸停時讓提示更不明顯 */
-            }
-
         }
+        /* -----【***** END OF MOBILE STYLES MODIFICATION *****】----- */
     </style>
 </head>
 <body>
@@ -760,7 +733,7 @@
                 </div>
             </div>
             <div id="full-calendar-view"><div id="calendar"></div></div>
-            <div id="simple-list-view" class="table-responsive"></div>
+            <div id="simple-list-view" style="display: none;"></div>
         </div>
 
         <div id="my-signups-tab" class="tab-content">
@@ -792,17 +765,21 @@
         <div id="admin-tab" class="tab-content">
             <hr style="margin-top:0;">
             <h4>📊 匯出 Excel / 快速分享</h4>
+             <!-- -----【***** START OF HTML MODIFICATION *****】----- -->
             <div class="inline-form" style="flex-direction: column; align-items: stretch;">
-                <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 10px;">
+                <div class="inline-form" style="justify-content: center;">
                     <div class="form-group"><label for="export-start-date">開始日期</label><input type="date" id="export-start-date"></div>
                     <div class="form-group"><label for="export-end-date">結束日期</label><input type="date" id="export-end-date"></div>
+                </div>
+                 <div class="inline-form" style="justify-content: center;">
                     <button id="export-excel-btn" class="btn btn-primary">產生並下載 Excel</button>
                 </div>
-                <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">
+                <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-top:10px;">
                     <button id="share-today-line-btn" class="btn btn-success">分享今天至 LINE</button>
                     <button id="share-tomorrow-line-btn" class="btn btn-success">分享明天至 LINE</button>
                 </div>
             </div>
+            <!-- -----【***** END OF HTML MODIFICATION *****】----- -->
         </div>
     </div>
     
@@ -1041,7 +1018,6 @@
 
         function renderSimpleListView() {
             const container = document.getElementById('simple-list-view');
-            container.innerHTML = ''; // 清空舊內容
             const titleEl = document.getElementById('custom-calendar-title');
             titleEl.textContent = `${currentDisplayDate.getFullYear()}年 ${currentDisplayDate.getMonth() + 1}月`;
             
@@ -1051,11 +1027,11 @@
             const currentMonthEvents = allCalendarEvents.filter(e => new Date(e.start) >= viewStart && new Date(e.start) <= viewEnd).sort((a, b) => new Date(a.start) - new Date(b.start));
 
             if (currentMonthEvents.length === 0) {
-                container.innerHTML = '<p style="text-align:center; padding: 20px;">本月尚無活動。</p>';
+                container.innerHTML = '<div class="table-responsive" style="margin-top:0;"><p style="text-align:center; padding: 20px;">本月尚無活動。</p></div>';
                 return;
             }
             
-            let tableHtml = `<table><thead><tr><th>日期</th><th>星期</th><th>標題</th><th>開始</th><th>結束</th><th>上限 (已報)</th></tr></thead><tbody>`;
+            let tableHtml = `<div class="table-responsive" style="margin-top:0;"><table><thead><tr><th>日期</th><th>星期</th><th>標題</th><th>開始</th><th>結束</th><th>上限 (已報)</th></tr></thead><tbody>`;
             currentMonthEvents.forEach(event => {
                 const props = event.extendedProps;
                 const startDate = new Date(event.start);
@@ -1064,7 +1040,7 @@
                 const signupCount = props.signups ? props.signups.length : 0;
                 tableHtml += `<tr data-event-id="${event.id}"><td><span class="status-dot" style="background-color: ${event.backgroundColor};"></span>${dateString.substring(5)}</td><td>${dayOfWeek.replace('週', '')}</td><td>${event.title}</td><td>${props.startTime || ''}</td><td>${props.endTime || ''}</td><td>${props.maxAttendees} (${signupCount})</td></tr>`;
             });
-            container.innerHTML = `${tableHtml}</tbody></table>`;
+            container.innerHTML = `${tableHtml}</tbody></table></div>`;
 
             container.querySelectorAll('tbody tr').forEach(row => {
                 const eventId = row.dataset.eventId;
@@ -1157,23 +1133,21 @@
                 return;
             }
             
+            // 手機版會顯示所有欄位，但姓名和操作欄位是預設隱藏，除非是 "所有報名" 查詢
             const isAllSignups = queryType === 'byDate';
             
-            let tableHtml = `<table><thead><tr>
-                                <th>活動日期</th><th>星期</th><th>活動名稱</th><th>崗位</th>
-                                <th class="${isAllSignups ? '' : 'hidden-col'}">姓名</th>
-                                <th class="hidden-col">報名時間</th>
-                                <th class="${isAllSignups ? '' : 'hidden-col'}">操作</th>
-                             </tr></thead><tbody>`;
+            let tableHtml = `<table class="${isAllSignups ? 'all-signups-table' : 'my-signups-table'}">
+                                <thead><tr><th>活動日期</th><th>星期</th><th>活動名稱</th><th>崗位</th><th class="col-user">姓名</th><th class="col-timestamp">報名時間</th><th class="col-action">操作</th></tr></thead>
+                                <tbody>`;
             signups.forEach(s => {
                 tableHtml += `<tr>
                                 <td>${s.eventDate || ''}</td>
                                 <td>${s.eventDayOfWeek || ''}</td>
                                 <td>${s.eventTitle || ''}</td>
                                 <td>${s.position || ''}</td>
-                                <td class="${isAllSignups ? '' : 'hidden-col'}">${s.user || ''}</td>
-                                <td class="hidden-col">${s.timestamp || ''}</td>
-                                <td class="${isAllSignups ? '' : 'hidden-col'}"><button class="btn btn-danger btn-sm" onclick='promptToDeleteSignup(${JSON.stringify(s).replace(/'/g, "\\'")})'>刪除</button></td>
+                                <td class="col-user">${s.user || ''}</td>
+                                <td class="col-timestamp">${s.timestamp || ''}</td>
+                                <td class="col-action"><button class="btn btn-danger btn-sm" onclick='promptToDeleteSignup(${JSON.stringify(s).replace(/'/g, "\\'")})'>刪除</button></td>
                               </tr>`;
             });
             resultDiv.innerHTML = tableHtml + '</tbody></table>';

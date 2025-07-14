@@ -751,6 +751,9 @@
                 <button id="search-all-signups" class="btn btn-primary">報名查詢</button>
             </div>
             <div id="my-signups-result" class="table-responsive"></div>
+            <div id="export-from-query-container" style="text-align: center; margin-top: 25px; display: none;">
+                <button id="export-from-query-btn" class="btn btn-primary">產生並下載 Excel</button>
+            </div>
         </div>
 
         <div id="stats-tab" class="tab-content">
@@ -758,7 +761,7 @@
                 <div class="form-group"><label for="stats-start-date">開始日期</label><input type="date" id="stats-start-date"></div>
                 <div class="form-group"><label for="stats-end-date">結束日期</label><input type="date" id="stats-end-date"></div>
                 <button id="generate-stats" class="btn btn-primary">📈 產生報表</button>
-                <button id="export-stats-pdf-btn" class="btn btn-primary">輸出 PDF 报表</button> </div>
+                <button id="export-stats-pdf-btn" class="btn btn-primary">輸出 PDF 報表</button> </div>
             <div class="chart-container" style="position: relative; height:40vh; margin-bottom: 20px;"><canvas id="stats-chart"></canvas></div>
             <div id="stats-details-container"></div>
         </div>
@@ -803,7 +806,7 @@
         const isMobile = window.innerWidth <= 768; 
         let allCalendarEvents = [];
         let currentDisplayDate = new Date();
-        let lastQuery = {};
+        let lastQuery = { type: null, params: {} };
         let lastStatsData = null; 
 
         let currentCalendarOptions = {
@@ -1125,10 +1128,12 @@
         
         function renderMySignupsTable(signups, queryType) {
             const resultDiv = document.getElementById('my-signups-result');
-            resultDiv.innerHTML = ''; 
+            const exportContainer = document.getElementById('export-from-query-container');
+            resultDiv.innerHTML = '';
+            exportContainer.style.display = 'none';
 
             if (!signups || signups.length === 0) {
-                Swal.fire({ icon: 'info', title: '查無資料', text: '在您指定的條件下，找不到相關の報名紀錄。' });
+                Swal.fire({ icon: 'info', title: '查無資料', text: '在您指定的條件下，找不到相關的報名紀錄。' });
                 return;
             }
             
@@ -1149,11 +1154,19 @@
                               </tr>`;
             });
             resultDiv.innerHTML = tableHtml + '</tbody></table>';
+
+            exportContainer.style.display = 'block';
         }
 
+        // 【***** START OF MODIFICATION *****】
         async function executeSignupQuery(type, params) {
             showLoading();
-            lastQuery = { type, params };
+            // 在按姓名查詢時，清除日期參數，以確保匯出功能正常
+            if (type === 'byName') {
+                params.startDateStr = '';
+                params.endDateStr = '';
+            }
+            lastQuery = { type, params }; // 更新 lastQuery
             try {
                 const data = (type === 'byName') ? await callAppsScript('getMySignups', params) : await callAppsScript('getAllSignups', params);
                 renderMySignupsTable(data, type);
@@ -1161,6 +1174,7 @@
                 Swal.fire('查詢失敗', e.message, 'error');
             } finally { hideLoading(); }
         }
+        // 【***** END OF MODIFICATION *****】
         
         async function promptToDeleteSignup(signup) {
             const { value: password } = await Swal.fire({
@@ -1223,15 +1237,14 @@
                 const dynamicColors = () => `rgba(${Math.floor(Math.random()*200)+50},${Math.floor(Math.random()*200)+50},${Math.floor(Math.random()*200)+50},0.8)`;
                 const backgroundColors = data.labels.map(() => dynamicColors());
                 
-                const multiLineLabels = data.labels.map(label => {
+                const chartLabels = data.labels.map(label => {
                     const parts = label.match(/(.*?)\s*\((.*?)\)/);
                     if (parts && parts.length === 3) {
-                        return [parts[1].trim(), `(${parts[2]})`];
+                        return isMobile ? parts[1].trim() : [parts[1].trim(), `(${parts[2]})`];
                     }
                     return label;
                 });
                 
-                // 【***** 關鍵修改：針對手機版調整圖表選項 *****】
                 const chartOptions = { 
                     responsive: true, maintainAspectRatio: false, backgroundColor: 'white',
                     plugins: {
@@ -1275,22 +1288,20 @@
                     layout: { 
                         padding: {
                             top: 30,
-                            bottom: 40 
+                            bottom: isMobile ? 80 : 40 
                         }
                     }
                 };
 
-                // 如果是手機版，則傾斜標籤
                 if (isMobile) {
                     chartOptions.scales.x.ticks.maxRotation = 45;
                     chartOptions.scales.x.ticks.minRotation = 45;
-                    chartOptions.layout.padding.bottom = 80; // 手機版需要更多底部空間給斜向文字
                 }
 
                 statsChart = new Chart(ctx, {
                     type: 'bar',
                     data: { 
-                        labels: multiLineLabels, 
+                        labels: chartLabels, 
                         datasets: [{ 
                             label: '報名人數', 
                             data: data.data, 
@@ -1336,6 +1347,57 @@
             }
         }
 
+        async function exportDataToExcel(startDateStr, endDateStr) {
+            showLoading();
+            try {
+                // 如果是按姓名查詢，日期為空，後端會撈全部資料
+                const dataToExport = await callAppsScript('getAllSignups', { 
+                    startDateStr: startDateStr || '', 
+                    endDateStr: endDateStr || ''
+                });
+
+                if (!dataToExport || dataToExport.length === 0) {
+                    hideLoading();
+                    return Swal.fire('無資料', '在選定的條件下沒有任何報名記錄可供匯出。', 'info');
+                }
+
+                // 如果是按姓名查詢，需要再過濾一次
+                let finalData = dataToExport;
+                if (lastQuery.type === 'byName' && lastQuery.params.userName) {
+                    finalData = dataToExport.filter(signup => signup.user === lastQuery.params.userName);
+                }
+
+                if (finalData.length === 0) {
+                     hideLoading();
+                    return Swal.fire('無資料', '在選定的條件下沒有任何報名記錄可供匯出。', 'info');
+                }
+                
+                const dateRangeText = (startDateStr && endDateStr) ? `${startDateStr} - ${endDateStr}` : '所有日期';
+                const title = `AV放送立願報名記錄 (${dateRangeText})`;
+                const generateTime = new Date().toLocaleString('zh-TW');
+                
+                let htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>table{border-collapse:collapse;width:100%;font-family:'Microsoft JhengHei',sans-serif}td,th{border:1px solid #ddd;text-align:left;padding:8px}th{background-color:#f2f2f2}.title-row{background-color:#FF8C42;color:white;font-weight:bold;font-size:16px;text-align:center}</style></head><body><table><tr><td colspan="5" class="title-row">${title}</td></tr><tr><td colspan="5">報表生成時間：${generateTime}</td></tr><tr><th>活動日期</th><th>活動名稱</th><th>崗位</th><th>報名者</th><th>報名時間</th></tr>`;
+                finalData.forEach(row => {
+                    htmlContent += `<tr><td>${row.eventDate||''}</td><td>${row.eventTitle||''}</td><td>${row.position||''}</td><td>${row.user||''}</td><td>'${row.timestamp||''}'</td></tr>`;
+                });
+                htmlContent += '</table></body></html>';
+
+                const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+                const fileName = `AV立願報名記錄_${new Date().toISOString().slice(0,10)}.xls`;
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            } catch (e) {
+                Swal.fire('匯出失敗', e.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
         document.addEventListener('DOMContentLoaded', function() {
             Chart.register(ChartDataLabels);
 
@@ -1358,6 +1420,8 @@
             document.getElementById('search-my-signups').addEventListener('click', () => {
                 const userName = document.getElementById('my-name-input').value.trim();
                 if (!userName) return Swal.fire('提示', '請先輸入您的姓名', 'info');
+                document.getElementById('all-signups-start-date').value = '';
+                document.getElementById('all-signups-end-date').value = '';
                 executeSignupQuery('byName', { userName });
             });
             document.getElementById('search-all-signups').addEventListener('click', () => {
@@ -1368,47 +1432,26 @@
             });
             document.getElementById('generate-stats').addEventListener('click', generateStatsReport);
             
-            document.getElementById('export-excel-btn').addEventListener('click', async () => {
-                showLoading();
+            document.getElementById('export-excel-btn').addEventListener('click', () => {
                 const startDateStr = document.getElementById('export-start-date').value;
                 const endDateStr = document.getElementById('export-end-date').value;
-                if (!startDateStr || !endDateStr) {
-                    hideLoading();
-                    return Swal.fire('提示', '請選擇開始及結束日期。', 'info');
-                }
-                
-                try {
-                    const data = await callAppsScript('getAllSignups', { startDateStr, endDateStr });
-                    if (!data || data.length === 0) {
-                        hideLoading();
-                        return Swal.fire('無資料', '在選定的日期範圍內沒有任何報名記錄。', 'info');
-                    }
-                    
-                    const dateRangeText = `${startDateStr} - ${endDateStr}`;
-                    const title = `AV放送立願報名記錄 (${dateRangeText})`;
-                    const generateTime = new Date().toLocaleString('zh-TW');
-                    
-                    let htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>table{border-collapse:collapse;width:100%;font-family:'Microsoft JhengHei',sans-serif}td,th{border:1px solid #ddd;text-align:left;padding:8px}th{background-color:#f2f2f2}.title-row{background-color:#FF8C42;color:white;font-weight:bold;font-size:16px;text-align:center}</style></head><body><table><tr><td colspan="5" class="title-row">${title}</td></tr><tr><td colspan="5">報表生成時間：${generateTime}</td></tr><tr><th>活動日期</th><th>活動名稱</th><th>崗位</th><th>報名者</th><th>報名時間</th></tr>`;
-                    data.forEach(row => {
-                        htmlContent += `<tr><td>${row.eventDate||''}</td><td>${row.eventTitle||''}</td><td>${row.position||''}</td><td>${row.user||''}</td><td>${row.timestamp||''}</td></tr>`;
-                    });
-                    htmlContent += '</table></body></html>';
+                exportDataToExcel(startDateStr, endDateStr);
+            });
 
-                    const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-                    const fileName = `AV立願報名記錄_${startDateStr}_${endDateStr}.xls`;
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(blob);
-                    link.download = fileName;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(link.href);
-                } catch (e) {
-                    Swal.fire('匯出失敗', e.message, 'error');
-                } finally {
-                    hideLoading();
+            // 【***** START OF MODIFICATION *****】
+            document.getElementById('export-from-query-btn').addEventListener('click', () => {
+                const { type, params } = lastQuery;
+                if (type === 'byName') {
+                    // 按姓名查詢時，日期為空，讓後端撈取所有紀錄
+                    exportDataToExcel('', '');
+                } else if (type === 'byDate') {
+                    // 按日期查詢時，使用儲存的日期
+                    exportDataToExcel(params.startDateStr, params.endDateStr);
+                } else {
+                    Swal.fire('錯誤', '沒有可匯出的查詢條件。', 'error');
                 }
             });
+            // 【***** END OF MODIFICATION *****】
 
             document.getElementById('share-today-line-btn').addEventListener('click', async () => {
                 showLoading();
@@ -1495,8 +1538,8 @@
                         html += `
                             <div style="page-break-inside: avoid; margin-bottom: 15px; border: 1px solid #eee; padding: 15px; border-radius: 5px;">
                                 <h3 style="font-size: 16px; margin: 0 0 10px 0; color: #FF8C42;">${eventData.eventInfo.title}</h3>
-                                <p style="margin: 0 0 5px 0;"><strong>日期:</strong> ${eventData.eventInfo.date} ${dayOfWeekText}</p>
-                                <p style="margin: 0 0 5px 0;"><strong>時間:</strong> ${eventData.eventInfo.startTime}${eventData.eventInfo.endTime ? ' - ' + eventData.eventInfo.endTime : ''}</p>
+                                <p><strong>日期:</strong> ${eventData.eventInfo.date} ${dayOfWeekText}</p>
+                                <p><strong>時間:</strong> ${eventData.eventInfo.startTime}${eventData.eventInfo.endTime ? ' - ' + eventData.eventInfo.endTime : ''}</p>
                                 <p style="margin: 0 0 10px 0;"><strong>報名狀況:</strong> ${eventData.signups.length} / ${eventData.eventInfo.maxAttendees}</p>`;
                         if (eventData.signups && eventData.signups.length > 0) {
                             html += '<ul style="list-style-type: none; padding-left: 0; margin: 0; font-size: 10px;">';

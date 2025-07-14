@@ -337,7 +337,6 @@
             transform: translateY(0);
             box-shadow: inset 0 3px 8px rgba(0,0,0,0.25), 0 1px 3px rgba(231, 76, 60, 0.2);
         }
-        /* 【新增】LINE 按鈕樣式 */
         .btn-success {
             background: #06C755;
             color: white;
@@ -355,7 +354,7 @@
             background: var(--card-bg-start); 
             color: var(--text-color); 
             border: 1px solid var(--card-border); 
-            box-shadow: 0 2px 6px var(--card-shadow-light); /* 普通按鈕的陰影 */
+            box-shadow: 0 2px 6px var(--card-shadow-light);
             font-weight: 500;
         }
         .toolbar-chunk .btn:hover, .view-switcher-btn:hover {
@@ -370,7 +369,7 @@
             background-color: var(--primary-color); 
             color: white; 
             border-color: var(--primary-color); 
-            box-shadow: 0 3px 10px rgba(255, 140, 66, 0.4); /* 激活按鈕陰影 */
+            box-shadow: 0 3px 10px rgba(255, 140, 66, 0.4);
         }
         .view-switcher-btn.active:hover {
             box-shadow: 0 5px 15px rgba(255, 140, 66, 0.5);
@@ -379,30 +378,30 @@
         /* --- 表格 --- */
         .table-responsive { 
             overflow-x: auto; 
-            border-radius: var(--border-radius-sm); /* 表格容器圓角 */
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* 表格輕微陰影 */
+            border-radius: var(--border-radius-sm);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         .table-responsive table { 
             width: 100%; 
-            border-collapse: separate; /* 為了圓角和邊框間距 */
+            border-collapse: separate;
             border-spacing: 0;
         }
         .table-responsive th, .table-responsive td { 
             padding: 15px; 
             text-align: left; 
             border-bottom: 1px solid var(--card-border); 
-            background-color: var(--card-bg-start); /* 行背景色 */
+            background-color: var(--card-bg-start);
         }
         .table-responsive th { 
-            background-color: var(--bg-color); /* 表頭背景色 */
+            background-color: var(--bg-color);
             font-weight: 600;
             color: var(--text-color);
             position: sticky;
-            top: 0; /* 固定表頭 */
+            top: 0;
             z-index: 10;
         }
         .table-responsive tbody tr:last-child td {
-            border-bottom: none; /* 最後一行沒有底部邊框 */
+            border-bottom: none;
         }
         #my-signups-result tbody tr:hover, 
         #simple-list-view .table-responsive tbody tr:hover { 
@@ -417,7 +416,7 @@
             border-radius: 50%; 
             margin-right: 12px; 
             vertical-align: middle; 
-            border: 1px solid rgba(0,0,0,0.15); /* 點點邊框增加質感 */
+            border: 1px solid rgba(0,0,0,0.15);
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         
@@ -442,12 +441,12 @@
 
         .fc-event { 
             cursor: pointer; 
-            border-radius: var(--border-radius-sm); /* 事件方塊圓角 */
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* 事件方塊陰影 */
+            border-radius: var(--border-radius-sm);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             transition: var(--transition-fast);
         }
         .fc-event:hover {
-            transform: translateY(-2px); /* 事件方塊 hover 上浮 */
+            transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
         
@@ -455,12 +454,12 @@
             display: none; 
             position: absolute; 
             z-index: 10000; 
-            background: linear-gradient(135deg, var(--card-bg-start), var(--card-bg-end)); /* 漸變背景 */
+            background: linear-gradient(135deg, var(--card-bg-start), var(--card-bg-end));
             border: 1px solid var(--card-border); 
             border-radius: var(--border-radius); 
-            box-shadow: 0 12px 35px rgba(0,0,0,0.2), 0 6px 15px rgba(0,0,0,0.1); /* 更深更明顯的陰影 */
-            padding: 20px; /* 增加內距 */
-            width: 320px; /* 稍微寬一點 */
+            box-shadow: 0 12px 35px rgba(0,0,0,0.2), 0 6px 15px rgba(0,0,0,0.1);
+            padding: 20px;
+            width: 320px;
             max-width: 90vw; 
             color: var(--text-color);
         }
@@ -479,7 +478,7 @@
             margin-top: 10px; 
             padding-top: 10px; 
             border-top: 1px dashed var(--card-border); 
-            max-height: 150px; /* 限制高度，可滾動 */
+            max-height: 150px;
             overflow-y: auto;
         }
         .event-popover ul li {
@@ -489,7 +488,6 @@
             color: var(--primary-dark);
         }
         
-        /* 【新增】統計報表詳細資料區塊樣式 */
         #stats-details-container {
             margin-top: 40px;
         }
@@ -530,16 +528,13 @@
             margin-bottom: 3px;
         }
 
-
-        /* --- 桌面瀏覽器優化 (新增，只影響電腦) --- */
         @media (min-width: 769px) {
             .container {
-                width: 90vw; /* 電腦瀏覽時寬度為視窗的 90% */
-                max-width: 1600px; /* 限制最大寬度，避免在超寬螢幕上過於分散 */
+                width: 90vw;
+                max-width: 1600px;
             }
         }
 
-        /* --- 手機響應式優化 - 修正滾動問題 --- */
         @media (max-width: 768px) {
             html { 
                 height: 100%; 
@@ -547,11 +542,11 @@
             body { 
                 padding: 10px; 
                 margin: 0; 
-                height: 100vh; /* 固定高度 */
+                height: 100vh;
                 display: flex;
                 flex-direction: column;
                 overflow-x: hidden; 
-                overflow-y: hidden; /* 防止body本身滾動 */
+                overflow-y: hidden;
             }
             .page-header { 
                 margin-bottom: 15px; 
@@ -566,17 +561,17 @@
                 flex: 1; 
                 display: flex;
                 flex-direction: column;
-                overflow-y: auto; /* 只有容器內部可滾動 */
+                overflow-y: auto;
                 overflow-x: hidden;
-                min-height: 0; /* 重要：讓flex子項可以縮小 */
+                min-height: 0;
             }
             
             .page-footer { 
-                margin-top: 0; /* 移除上邊距 */
-                padding: 8px 10px; /* 減少內距 */
+                margin-top: 0;
+                padding: 8px 10px;
                 flex-shrink: 0; 
                 text-align: center;
-                background: var(--bg-color); /* 確保背景色 */
+                background: var(--bg-color);
             }
 
             .tabs { 
@@ -588,7 +583,7 @@
                 background: linear-gradient(135deg, #f8f9fa, #e9ecef); 
                 border-radius: var(--border-radius); 
                 box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); 
-                margin-bottom: 15px; /* 減少底部間距 */
+                margin-bottom: 15px;
                 flex-shrink: 0; 
             }
             .tab-button { 
@@ -597,7 +592,7 @@
                 flex-grow: 1; 
                 font-size: 1.1rem; 
                 font-weight: 700; 
-                padding: 15px 10px; /* 減少內距 */
+                padding: 15px 10px;
                 border-radius: var(--border-radius); 
                 border-bottom: none !important; 
                 box-shadow: 0 4px 12px rgba(0,0,0,0.08), 
@@ -615,9 +610,9 @@
                 justify-content: center; 
             }
             .tab-content {
-                flex: 1; /* 讓頁籤內容佔據剩餘空間 */
-                overflow-y: auto; /* 允許內容滾動 */
-                min-height: 0; /* 重要：讓flex子項可以縮小 */
+                flex: 1;
+                overflow-y: auto;
+                min-height: 0;
             }
             .tab-button::before { 
                 bottom: 2px; height: 3px; width: 70%; border-radius: 1.5px;
@@ -662,16 +657,15 @@
             .toolbar-chunk:nth-of-type(1) { order: 2; justify-content: center; } 
             .toolbar-chunk:nth-of-type(2) { order: 3; justify-content: center; } 
             
-            /* 【修改】手機版日期輸入框寬度統一為90%並置中 */
             .inline-form {
                 display: flex;
                 flex-direction: column;
-                align-items: center; /* 水平置中所有子元素 */
+                align-items: center;
                 gap: 15px;
             }
-            .inline-form > * { /* 針對所有直接子元素（.form-group, .btn） */
-                width: 90% !important; /* 強制寬度為90% */
-                max-width: 450px;   /* 在較寬的平板上限制最大寬度 */
+            .inline-form > * {
+                width: 90% !important;
+                max-width: 450px;
             }
 
             .btn { 
@@ -769,15 +763,13 @@
         
         <div id="admin-tab" class="tab-content">
             <hr style="margin-top:0;">
-            <h4>📊 匯出 Excel / 分享資料</h4>
+            <h4>📊 匯出 Excel / 快速分享</h4>
             <div class="inline-form" style="flex-direction: column; align-items: stretch;">
-                <!-- 【修改】日期選擇區域保留，但快速分享按鈕獨立出來 -->
                 <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 10px;">
                     <div class="form-group"><label for="export-start-date">開始日期</label><input type="date" id="export-start-date"></div>
                     <div class="form-group"><label for="export-end-date">結束日期</label><input type="date" id="export-end-date"></div>
                     <button id="export-excel-btn" class="btn btn-primary">產生並下載 Excel</button>
                 </div>
-                <!-- 【修改】快速分享按鈕組 -->
                 <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">
                     <button id="share-today-line-btn" class="btn btn-success">分享今天至 LINE</button>
                     <button id="share-tomorrow-line-btn" class="btn btn-success">分享明天至 LINE</button>
@@ -885,15 +877,26 @@
                 }
             });
         }
-
+        
+        // 【***** 關鍵修改 *****】
         function openTab(evt, tabName) {
             document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
             document.querySelectorAll('.tab-button').forEach(tb => tb.classList.remove('active'));
             document.getElementById(tabName).style.display = 'block';
             evt.currentTarget.classList.add('active');
-            
-            if (tabName === 'calendar-tab' && allCalendarEvents.length === 0) {
-                setupCalendarTab(true); 
+
+            if (tabName === 'calendar-tab') {
+                if (calendar) {
+                    // 如果日曆已存在，它可能因被隱藏而尺寸計算錯誤。
+                    // 呼叫 updateSize() 來修正它。
+                    // 使用 setTimeout 是為了確保 DOM 元素已完全可見。
+                    setTimeout(() => {
+                        calendar.updateSize();
+                    }, 0);
+                } else {
+                    // 如果日曆從未初始化，則進行設定。
+                    setupCalendarTab(true);
+                }
             }
         }
         
@@ -1121,10 +1124,9 @@
             }
         }
         
-        // 【修改】查詢無資料時改為彈出視窗
         function renderMySignupsTable(signups, queryType) {
             const resultDiv = document.getElementById('my-signups-result');
-            resultDiv.innerHTML = ''; // 先清空舊資料
+            resultDiv.innerHTML = '';
 
             if (!signups || signups.length === 0) {
                 Swal.fire({
@@ -1189,11 +1191,10 @@
             }
         }
 
-        // 【修改】產生統計報表與詳細資料
         async function generateStatsReport() {
             showLoading();
             const detailsContainer = document.getElementById('stats-details-container');
-            detailsContainer.innerHTML = ''; // 清空舊資料
+            detailsContainer.innerHTML = '';
             
             try {
                 const data = await callAppsScript('getStatsData', { 
@@ -1252,7 +1253,6 @@
                     }
                 });
                 
-                // 渲染詳細資料到畫面上
                 let detailsHtml = '<h2>詳細活動報名資訊</h2>';
                 data.fullDetails.forEach(eventData => {
                     detailsHtml += `
@@ -1358,7 +1358,6 @@
                 }
             });
 
-            // 【修改】分享今天至 LINE 按鈕的事件監聽
             document.getElementById('share-today-line-btn').addEventListener('click', async () => {
                 showLoading();
                 try {
@@ -1380,8 +1379,6 @@
                 }
             });
 
-
-            // 【修改】分享明天至 LINE 按鈕的事件監聽
             document.getElementById('share-tomorrow-line-btn').addEventListener('click', async () => {
                 showLoading();
                 try {
@@ -1403,7 +1400,6 @@
                 }
             });
 
-            // PDF匯出功能
             document.getElementById('export-stats-pdf-btn').addEventListener('click', async () => {
                 if (!statsChart || !lastStatsData || lastStatsData.labels.length === 0) {
                     return Swal.fire('提示', '請先點擊「產生報表」以生成統計圖表和數據。', 'info');
@@ -1413,7 +1409,6 @@
                     const { jsPDF } = window.jspdf;
                     const reportElement = document.createElement('div');
                     
-                    // 設定列印樣式
                     reportElement.style.position = 'absolute';
                     reportElement.style.left = '-9999px';
                     reportElement.style.width = '210mm';

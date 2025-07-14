@@ -947,9 +947,14 @@
             let timeText = `<b>開始時間:</b> ${props.startTime}${props.endTime ? '<br><b>結束時間:</b> ' + props.endTime : ''}`;
 
             const { value: selectedPosition } = await Swal.fire({
-                title: props.full_title, html: `${timeText}<br><br><b>說明:</b> ${props.description || '無'}`, 
-                input: 'select', inputOptions: positionOptions, inputPlaceholder: '選擇崗位',
-                showCancelButton: true, confirmButtonText: '確認報名', cancelButtonText: '取消',
+                title: props.full_title, 
+                html: `${timeText}<br><br><b>說明:</b> ${props.description || '無'}<br><br><p style="color: red; font-weight: bold;">當立願崗位重複時，在法會當天奉仕讀經結束後，因準備工作需要，始可由其他人員遞補。您的立願崗位優先保留至奉仕讀經結束。</p>`, 
+                input: 'select', 
+                inputOptions: positionOptions, 
+                inputPlaceholder: '選擇崗位',
+                showCancelButton: true, 
+                confirmButtonText: '確認報名', 
+                cancelButtonText: '取消',
                 preConfirm: p => !p ? Swal.showValidationMessage('請選擇一個崗位') : p
             });
 

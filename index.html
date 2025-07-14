@@ -785,7 +785,7 @@
                 position: relative; /* 改為相對定位以適應自動高度 */
                 width: 100%;
                 white-space: normal; /* 允許文字換行 */
-                text-align: center;
+                text-align: left; /* 將置中改為靠左 */
                 animation: none !important; /* 手機版停用滾動動畫 */
                 transition: opacity 0.4s ease-in-out;
                 opacity: 1;
@@ -1599,7 +1599,7 @@
 
                 const nextMessage = marqueeMessages[marqueeIndex];
                 
-                if (isMarqueeMobile) {
+                if (isMobile) { // 使用 isMobile 而不是 isMarqueeMobile
                     marqueeTextEl.style.opacity = 0; // 開始淡出
                     setTimeout(() => {
                         marqueeTextEl.textContent = nextMessage;

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>區域截圖工具</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            position: relative;
+        }
+        
+        .button-container {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        
+        .full-screenshot {
+            background-color: #4CAF50;
+        }
+        
+        .full-screenshot:hover {
+            background-color: #45a049;
+        }
+        
+        .area-screenshot {
+            background-color: #2196F3;
+        }
+        
+        .area-screenshot:hover {
+            background-color: #1976D2;
+        }
+        
+        .cancel-btn {
+            background-color: #f44336;
+        }
+        
+        .cancel-btn:hover {
+            background-color: #d32f2f;
+        }
+        
+        #content {
+            padding: 20px;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            max-width: 600px;
+        }
+        
+        .demo-content {
+            margin: 20px 0;
+        }
+        
+        .demo-box {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            margin: 10px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        
+        /* 選擇區域的樣式 */
+        .selection-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.3);
+            cursor: crosshair;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .selection-box {
+            position: absolute;
+            border: 2px dashed #fff;
+            background-color: rgba(255, 255, 255, 0.1);
+            pointer-events: none;
+        }
+        
+        .selection-info {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            pointer-events: none;
+        }
+        
+        .instructions {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 1001;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="button-container">
+        <button class="full-screenshot" onclick="captureFullScreenshot()">全螢幕截圖</button>
+        <button class="area-screenshot" onclick="startAreaSelection()">區域截圖</button>
+        <button class="cancel-btn" onclick="cancelSelection()" style="display: none;" id="cancelBtn">取消選擇</button>
+    </div>
+    
+    <div id="content">
+        <h1>區域截圖工具</h1>
+        <p>你可以選擇全螢幕截圖或特定區域截圖：</p>
+        <ul>
+            <li><strong>全螢幕截圖：</strong>截取整個頁面</li>
+            <li><strong>區域截圖：</strong>拖拽選擇要截圖的區域</li>
+        </ul>
+        
+        <div class="demo-content">
+            <h3>測試內容區域</h3>
+            <p>這裡有一些測試內容，你可以嘗試截取這個區域。</p>
+            <div class="demo-box"></div>
+            <div class="demo-box"></div>
+            <div class="demo-box"></div>
+            <p>區域截圖功能讓你可以精確選擇要截取的範圍。</p>
+        </div>
+    </div>
+
+    <!-- 選擇區域的覆蓋層 -->
+    <div class="selection-overlay" id="selectionOverlay">
+        <div class="selection-box" id="selectionBox"></div>
+        <div class="selection-info" id="selectionInfo"></div>
+    </div>
+    
+    <div class="instructions" id="instructions">
+        按住滑鼠左鍵並拖拽來選擇截圖區域，放開滑鼠完成選擇
+    </div>
+
+    <script>
+        let isSelecting = false;
+        let startX, startY, endX, endY;
+        let selectionOverlay, selectionBox, selectionInfo, instructions;
+
+        // 初始化元素
+        document.addEventListener('DOMContentLoaded', function() {
+            selectionOverlay = document.getElementById('selectionOverlay');
+            selectionBox = document.getElementById('selectionBox');
+            selectionInfo = document.getElementById('selectionInfo');
+            instructions = document.getElementById('instructions');
+        });
+
+        // 全螢幕截圖
+        function captureFullScreenshot() {
+            html2canvas(document.body, {
+                useCORS: true,
+                scale: 1
+            }).then(canvas => {
+                downloadImage(canvas, 'full-screenshot.png');
+            });
+        }
+
+        // 開始區域選擇
+        function startAreaSelection() {
+            selectionOverlay.style.display = 'block';
+            instructions.style.display = 'block';
+            document.getElementById('cancelBtn').style.display = 'inline-block';
+            
+            // 添加事件監聽器
+            selectionOverlay.addEventListener('mousedown', startSelection);
+            selectionOverlay.addEventListener('mousemove', updateSelection);
+            selectionOverlay.addEventListener('mouseup', endSelection);
+        }
+
+        // 取消選擇
+        function cancelSelection() {
+            selectionOverlay.style.display = 'none';
+            instructions.style.display = 'none';
+            document.getElementById('cancelBtn').style.display = 'none';
+            isSelecting = false;
+            
+            // 移除事件監聽器
+            selectionOverlay.removeEventListener('mousedown', startSelection);
+            selectionOverlay.removeEventListener('mousemove', updateSelection);
+            selectionOverlay.removeEventListener('mouseup', endSelection);
+        }
+
+        // 開始選擇
+        function startSelection(e) {
+            isSelecting = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            
+            selectionBox.style.left = startX + 'px';
+            selectionBox.style.top = startY + 'px';
+            selectionBox.style.width = '0px';
+            selectionBox.style.height = '0px';
+            selectionBox.style.display = 'block';
+            
+            e.preventDefault();
+        }
+
+        // 更新選擇區域
+        function updateSelection(e) {
+            if (!isSelecting) return;
+            
+            endX = e.clientX;
+            endY = e.clientY;
+            
+            const left = Math.min(startX, endX);
+            const top = Math.min(startY, endY);
+            const width = Math.abs(endX - startX);
+            const height = Math.abs(endY - startY);
+            
+            selectionBox.style.left = left + 'px';
+            selectionBox.style.top = top + 'px';
+            selectionBox.style.width = width + 'px';
+            selectionBox.style.height = height + 'px';
+            
+            // 顯示選擇資訊
+            selectionInfo.style.left = (endX + 10) + 'px';
+            selectionInfo.style.top = (endY - 30) + 'px';
+            selectionInfo.style.display = 'block';
+            selectionInfo.textContent = `${width} × ${height}`;
+        }
+
+        // 結束選擇並截圖
+        function endSelection(e) {
+            if (!isSelecting) return;
+            
+            isSelecting = false;
+            const left = Math.min(startX, endX);
+            const top = Math.min(startY, endY);
+            const width = Math.abs(endX - startX);
+            const height = Math.abs(endY - startY);
+            
+            // 如果選擇區域太小，取消操作
+            if (width < 10 || height < 10) {
+                cancelSelection();
+                alert('選擇區域太小，請重新選擇');
+                return;
+            }
+            
+            // 隱藏選擇界面
+            selectionOverlay.style.display = 'none';
+            instructions.style.display = 'none';
+            document.getElementById('cancelBtn').style.display = 'none';
+            
+            // 稍微延遲以確保界面隱藏完成
+            setTimeout(() => {
+                captureArea(left, top, width, height);
+            }, 100);
+        }
+
+        // 截取指定區域
+        function captureArea(x, y, width, height) {
+            html2canvas(document.body, {
+                useCORS: true,
+                scale: 1
+            }).then(canvas => {
+                // 創建新的 canvas 來存放裁剪後的圖片
+                const croppedCanvas = document.createElement('canvas');
+                const ctx = croppedCanvas.getContext('2d');
+                
+                // 設置裁剪後的尺寸
+                croppedCanvas.width = width;
+                croppedCanvas.height = height;
+                
+                // 裁剪並繪製到新的 canvas
+                ctx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
+                
+                // 下載裁剪後的圖片
+                downloadImage(croppedCanvas, 'area-screenshot.png');
+            });
+        }
+
+        // 下載圖片
+        function downloadImage(canvas, filename) {
+            const imgData = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = imgData;
+            link.download = filename;
+            link.click();
+        }
+
+        // 防止右鍵菜單在選擇模式下出現
+        document.addEventListener('contextmenu', function(e) {
+            if (selectionOverlay.style.display === 'block') {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>

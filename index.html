@@ -770,17 +770,24 @@
         <div id="admin-tab" class="tab-content">
             <hr style="margin-top:0;">
             <h4>📊 匯出 Excel / 分享資料</h4>
-            <div class="inline-form">
-                <div class="form-group"><label for="export-start-date">開始日期</label><input type="date" id="export-start-date"></div>
-                <div class="form-group"><label for="export-end-date">結束日期</label><input type="date" id="export-end-date"></div>
-                <button id="export-excel-btn" class="btn btn-primary">產生並下載 Excel</button>
-                <button id="share-line-btn" class="btn btn-success">分享至 LINE</button>
+            <div class="inline-form" style="flex-direction: column; align-items: stretch;">
+                <!-- 【修改】日期選擇區域保留，但快速分享按鈕獨立出來 -->
+                <div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 10px;">
+                    <div class="form-group"><label for="export-start-date">開始日期</label><input type="date" id="export-start-date"></div>
+                    <div class="form-group"><label for="export-end-date">結束日期</label><input type="date" id="export-end-date"></div>
+                    <button id="export-excel-btn" class="btn btn-primary">產生並下載 Excel</button>
+                </div>
+                <!-- 【修改】快速分享按鈕組 -->
+                <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center;">
+                    <button id="share-today-line-btn" class="btn btn-success">分享今天至 LINE</button>
+                    <button id="share-tomorrow-line-btn" class="btn btn-success">分享明天至 LINE</button>
+                </div>
             </div>
         </div>
     </div>
     
     <div id="event-popover" class="event-popover"></div>
-    <footer class="page-footer"><p>&copy; 2025 AV-Broadcasting Team. All Rights Reserved. | 版本號: <span id="version-number"></span></p></footer>
+    <footer class="page-footer"><p>© 2025 AV-Broadcasting Team. All Rights Reserved. | 版本號: <span id="version-number"></span></p></footer>
     <div id="loading" class="loading-overlay" style="display: none;"></div>
 
     <script>
@@ -1351,36 +1358,39 @@
                 }
             });
 
-            // 【修改】分享至 LINE 按鈕的事件監聽
-            document.getElementById('share-line-btn').addEventListener('click', async () => {
+            // 【修改】分享今天至 LINE 按鈕的事件監聽
+            document.getElementById('share-today-line-btn').addEventListener('click', async () => {
                 showLoading();
-                const startDateStr = document.getElementById('export-start-date').value;
-                const endDateStr = document.getElementById('export-end-date').value;
-
-                if (!startDateStr || !endDateStr) {
-                    hideLoading();
-                    return Swal.fire('提示', '請選擇開始及結束日期。', 'info');
-                }
-
                 try {
-                    const data = await callAppsScript('getSignupsAsText', { startDateStr, endDateStr });
-                    
-                    // 檢查後端是否回傳資料過大的特定訊息
-                    if (data.text && data.text.includes("報名資料過於龐大")) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: '資料量過大',
-                            text: '您選擇的日期範圍過長，無法直接分享至LINE。請縮短日期範圍後再試一次，或改用Excel匯出功能。'
-                        });
-                        return; // 中斷執行，不開啟LINE
-                    }
+                    const data = await callAppsScript('getSignupsAsTextForToday');
                     
                     if (data.status === 'nodata') {
-                        Swal.fire('無資料', '在選定的日期範圍內沒有任何報名記錄可供分享。', 'info');
+                        Swal.fire('無資料', '今天沒有任何報名記錄可供分享。', 'info');
                     } else if (data.text) {
-                        // 強力過濾掉所有可能的網址，避免產生預覽圖
                         const cleanText = data.text.replace(/https?:\/\/\S+/gi, '').trim();
-                        
+                        const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(cleanText)}`;
+                        window.open(lineUrl, '_blank');
+                    } else {
+                        throw new Error("後端未回傳有效的文字資料。");
+                    }
+                } catch (e) {
+                    Swal.fire('分享失敗', e.message, 'error');
+                } finally {
+                    hideLoading();
+                }
+            });
+
+
+            // 【修改】分享明天至 LINE 按鈕的事件監聽
+            document.getElementById('share-tomorrow-line-btn').addEventListener('click', async () => {
+                showLoading();
+                try {
+                    const data = await callAppsScript('getSignupsAsTextForTomorrow');
+                    
+                    if (data.status === 'nodata') {
+                        Swal.fire('無資料', '明天沒有任何報名記錄可供分享。', 'info');
+                    } else if (data.text) {
+                        const cleanText = data.text.replace(/https?:\/\/\S+/gi, '').trim();
                         const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(cleanText)}`;
                         window.open(lineUrl, '_blank');
                     } else {

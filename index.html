@@ -7,6 +7,7 @@
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
@@ -757,7 +758,7 @@
                 <div class="form-group"><label for="stats-start-date">開始日期</label><input type="date" id="stats-start-date"></div>
                 <div class="form-group"><label for="stats-end-date">結束日期</label><input type="date" id="stats-end-date"></div>
                 <button id="generate-stats" class="btn btn-primary">📈 產生報表</button>
-                <button id="export-stats-pdf-btn" class="btn btn-primary">輸出 PDF 報表</button> </div>
+                <button id="export-stats-pdf-btn" class="btn btn-primary">輸出 PDF 报表</button> </div>
             <div class="chart-container" style="position: relative; height:40vh; margin-bottom: 20px;"><canvas id="stats-chart"></canvas></div>
             <div id="stats-details-container"></div>
         </div>
@@ -765,7 +766,6 @@
         <div id="admin-tab" class="tab-content">
             <hr style="margin-top:0;">
             <h4>📊 匯出 Excel / 快速分享</h4>
-             <!-- -----【***** START OF HTML MODIFICATION *****】----- -->
             <div class="inline-form" style="flex-direction: column; align-items: stretch;">
                 <div class="inline-form" style="justify-content: center;">
                     <div class="form-group"><label for="export-start-date">開始日期</label><input type="date" id="export-start-date"></div>
@@ -779,7 +779,6 @@
                     <button id="share-tomorrow-line-btn" class="btn btn-success">分享明天至 LINE</button>
                 </div>
             </div>
-            <!-- -----【***** END OF HTML MODIFICATION *****】----- -->
         </div>
     </div>
     
@@ -1133,7 +1132,6 @@
                 return;
             }
             
-            // 手機版會顯示所有欄位，但姓名和操作欄位是預設隱藏，除非是 "所有報名" 查詢
             const isAllSignups = queryType === 'byDate';
             
             let tableHtml = `<table class="${isAllSignups ? 'all-signups-table' : 'my-signups-table'}">
@@ -1224,11 +1222,75 @@
 
                 const dynamicColors = () => `rgba(${Math.floor(Math.random()*200)+50},${Math.floor(Math.random()*200)+50},${Math.floor(Math.random()*200)+50},0.8)`;
                 const backgroundColors = data.labels.map(() => dynamicColors());
+                
+                const multiLineLabels = data.labels.map(label => {
+                    const parts = label.match(/(.*?)\s*\((.*?)\)/);
+                    if (parts && parts.length === 3) {
+                        return [parts[1].trim(), `(${parts[2]})`];
+                    }
+                    return label;
+                });
+                
+                // 【***** 關鍵修改：針對手機版調整圖表選項 *****】
+                const chartOptions = { 
+                    responsive: true, maintainAspectRatio: false, backgroundColor: 'white',
+                    plugins: {
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            offset: 4,
+                            color: '#444',
+                            font: {
+                                weight: 'bold',
+                                size: 14,
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: (items) => data.fullDetails[items[0].dataIndex].eventInfo.title,
+                                label: (item) => {
+                                    const detail = data.fullDetails[item.dataIndex];
+                                    let label = [
+                                        `日期: ${detail.eventInfo.date}`,
+                                        `時間: ${detail.eventInfo.startTime}${detail.eventInfo.endTime ? ' - ' + detail.eventInfo.endTime : ''}`,
+                                        `已報名: ${item.raw} / ${detail.eventInfo.maxAttendees} 人`,
+                                        '--- 崗位人員 ---'
+                                    ];
+                                    detail.signups.forEach(s => label.push(`${s.position}: ${s.user}`));
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: { 
+                        x: { 
+                            ticks: { 
+                                autoSkip: false,
+                            } 
+                        },
+                        y: {
+                            grace: '10%'
+                        }
+                    },
+                    layout: { 
+                        padding: {
+                            top: 30,
+                            bottom: 40 
+                        }
+                    }
+                };
+
+                // 如果是手機版，則傾斜標籤
+                if (isMobile) {
+                    chartOptions.scales.x.ticks.maxRotation = 45;
+                    chartOptions.scales.x.ticks.minRotation = 45;
+                    chartOptions.layout.padding.bottom = 80; // 手機版需要更多底部空間給斜向文字
+                }
 
                 statsChart = new Chart(ctx, {
                     type: 'bar',
                     data: { 
-                        labels: data.labels, 
+                        labels: multiLineLabels, 
                         datasets: [{ 
                             label: '報名人數', 
                             data: data.data, 
@@ -1237,29 +1299,7 @@
                             borderWidth: 1
                         }] 
                     },
-                    options: { 
-                        responsive: true, maintainAspectRatio: false, backgroundColor: 'white',
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    title: (items) => data.fullDetails[items[0].dataIndex].eventInfo.title,
-                                    label: (item) => {
-                                        const detail = data.fullDetails[item.dataIndex];
-                                        let label = [
-                                            `日期: ${detail.eventInfo.date}`,
-                                            `時間: ${detail.eventInfo.startTime}${detail.eventInfo.endTime ? ' - ' + detail.eventInfo.endTime : ''}`,
-                                            `已報名: ${item.raw} / ${detail.eventInfo.maxAttendees} 人`,
-                                            '--- 崗位人員 ---'
-                                        ];
-                                        detail.signups.forEach(s => label.push(`${s.position}: ${s.user}`));
-                                        return label;
-                                    }
-                                }
-                            }
-                        },
-                        scales: { x: { ticks: { autoSkip: false, maxRotation: 90, minRotation: 90 } } },
-                        layout: { padding: 20 }
-                    }
+                    options: chartOptions
                 });
                 
                 let detailsHtml = '<h2>詳細活動報名資訊</h2>';
@@ -1297,6 +1337,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            Chart.register(ChartDataLabels);
+
             if (localStorage.getItem('av_signup_username')) document.getElementById('my-name-input').value = localStorage.getItem('av_signup_username');
             
             const today = new Date();

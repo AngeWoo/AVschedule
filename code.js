@@ -1,6 +1,6 @@
 // ====================================================================
 //  檔案：code.gs (AV放送立願報名行事曆 - 後端 API)
-//  版本：6.7 (修改分享按鈕為分享今天/明天，並加入無資料提示)
+//  版本：6.12 (修正報名時間顯示，直接讀取文字)
 // ====================================================================
 
 // --- 已填入您提供的 CSV 網址 ---
@@ -36,11 +36,8 @@ function doGet(e) {
       case 'addBackupSignup': result = addBackupSignup(params.eventId, params.userName, params.position); break;
       case 'removeSignup': result = removeSignup(params.eventId, params.userName); break;
       case 'createTempSheetAndExport': result = createTempSheetAndExport(params.startDateStr, params.endDateStr); break;
-      
-      // 【修改】快速分享函式路由
       case 'getSignupsAsTextForToday': result = getSignupsAsTextForToday(); break;
       case 'getSignupsAsTextForTomorrow': result = getSignupsAsTextForTomorrow(); break;
-      
       default: throw new Error(`未知的函式名稱: ${functionName}`);
     }
 
@@ -60,60 +57,36 @@ function doPost(e) {
   return doGet(e);
 }
 
-// 【新增】分享今天報名記錄至Line的函式
 function getSignupsAsTextForToday() {
     const scriptTimeZone = Session.getScriptTimeZone();
     const today = new Date();
-    
     const todayStr = Utilities.formatDate(today, scriptTimeZone, 'yyyy-MM-dd');
-    
-    // 呼叫通用的文字產生函式
     const result = getSignupsAsText(todayStr, todayStr);
-
-    // 如果有資料，就修改標題讓它更易讀
     if (result && result.status === 'success' && result.text && !result.text.includes("報名資料過於龐大")) {
         const dateDisplay = Utilities.formatDate(today, scriptTimeZone, 'MM/dd');
-        result.text = result.text.replace(
-          `日期：${todayStr} ~ ${todayStr}`,
-          `日期：今天 (${dateDisplay})`
-        );
+        result.text = result.text.replace(`日期：${todayStr} ~ ${todayStr}`, `日期：今天 (${dateDisplay})`);
     }
-
     return result;
 }
 
-// 【修改】分享明天報名記錄至Line的函式
 function getSignupsAsTextForTomorrow() {
     const scriptTimeZone = Session.getScriptTimeZone();
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    
     const tomorrowStr = Utilities.formatDate(tomorrow, scriptTimeZone, 'yyyy-MM-dd');
-    
-    // 呼叫通用的文字產生函式
     const result = getSignupsAsText(tomorrowStr, tomorrowStr);
-
-    // 如果有資料，就修改標題讓它更易讀
     if (result && result.status === 'success' && result.text && !result.text.includes("報名資料過於龐大")) {
         const dateDisplay = Utilities.formatDate(tomorrow, scriptTimeZone, 'MM/dd');
-        result.text = result.text.replace(
-          `日期：${tomorrowStr} ~ ${tomorrowStr}`,
-          `日期：明天 (${dateDisplay})`
-        );
+        result.text = result.text.replace(`日期：${tomorrowStr} ~ ${tomorrowStr}`, `日期：明天 (${dateDisplay})`);
     }
-
     return result;
 }
 
-// 【修改】通用的文字產生函式，確保無資料時回傳特定狀態
 function getSignupsAsText(startDateStr, endDateStr) {
   const allSignups = getAllSignups(startDateStr, endDateStr);
-
   if (!allSignups || allSignups.length === 0) {
-    return { status: 'nodata' }; // <<< 關鍵修改
+    return { status: 'nodata' };
   }
-
-  // 按活動分組
   const eventsGroup = {};
   allSignups.forEach(signup => {
     const key = `${signup.eventDate} ${signup.eventTitle}`;
@@ -122,31 +95,23 @@ function getSignupsAsText(startDateStr, endDateStr) {
     }
     eventsGroup[key].push(`- ${signup.position}: ${signup.user}`);
   });
-
-  // 組合文字
   let formattedText = `【AV放送立願報名記錄】\n日期：${startDateStr} ~ ${endDateStr}\n----------\n\n`;
-  
   Object.keys(eventsGroup).sort().forEach(eventKey => {
     formattedText += `【${eventKey}】\n`;
     formattedText += eventsGroup[eventKey].join('\n');
     formattedText += '\n\n';
   });
-  
-  // 檢查文字長度，Line的URL分享長度限制約在2000字元
   if (encodeURIComponent(formattedText).length > 1800) {
       formattedText = "報名資料過於龐大，無法透過文字分享，請改用「產生並下載Excel」功能。";
   }
-
   return { status: 'success', text: formattedText };
 }
-
 
 // -------------------- 核心資料獲取函式 --------------------
 function getMasterData() {
   if (EVENTS_CSV_URL.includes("在此貼上") || SIGNUPS_CSV_URL.includes("在此貼上")) {
     throw new Error("後端程式碼尚未設定 Events 和 Signups 的 CSV 網址。");
   }
-
   try {
     const requests = [ { url: EVENTS_CSV_URL, muteHttpExceptions: true }, { url: SIGNUPS_CSV_URL, muteHttpExceptions: true } ];
     const responses = UrlFetchApp.fetchAll(requests);
@@ -161,14 +126,23 @@ function getMasterData() {
     const eventsMap = new Map();
     eventsData.forEach(row => {
       const eventId = row[0];
-      if (eventId) {
-        eventsMap.set(eventId, {
-          title: row[1] || '未知事件',
-          dateString: row[2] ? Utilities.formatDate(new Date(row[2]), scriptTimeZone, 'yyyy/MM/dd') : '',
-          dateObj: new Date(row[2]),
-          startTime: row[3] || '', endTime: row[4] || '',
-          maxAttendees: parseInt(row[5], 10) || 999
-        });
+      if (eventId && row[2]) {
+        try {
+            const dateObj = new Date(row[2]);
+            if (isNaN(dateObj.getTime())) {
+                console.warn(`Invalid date found for event ID ${eventId}: ${row[2]}`);
+                return;
+            }
+            eventsMap.set(eventId, {
+              title: row[1] || '未知事件',
+              dateString: Utilities.formatDate(dateObj, scriptTimeZone, 'yyyy/MM/dd'),
+              dateObj: dateObj,
+              startTime: row[3] || '', endTime: row[4] || '',
+              maxAttendees: parseInt(row[5], 10) || 999
+            });
+        } catch(e) {
+            console.error(`Error processing date for event ID ${eventId}: ${row[2]}. Error: ${e.message}`);
+        }
       }
     });
     return { eventsData, signupsData, eventsMap };
@@ -244,6 +218,7 @@ function getEventsAndSignups() {
   } catch(err) { console.error("getEventsAndSignups 失敗:", err.message, err.stack); throw err; }
 }
 
+// 【***** 關鍵修改 *****】
 function getAllSignups(startDateStr, endDateStr) {
   try {
     const { signupsData, eventsMap } = getMasterData();
@@ -257,12 +232,31 @@ function getAllSignups(startDateStr, endDateStr) {
         return eventDetail && eventDetail.dateObj && eventDetail.dateObj >= start && eventDetail.dateObj <= end;
       });
     }
+
+    const dayMap = ['日', '一', '二', '三', '四', '五', '六'];
+
     const mappedSignups = filteredSignups.map(row => {
       const eventId = row[1];
       const eventDetail = eventsMap.get(eventId) || { title: '未知事件', dateString: '日期無效'};
+      
+      let eventDayOfWeek = '';
+      if (eventDetail.dateObj) {
+        const dayIndex = eventDetail.dateObj.getDay();
+        eventDayOfWeek = dayMap[dayIndex];
+      }
+
+      // 直接將 row[3] (報名時間) 視為文字，不做任何轉換
+      const rawTimestamp = row[3] || '';
+
       return {
-        signupId: row[0], eventId: eventId, eventTitle: eventDetail.title, eventDate: eventDetail.dateString,
-        user: row[2], timestamp: row[3] || '', position: row[4]
+        signupId: row[0], 
+        eventId: eventId, 
+        eventTitle: eventDetail.title, 
+        eventDate: eventDetail.dateString,
+        eventDayOfWeek: eventDayOfWeek,
+        user: row[2], 
+        timestamp: rawTimestamp, // 直接使用原始文字
+        position: row[4]
       };
     });
     mappedSignups.sort((a, b) => {
@@ -278,14 +272,18 @@ function getStatsData(startDateStr, endDateStr) {
     const { eventsMap } = getMasterData();
     const allSignups = getAllSignups(startDateStr, endDateStr);
     if (!allSignups || allSignups.length === 0) { return { labels: [], data: [], fullDetails: [] }; }
+
     const statsByEventId = {};
     allSignups.forEach(signup => {
       const eventId = signup.eventId;
       if (!statsByEventId[eventId]) {
         const eventInfoFromMap = eventsMap.get(eventId) || {}; 
         const eventInfo = {
-          title: eventInfoFromMap.title || signup.eventTitle, date: eventInfoFromMap.dateString || signup.eventDate,
-          startTime: eventInfoFromMap.startTime || '', endTime: eventInfoFromMap.endTime || '',
+          title: eventInfoFromMap.title || signup.eventTitle, 
+          date: eventInfoFromMap.dateString || signup.eventDate,
+          dayOfWeek: signup.eventDayOfWeek,
+          startTime: eventInfoFromMap.startTime || '', 
+          endTime: eventInfoFromMap.endTime || '',
           maxAttendees: eventInfoFromMap.maxAttendees || 999
         };
         statsByEventId[eventId] = { count: 0, signups: [], eventInfo: eventInfo, label: `${eventInfo.title} (${eventInfo.date})` };

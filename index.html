@@ -380,6 +380,7 @@
             overflow-x: auto; 
             border-radius: var(--border-radius-sm);
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            position: relative; /* 為了偽元素定位 */
         }
         .table-responsive table { 
             width: 100%; 
@@ -683,17 +684,9 @@
             }
 
             .table-responsive th, .table-responsive td { 
-                padding: 10px 8px; 
-                font-size: 0.85rem; 
-                white-space: nowrap; 
-            }
-            
-            #my-signups-result th:nth-child(2),
-            #my-signups-result td:nth-child(2) {
-                max-width: 120px; 
-                white-space: nowrap; 
-                overflow: hidden; 
-                text-overflow: ellipsis; 
+                padding: 12px 8px;
+                font-size: 0.9rem;
+                white-space: nowrap;
             }
 
             .event-popover {
@@ -701,6 +694,41 @@
                 left: 2.5vw !important; 
                 transform: translateX(0) !important; 
             }
+
+            /* 【***** 關鍵修改：橫向捲動提示 *****】 */
+            .table-responsive {
+                -webkit-overflow-scrolling: touch;
+                position: relative;
+            }
+            .table-responsive::before, .table-responsive::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                width: 25px; /* 提示的寬度 */
+                pointer-events: none; /* 讓滑鼠可以穿透 */
+                transition: opacity 0.2s ease-in-out;
+            }
+            .table-responsive::before {
+                left: 0;
+                background: linear-gradient(to right, rgba(240, 244, 248, 1), rgba(240, 244, 248, 0)),
+                            radial-gradient(10px at 10px 50%, rgba(0,0,0,0.2), transparent 70%);
+                background-repeat: no-repeat;
+                background-size: 25px 100%, 15px 15px;
+                background-position: left, 5px center;
+            }
+            .table-responsive::after {
+                right: 0;
+                background: linear-gradient(to left, rgba(240, 244, 248, 1), rgba(240, 244, 248, 0)),
+                            radial-gradient(10px at 5px 50%, rgba(0,0,0,0.2), transparent 70%);
+                background-repeat: no-repeat;
+                background-size: 25px 100%, 15px 15px;
+                background-position: right, 5px center;
+            }
+            .table-responsive:hover::before, .table-responsive:hover::after {
+                opacity: 0.6; /* 滑鼠懸停時讓提示更不明顯 */
+            }
+
         }
     </style>
 </head>
@@ -732,7 +760,7 @@
                 </div>
             </div>
             <div id="full-calendar-view"><div id="calendar"></div></div>
-            <div id="simple-list-view" style="display: none;"></div>
+            <div id="simple-list-view" class="table-responsive"></div>
         </div>
 
         <div id="my-signups-tab" class="tab-content">
@@ -878,7 +906,6 @@
             });
         }
         
-        // 【***** 關鍵修改 *****】
         function openTab(evt, tabName) {
             document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none');
             document.querySelectorAll('.tab-button').forEach(tb => tb.classList.remove('active'));
@@ -887,14 +914,10 @@
 
             if (tabName === 'calendar-tab') {
                 if (calendar) {
-                    // 如果日曆已存在，它可能因被隱藏而尺寸計算錯誤。
-                    // 呼叫 updateSize() 來修正它。
-                    // 使用 setTimeout 是為了確保 DOM 元素已完全可見。
                     setTimeout(() => {
                         calendar.updateSize();
                     }, 0);
                 } else {
-                    // 如果日曆從未初始化，則進行設定。
                     setupCalendarTab(true);
                 }
             }
@@ -1018,6 +1041,7 @@
 
         function renderSimpleListView() {
             const container = document.getElementById('simple-list-view');
+            container.innerHTML = ''; // 清空舊內容
             const titleEl = document.getElementById('custom-calendar-title');
             titleEl.textContent = `${currentDisplayDate.getFullYear()}年 ${currentDisplayDate.getMonth() + 1}月`;
             
@@ -1027,11 +1051,11 @@
             const currentMonthEvents = allCalendarEvents.filter(e => new Date(e.start) >= viewStart && new Date(e.start) <= viewEnd).sort((a, b) => new Date(a.start) - new Date(b.start));
 
             if (currentMonthEvents.length === 0) {
-                container.innerHTML = '<div class="table-responsive" style="margin-top:0;"><p style="text-align:center; padding: 20px;">本月尚無活動。</p></div>';
+                container.innerHTML = '<p style="text-align:center; padding: 20px;">本月尚無活動。</p>';
                 return;
             }
             
-            let tableHtml = `<div class="table-responsive" style="margin-top:0;"><table><thead><tr><th>日期</th><th>星期</th><th>標題</th><th>開始</th><th>結束</th><th>上限 (已報)</th></tr></thead><tbody>`;
+            let tableHtml = `<table><thead><tr><th>日期</th><th>星期</th><th>標題</th><th>開始</th><th>結束</th><th>上限 (已報)</th></tr></thead><tbody>`;
             currentMonthEvents.forEach(event => {
                 const props = event.extendedProps;
                 const startDate = new Date(event.start);
@@ -1040,7 +1064,7 @@
                 const signupCount = props.signups ? props.signups.length : 0;
                 tableHtml += `<tr data-event-id="${event.id}"><td><span class="status-dot" style="background-color: ${event.backgroundColor};"></span>${dateString.substring(5)}</td><td>${dayOfWeek.replace('週', '')}</td><td>${event.title}</td><td>${props.startTime || ''}</td><td>${props.endTime || ''}</td><td>${props.maxAttendees} (${signupCount})</td></tr>`;
             });
-            container.innerHTML = `${tableHtml}</tbody></table></div>`;
+            container.innerHTML = `${tableHtml}</tbody></table>`;
 
             container.querySelectorAll('tbody tr').forEach(row => {
                 const eventId = row.dataset.eventId;
@@ -1126,20 +1150,31 @@
         
         function renderMySignupsTable(signups, queryType) {
             const resultDiv = document.getElementById('my-signups-result');
-            resultDiv.innerHTML = '';
+            resultDiv.innerHTML = ''; 
 
             if (!signups || signups.length === 0) {
-                Swal.fire({
-                    icon: 'info',
-                    title: '查無資料',
-                    text: '在您指定的條件下，找不到相關の報名紀錄。'
-                });
+                Swal.fire({ icon: 'info', title: '查無資料', text: '在您指定的條件下，找不到相關の報名紀錄。' });
                 return;
             }
-
-            let tableHtml = `<table><thead><tr><th>活動日期</th><th>活動名稱</th><th>姓名</th><th>崗位</th><th>報名時間</th><th>操作</th></tr></thead><tbody>`;
+            
+            const isAllSignups = queryType === 'byDate';
+            
+            let tableHtml = `<table><thead><tr>
+                                <th>活動日期</th><th>星期</th><th>活動名稱</th><th>崗位</th>
+                                <th class="${isAllSignups ? '' : 'hidden-col'}">姓名</th>
+                                <th class="hidden-col">報名時間</th>
+                                <th class="${isAllSignups ? '' : 'hidden-col'}">操作</th>
+                             </tr></thead><tbody>`;
             signups.forEach(s => {
-                tableHtml += `<tr><td>${s.eventDate}</td><td>${s.eventTitle}</td><td>${s.user}</td><td>${s.position}</td><td>${s.timestamp}</td><td><button class="btn btn-danger btn-sm" onclick='promptToDeleteSignup(${JSON.stringify(s).replace(/'/g, "\\'")})'>刪除</button></td></tr>`;
+                tableHtml += `<tr>
+                                <td>${s.eventDate || ''}</td>
+                                <td>${s.eventDayOfWeek || ''}</td>
+                                <td>${s.eventTitle || ''}</td>
+                                <td>${s.position || ''}</td>
+                                <td class="${isAllSignups ? '' : 'hidden-col'}">${s.user || ''}</td>
+                                <td class="hidden-col">${s.timestamp || ''}</td>
+                                <td class="${isAllSignups ? '' : 'hidden-col'}"><button class="btn btn-danger btn-sm" onclick='promptToDeleteSignup(${JSON.stringify(s).replace(/'/g, "\\'")})'>刪除</button></td>
+                              </tr>`;
             });
             resultDiv.innerHTML = tableHtml + '</tbody></table>';
         }
@@ -1190,7 +1225,7 @@
                 } finally { hideLoading(); }
             }
         }
-
+        
         async function generateStatsReport() {
             showLoading();
             const detailsContainer = document.getElementById('stats-details-container');
@@ -1255,10 +1290,11 @@
                 
                 let detailsHtml = '<h2>詳細活動報名資訊</h2>';
                 data.fullDetails.forEach(eventData => {
+                    const dayOfWeekText = eventData.eventInfo.dayOfWeek ? `(${eventData.eventInfo.dayOfWeek})` : '';
                     detailsHtml += `
                         <div class="stats-event-block">
                             <h3>${eventData.eventInfo.title}</h3>
-                            <p><strong>日期:</strong> ${eventData.eventInfo.date}</p>
+                            <p><strong>日期:</strong> ${eventData.eventInfo.date} ${dayOfWeekText}</p>
                             <p><strong>時間:</strong> ${eventData.eventInfo.startTime}${eventData.eventInfo.endTime ? ' - ' + eventData.eventInfo.endTime : ''}</p>
                             <p><strong>報名狀況:</strong> ${eventData.signups.length} / ${eventData.eventInfo.maxAttendees}</p>`;
                     if (eventData.signups && eventData.signups.length > 0) {
@@ -1399,7 +1435,7 @@
                     hideLoading();
                 }
             });
-
+            
             document.getElementById('export-stats-pdf-btn').addEventListener('click', async () => {
                 if (!statsChart || !lastStatsData || lastStatsData.labels.length === 0) {
                     return Swal.fire('提示', '請先點擊「產生報表」以生成統計圖表和數據。', 'info');
@@ -1439,10 +1475,11 @@
                             <h2 style="font-size: 18px; text-align: left; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 15px;">詳細活動報名資訊</h2>`;
 
                     lastStatsData.fullDetails.forEach(eventData => {
+                         const dayOfWeekText = eventData.eventInfo.dayOfWeek ? `(${eventData.eventInfo.dayOfWeek})` : '';
                         html += `
                             <div style="page-break-inside: avoid; margin-bottom: 15px; border: 1px solid #eee; padding: 15px; border-radius: 5px;">
                                 <h3 style="font-size: 16px; margin: 0 0 10px 0; color: #FF8C42;">${eventData.eventInfo.title}</h3>
-                                <p style="margin: 0 0 5px 0;"><strong>日期:</strong> ${eventData.eventInfo.date}</p>
+                                <p style="margin: 0 0 5px 0;"><strong>日期:</strong> ${eventData.eventInfo.date} ${dayOfWeekText}</p>
                                 <p style="margin: 0 0 5px 0;"><strong>時間:</strong> ${eventData.eventInfo.startTime}${eventData.eventInfo.endTime ? ' - ' + eventData.eventInfo.endTime : ''}</p>
                                 <p style="margin: 0 0 10px 0;"><strong>報名狀況:</strong> ${eventData.signups.length} / ${eventData.eventInfo.maxAttendees}</p>`;
                         if (eventData.signups && eventData.signups.length > 0) {

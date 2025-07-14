@@ -1,6 +1,6 @@
 // ====================================================================
 //  檔案：code.gs (AV放送立願報名行事曆 - 後端 API)
-//  版本：6.12 (修正報名時間顯示，直接讀取文字)
+//  版本：6.15 (修正報名時間顯示，直接讀取文字)
 // ====================================================================
 
 // --- 已填入您提供的 CSV 網址 ---
@@ -29,9 +29,8 @@ function doGet(e) {
 
     switch (functionName) {
       case 'getEventsAndSignups': result = getEventsAndSignups(); break;
-      case 'getAllSignups': result = getAllSignups(params.startDateStr, params.endDateStr); break;
+      case 'getUnifiedSignups': result = getUnifiedSignups(params.searchText, params.startDateStr, params.endDateStr); break; // 新增統一查詢函式
       case 'getStatsData': result = getStatsData(params.startDateStr, params.endDateStr); break;
-      case 'getMySignups': result = getMySignups(params.userName, params.startDateStr, params.endDateStr); break;
       case 'addSignup': result = addSignup(params.eventId, params.userName, params.position); break;
       case 'addBackupSignup': result = addBackupSignup(params.eventId, params.userName, params.position); break;
       case 'removeSignup': result = removeSignup(params.eventId, params.userName); break;
@@ -83,7 +82,8 @@ function getSignupsAsTextForTomorrow() {
 }
 
 function getSignupsAsText(startDateStr, endDateStr) {
-  const allSignups = getAllSignups(startDateStr, endDateStr);
+  // 修改為使用 getUnifiedSignups
+  const allSignups = getUnifiedSignups('', startDateStr, endDateStr); // 空關鍵字，獲取指定日期範圍內的所有報名
   if (!allSignups || allSignups.length === 0) {
     return { status: 'nodata' };
   }
@@ -126,19 +126,21 @@ function getMasterData() {
     const eventsMap = new Map();
     eventsData.forEach(row => {
       const eventId = row[0];
+      // 確保 row[2] (日期) 存在且有效，避免 new Date(undefined) 或無效日期字串
       if (eventId && row[2]) {
         try {
             const dateObj = new Date(row[2]);
             if (isNaN(dateObj.getTime())) {
                 console.warn(`Invalid date found for event ID ${eventId}: ${row[2]}`);
-                return;
+                return; // 跳過無效日期行
             }
             eventsMap.set(eventId, {
               title: row[1] || '未知事件',
               dateString: Utilities.formatDate(dateObj, scriptTimeZone, 'yyyy/MM/dd'),
               dateObj: dateObj,
               startTime: row[3] || '', endTime: row[4] || '',
-              maxAttendees: parseInt(row[5], 10) || 999
+              maxAttendees: parseInt(row[5], 10) || 999,
+              description: row[7] || '' // 新增描述欄位
             });
         } catch(e) {
             console.error(`Error processing date for event ID ${eventId}: ${row[2]}. Error: ${e.message}`);
@@ -218,22 +220,59 @@ function getEventsAndSignups() {
   } catch(err) { console.error("getEventsAndSignups 失敗:", err.message, err.stack); throw err; }
 }
 
-function getAllSignups(startDateStr, endDateStr) {
+/**
+ * 統一查詢報名紀錄的函式。
+ * @param {string} searchText - 查詢關鍵字，可搜尋姓名、活動標題、崗位、活動描述。
+ * @param {string} startDateStr - 開始日期字串 (yyyy-MM-dd)。
+ * @param {string} endDateStr - 結束日期字串 (yyyy-MM-dd)。
+ * @returns {Array<Object>} 符合條件的報名紀錄列表。
+ */
+function getUnifiedSignups(searchText, startDateStr, endDateStr) {
   try {
     const { signupsData, eventsMap } = getMasterData();
-    let filteredSignups = signupsData;
-    if (startDateStr && endDateStr) {
-      const start = new Date(startDateStr);
-      const end = new Date(endDateStr);
-      end.setHours(23, 59, 59, 999);
-      filteredSignups = signupsData.filter(row => {
-        const eventDetail = eventsMap.get(row[1]); 
-        return eventDetail && eventDetail.dateObj && eventDetail.dateObj >= start && eventDetail.dateObj <= end;
-      });
-    }
+    const searchLower = searchText ? searchText.toLowerCase() : '';
 
     const dayMap = ['日', '一', '二', '三', '四', '五', '六'];
 
+    let filteredSignups = signupsData.filter(row => {
+      const eventId = row[1];
+      const eventDetail = eventsMap.get(eventId);
+      
+      // 檢查事件詳情是否存在，且日期有效
+      if (!eventDetail || !eventDetail.dateObj || isNaN(eventDetail.dateObj.getTime())) {
+        return false; // 跳過無效事件
+      }
+
+      // 1. 日期範圍過濾
+      const eventDate = eventDetail.dateObj;
+      const start = startDateStr ? new Date(startDateStr) : null;
+      const end = endDateStr ? new Date(endDateStr) : null;
+      if (end) end.setHours(23, 59, 59, 999); // 結束日期包含當天所有時間
+
+      if (start && eventDate < start) return false;
+      if (end && eventDate > end) return false;
+
+      // 2. 關鍵字過濾 (如果提供了關鍵字)
+      if (searchLower) {
+        const user = String(row[2] || '').toLowerCase(); // 報名者姓名
+        const position = String(row[4] || '').toLowerCase(); // 報名崗位
+        const eventTitle = String(eventDetail.title || '').toLowerCase(); // 活動標題
+        const eventDescription = String(eventDetail.description || '').toLowerCase(); // 活動描述
+
+        // 檢查關鍵字是否匹配任一欄位
+        if (
+          !user.includes(searchLower) &&
+          !position.includes(searchLower) &&
+          !eventTitle.includes(searchLower) &&
+          !eventDescription.includes(searchLower)
+        ) {
+          return false; // 不符合關鍵字條件
+        }
+      }
+      return true; // 通過所有過濾條件
+    });
+
+    // 將過濾後的報名資料映射為前端所需的格式
     const mappedSignups = filteredSignups.map(row => {
       const eventId = row[1];
       const eventDetail = eventsMap.get(eventId) || { title: '未知事件', dateString: '日期無效'};
@@ -258,19 +297,26 @@ function getAllSignups(startDateStr, endDateStr) {
         position: row[4]
       };
     });
+    // 依活動日期排序
     mappedSignups.sort((a, b) => {
-        const dateA = new Date(a.eventDate); const dateB = new Date(b.eventDate);
+        const dateA = new Date(a.eventDate); 
+        const dateB = new Date(b.eventDate);
         return dateA.getTime() - dateB.getTime();
     });
     return mappedSignups;
-  } catch(err) { console.error("getAllSignups 失敗:", err.message, err.stack); throw err; }
+  } catch(err) { 
+    console.error("getUnifiedSignups 失敗:", err.message, err.stack); 
+    throw err; 
+  }
 }
 
 function getStatsData(startDateStr, endDateStr) {
   try {
-    const { eventsMap } = getMasterData();
-    const allSignups = getAllSignups(startDateStr, endDateStr);
+    // 修改為使用 getUnifiedSignups，空關鍵字表示不過濾文字
+    const allSignups = getUnifiedSignups('', startDateStr, endDateStr);
     if (!allSignups || allSignups.length === 0) { return { labels: [], data: [], fullDetails: [] }; }
+
+    const { eventsMap } = getMasterData(); // 仍然需要 eventsMap 來獲取完整的活動資訊
 
     const statsByEventId = {};
     allSignups.forEach(signup => {
@@ -312,9 +358,15 @@ function addSignup(eventId, userName, position) {
     const signupsSheet = ss.getSheetByName(SIGNUPS_SHEET_NAME);
     const eventData = eventsSheet.getDataRange().getValues().find(row => row[0] === eventId);
     if (!eventData) return { status: 'error', message: '找不到此活動。' };
-    const eventDatePart = new Date(eventData[2]);
-    const eventTimePart = new Date(eventData[4] || '23:59:59'); // Fallback end time
-    const eventEndDateTime = new Date( eventDatePart.getFullYear(), eventDatePart.getMonth(), eventDatePart.getDate(), eventTimePart.getHours(), eventTimePart.getMinutes(), eventTimePart.getSeconds() );
+    
+    // 創建正確的日期物件以進行時間比較
+    const eventDatePart = new Date(eventData[2]); // 從 CSV 讀取的日期字串
+    const eventTimeStr = eventData[4] || '23:59'; // 結束時間字串，若無則預設為當天結束
+    const [hours, minutes] = eventTimeStr.split(':').map(Number);
+    
+    // 將日期和時間合併為一個完整的日期時間物件
+    const eventEndDateTime = new Date(eventDatePart.getFullYear(), eventDatePart.getMonth(), eventDatePart.getDate(), hours, minutes, 0);
+
     if (new Date() > eventEndDateTime) { return { status: 'error', message: '此活動已結束，無法報名。' }; }
     const currentSignups = signupsSheet.getDataRange().getValues().filter(row => row[1] === eventId);
     if (currentSignups.some(row => row[2] === userName)) { return { status: 'error', message: '您已經報名過此活動了。' }; }
@@ -353,7 +405,49 @@ function removeSignup(eventId, userName) {
 
 // 其他輔助函式
 function addBackupSignup(eventId, userName, position) { if (!eventId || !userName || !position) return { status: 'error', message: '缺少必要資訊。' }; const lock = LockService.getScriptLock(); lock.waitLock(15000); try { SpreadsheetApp.openById(SHEET_ID).getSheetByName(SIGNUPS_SHEET_NAME).appendRow(['su' + new Date().getTime(), eventId, userName, new Date(), `${position} (備援)`]); return { status: 'success' }; } catch (err) { console.error("addBackupSignup 失敗:", err.message, err.stack); throw new Error('備援報名時發生錯誤。'); } finally { lock.releaseLock(); } }
-function getMySignups(userName, startDateStr, endDateStr) { if (!userName) return []; try { return getAllSignups(startDateStr, endDateStr).filter(signup => signup.user === userName); } catch (err) { console.error("getMySignups 失敗:", err.message, err.stack); throw err; } }
-function createTempSheetAndExport(startDateStr, endDateStr) { const ss = SpreadsheetApp.openById(SHEET_ID); const spreadsheetId = ss.getId(); let tempSheet = null; let tempFile = null; try { const tempSheetName = "匯出報表_" + new Date().getTime(); tempSheet = ss.insertSheet(tempSheetName); const data = getAllSignups(startDateStr, endDateStr); if (!data || data.length === 0) { ss.deleteSheet(tempSheet); return { status: 'nodata', message: '在選定的日期範圍內沒有任何報名記錄。' }; } data.sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()); const title = `AV放送立願報名記錄 (${startDateStr || '所有'} - ${endDateStr || '所有'})`; tempSheet.getRange("A1:E1").merge().setValue(title).setFontWeight("bold").setFontSize(15).setHorizontalAlignment('center'); const headers = ["活動日期", "活動", "崗位", "報名者", "報名時間"]; const fields = ["eventDate", "eventTitle", "position", "user", "timestamp"]; tempSheet.getRange(2, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground("#d9ead3").setFontSize(15).setHorizontalAlignment('center'); const outputData = data.map(row => fields.map(field => row[field] || "")); if (outputData.length > 0) { tempSheet.getRange(3, 1, outputData.length, headers.length).setValues(outputData).setFontSize(15).setHorizontalAlignment('left'); } tempSheet.autoResizeColumns(1, 5); SpreadsheetApp.flush(); const blob = Drive.Files.export(spreadsheetId, MimeType.MICROSOFT_EXCEL, { gid: tempSheet.getSheetId(), alt: 'media' }); blob.setName(`AV立願報名記錄_${new Date().toISOString().slice(0,10)}.xlsx`); tempFile = DriveApp.createFile(blob); tempFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); const downloadUrl = tempFile.getWebContentLink(); scheduleDeletion(tempFile.getId()); ss.deleteSheet(tempSheet); return { status: 'success', url: downloadUrl, fileId: tempFile.getId() }; } catch (e) { console.error("createTempSheetAndExport 失敗: " + e.toString()); if (tempFile) { try { DriveApp.getFileById(tempFile.getId()).setTrashed(true); } catch (f) { console.error("無法刪除臨時檔案: " + f.toString()); } } if (tempSheet && ss.getSheetByName(tempSheet.getName())) { ss.deleteSheet(tempSheet); } throw new Error('匯出時發生錯誤: ' + e.toString()); } }
+
+// `getAllSignups` 和 `getMySignups` 已不再被使用，可以安全移除。
+
+function createTempSheetAndExport(startDateStr, endDateStr) { 
+  const ss = SpreadsheetApp.openById(SHEET_ID); 
+  const spreadsheetId = ss.getId(); 
+  let tempSheet = null; 
+  let tempFile = null; 
+  try { 
+    const tempSheetName = "匯出報表_" + new Date().getTime(); 
+    tempSheet = ss.insertSheet(tempSheetName); 
+    // 修改為使用 getUnifiedSignups，空關鍵字表示不過濾文字
+    const data = getUnifiedSignups('', startDateStr, endDateStr); 
+    if (!data || data.length === 0) { 
+      ss.deleteSheet(tempSheet); 
+      return { status: 'nodata', message: '在選定的日期範圍內沒有任何報名記錄。' }; 
+    } 
+    data.sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()); 
+    const title = `AV放送立願報名記錄 (${startDateStr || '所有'} - ${endDateStr || '所有'})`; 
+    tempSheet.getRange("A1:E1").merge().setValue(title).setFontWeight("bold").setFontSize(15).setHorizontalAlignment('center'); 
+    const headers = ["活動日期", "活動", "崗位", "報名者", "報名時間"]; 
+    const fields = ["eventDate", "eventTitle", "position", "user", "timestamp"]; 
+    tempSheet.getRange(2, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground("#d9ead3").setFontSize(15).setHorizontalAlignment('center'); 
+    const outputData = data.map(row => fields.map(field => row[field] || "")); 
+    if (outputData.length > 0) { 
+      tempSheet.getRange(3, 1, outputData.length, headers.length).setValues(outputData).setFontSize(15).setHorizontalAlignment('left'); 
+    } 
+    tempSheet.autoResizeColumns(1, 5); 
+    SpreadsheetApp.flush(); 
+    const blob = Drive.Files.export(spreadsheetId, MimeType.MICROSOFT_EXCEL, { gid: tempSheet.getSheetId(), alt: 'media' }); 
+    blob.setName(`AV立願報名記錄_${new Date().toISOString().slice(0,10)}.xlsx`); 
+    tempFile = DriveApp.createFile(blob); 
+    tempFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); 
+    const downloadUrl = tempFile.getWebContentLink(); 
+    scheduleDeletion(tempFile.getId()); 
+    ss.deleteSheet(tempSheet); 
+    return { status: 'success', url: downloadUrl, fileId: tempFile.getId() }; 
+  } catch (e) { 
+    console.error("createTempSheetAndExport 失敗: " + e.toString()); 
+    if (tempFile) { try { DriveApp.getFileById(tempFile.getId()).setTrashed(true); } catch (f) { console.error("無法刪除臨時檔案: " + f.toString()); } } 
+    if (tempSheet && ss.getSheetByName(tempSheet.getName())) { ss.deleteSheet(tempSheet); } 
+    throw new Error('匯出時發生錯誤: ' + e.toString()); 
+  } 
+}
 function scheduleDeletion(fileId) { if (!fileId) return; try { const trigger = ScriptApp.newTrigger('triggeredDeleteHandler').timeBased().after(24 * 60 * 60 * 1000).create(); PropertiesService.getScriptProperties().setProperty(trigger.getUniqueId(), fileId); } catch (e) { console.error(`排程刪除檔案 '${fileId}' 時失敗: ${e.toString()}`); } }
 function triggeredDeleteHandler(e) { const triggerId = e.triggerUid; const scriptProperties = PropertiesService.getScriptProperties(); const fileId = scriptProperties.getProperty(triggerId); if (fileId) { try { DriveApp.getFileById(fileId).setTrashed(true); } catch (err) { console.error(`刪除檔案 ${fileId} 失敗: ${err.toString()}`); } scriptProperties.deleteProperty(triggerId); } const allTriggers = ScriptApp.getProjectTriggers(); for (let i = 0; i < allTriggers.length; i++) { if (allTriggers[i].getUniqueId() === triggerId) { ScriptApp.deleteTrigger(allTriggers[i]); break; } } }

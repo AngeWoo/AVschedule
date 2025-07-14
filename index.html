@@ -839,18 +839,15 @@
         </div>
 
         <div id="my-signups-tab" class="tab-content">
-            <h4>👤 查詢我的報名紀錄</h4>
+            <!-- 【***** START OF SIGNUP SEARCH MODIFICATION *****】 -->
+            <h4>📄 綜合報名查詢</h4>
             <div class="inline-form">
-                <div class="form-group"><label for="my-name-input">您的姓名</label><input type="text" id="my-name-input" placeholder="請輸入您報名時使用的姓名"></div>
-                <button id="search-my-signups" class="btn btn-primary">報名查詢</button>
+                <div class="form-group"><label for="universal-search-input">關鍵字</label><input type="text" id="universal-search-input" placeholder="姓名/活動/崗位/描述"></div>
+                <div class="form-group"><label for="search-start-date">開始日期</label><input type="date" id="search-start-date"></div>
+                <div class="form-group"><label for="search-end-date">結束日期</label><input type="date" id="search-end-date"></div>
+                <button id="unified-search-btn" class="btn btn-primary">🔍 查詢</button>
             </div>
-            <hr>
-            <h4>👥 查詢所有報名紀錄</h4>
-            <div class="inline-form">
-                <div class="form-group"><label for="all-signups-start-date">開始日期</label><input type="date" id="all-signups-start-date"></div>
-                <div class="form-group"><label for="all-signups-end-date">結束日期</label><input type="date" id="all-signups-end-date"></div>
-                <button id="search-all-signups" class="btn btn-primary">報名查詢</button>
-            </div>
+            <!-- 【***** END OF SIGNUP SEARCH MODIFICATION *****】 -->
             <div id="my-signups-result" class="table-responsive"></div>
             <div id="export-from-query-container" style="text-align: center; margin-top: 25px; display: none;">
                 <button id="export-from-query-btn" class="btn btn-primary">產生並下載 Excel</button>
@@ -903,11 +900,11 @@
         
         let calendar = null; 
         let statsChart;
-        let currentUserName = localStorage.getItem('av_signup_username') || '';
+        // Removed currentUserName, as it's only for the prompt, not global search state.
         const isMobile = window.innerWidth <= 768; 
         let allCalendarEvents = [];
         let currentDisplayDate = new Date();
-        let lastQuery = { type: null, params: {} };
+        let lastQuery = { type: null, params: {} }; // Store the last query for export/refresh
         let lastStatsData = null; 
 
         let currentCalendarOptions = {
@@ -1004,13 +1001,13 @@
         }
         
         async function promptForName() {
+            let currentUserName = localStorage.getItem('av_signup_username') || ''; // Only defined here locally
             const { value: name } = await Swal.fire({
                 title: "請輸入您的姓名", input: "text", inputValue: currentUserName,
                 inputPlaceholder: "請輸入姓名", showCancelButton: true,
                 inputValidator: (v) => !v && "姓名不能為空！"
             });
             if (name) {
-                currentUserName = name;
                 localStorage.setItem('av_signup_username', name);
             }
             return name;
@@ -1031,7 +1028,11 @@
             const name = await promptForName();
             if (!name) return;
 
-            const existingSignup = props.signups.find(s => s.user === currentUserName);
+            // Get current signups for this event
+            // Note: This relies on allCalendarEvents being up-to-date.
+            // For a critical check like this, ideally one would re-fetch directly from backend,
+            // but for a quick check, this is acceptable for now.
+            const existingSignup = props.signups.find(s => s.user === name); // Use the prompted name directly
             if (existingSignup) {
                 return Swal.fire({
                     icon: 'info', title: '您已報名過此活動',
@@ -1064,7 +1065,7 @@
             if (selectedPosition) {
                 showLoading();
                 try {
-                    const addResult = await callAppsScript('addSignup', { eventId: info.event.id, userName: currentUserName, position: selectedPosition });
+                    const addResult = await callAppsScript('addSignup', { eventId: info.event.id, userName: name, position: selectedPosition }); // Use prompted name
                     let successPayload = { icon: 'success' };
                     if (addResult.status === 'confirm_backup') {
                         const confirmBackup = await Swal.fire({
@@ -1073,12 +1074,12 @@
                         });
                         if (!confirmBackup.isConfirmed) { hideLoading(); return; }
                         showLoading();
-                        await callAppsScript('addBackupSignup', { eventId: info.event.id, userName: currentUserName, position: selectedPosition });
+                        await callAppsScript('addBackupSignup', { eventId: info.event.id, userName: name, position: selectedPosition }); // Use prompted name
                         successPayload.title = '備援報名成功！';
-                        successPayload.html = `<div style="text-align: left; padding: 0 1em;"><p><strong>姓名：</strong> ${currentUserName}</p><p><strong>活動：</strong> ${props.full_title}</p><p><strong>崗位：</strong> ${selectedPosition} (備援)</p></div>`;
+                        successPayload.html = `<div style="text-align: left; padding: 0 1em;"><p><strong>姓名：</strong> ${name}</p><p><strong>活動：</strong> ${props.full_title}</p><p><strong>崗位：</strong> ${selectedPosition} (備援)</p></div>`;
                     } else {
                         successPayload.title = '報名成功！';
-                        successPayload.html = `<div style="text-align: left; padding: 0 1em;"><p><strong>姓名：</strong> ${currentUserName}</p><p><strong>活動：</strong> ${props.full_title}</p><p><strong>崗位：</strong> ${selectedPosition}</p></div>`;
+                        successPayload.html = `<div style="text-align: left; padding: 0 1em;"><p><strong>姓名：</strong> ${name}</p><p><strong>活動：</strong> ${props.full_title}</p><p><strong>崗位：</strong> ${selectedPosition}</p></div>`;
                     }
                     await Swal.fire(successPayload);
                     setupCalendarTab(true); 
@@ -1245,9 +1246,8 @@
                 return;
             }
             
-            const isAllSignups = queryType === 'byDate';
-            
-            let tableHtml = `<table class="${isAllSignups ? 'all-signups-table' : 'my-signups-table'}">
+            // `queryType` is now 'unified'
+            let tableHtml = `<table class="all-signups-table">
                                 <thead><tr><th>活動日期</th><th>星期</th><th>活動名稱</th><th>崗位</th><th class="col-user">姓名</th><th class="col-timestamp">報名時間</th><th class="col-action">操作</th></tr></thead>
                                 <tbody>`;
             signups.forEach(s => {
@@ -1266,16 +1266,15 @@
             exportContainer.style.display = 'block';
         }
 
-        async function executeSignupQuery(type, params) {
+        async function executeUnifiedSignupQuery(searchText, startDateStr, endDateStr) {
             showLoading();
-            if (type === 'byName') {
-                params.startDateStr = '';
-                params.endDateStr = '';
-            }
-            lastQuery = { type, params }; 
             try {
-                const data = (type === 'byName') ? await callAppsScript('getMySignups', params) : await callAppsScript('getAllSignups', params);
-                renderMySignupsTable(data, type);
+                const data = await callAppsScript('getUnifiedSignups', {
+                    searchText: searchText,
+                    startDateStr: startDateStr,
+                    endDateStr: endDateStr
+                });
+                renderMySignupsTable(data, 'unified');
             } catch(e) {
                 Swal.fire('查詢失敗', e.message, 'error');
             } finally { hideLoading(); }
@@ -1309,7 +1308,15 @@
                 try {
                     const result = await callAppsScript('removeSignup', { eventId: signup.eventId, userName: signup.user });
                     await Swal.fire('刪除成功', result.message, 'success');
-                    if (lastQuery.type) await executeSignupQuery(lastQuery.type, lastQuery.params);
+                    // Re-execute the last query
+                    if (lastQuery.type === 'unified') {
+                        await executeUnifiedSignupQuery(lastQuery.params.searchText, lastQuery.params.startDateStr, lastQuery.params.endDateStr);
+                    } else {
+                         // Fallback: If no previous query, perform a default month query
+                        const defaultStartDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toLocaleDateString('en-CA');
+                        const defaultEndDate = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toLocaleDateString('en-CA');
+                        await executeUnifiedSignupQuery('', defaultStartDate, defaultEndDate);
+                    }
                     setupCalendarTab(true); 
                 } catch(e) {
                     Swal.fire('刪除失敗', e.message, 'error');
@@ -1452,12 +1459,18 @@
             }
         }
 
-        async function exportDataToExcel(startDateStr, endDateStr) {
+        async function exportCurrentQueryResultToExcel() {
+            if (!lastQuery.type || !lastQuery.params) {
+                return Swal.fire('錯誤', '沒有可匯出的查詢條件。', 'error');
+            }
+
             showLoading();
             try {
-                const dataToExport = await callAppsScript('getAllSignups', { 
-                    startDateStr: startDateStr || '', 
-                    endDateStr: endDateStr || ''
+                const { searchText, startDateStr, endDateStr } = lastQuery.params;
+                const dataToExport = await callAppsScript('getUnifiedSignups', {
+                    searchText: searchText,
+                    startDateStr: startDateStr,
+                    endDateStr: endDateStr
                 });
 
                 if (!dataToExport || dataToExport.length === 0) {
@@ -1465,22 +1478,13 @@
                     return Swal.fire('無資料', '在選定的條件下沒有任何報名記錄可供匯出。', 'info');
                 }
 
-                let finalData = dataToExport;
-                if (lastQuery.type === 'byName' && lastQuery.params.userName) {
-                    finalData = dataToExport.filter(signup => signup.user === lastQuery.params.userName);
-                }
-
-                if (finalData.length === 0) {
-                     hideLoading();
-                    return Swal.fire('無資料', '在選定的條件下沒有任何報名記錄可供匯出。', 'info');
-                }
-                
                 const dateRangeText = (startDateStr && endDateStr) ? `${startDateStr} - ${endDateStr}` : '所有日期';
-                const title = `AV放送立願報名記錄 (${dateRangeText})`;
+                const titleSuffix = searchText ? ` (關鍵字: "${searchText}")` : '';
+                const title = `AV放送立願報名記錄 (${dateRangeText})${titleSuffix}`;
                 const generateTime = new Date().toLocaleString('zh-TW');
                 
                 let htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>table{border-collapse:collapse;width:100%;font-family:'Microsoft JhengHei',sans-serif}td,th{border:1px solid #ddd;text-align:left;padding:8px}th{background-color:#f2f2f2}.title-row{background-color:#FF8C42;color:white;font-weight:bold;font-size:16px;text-align:center}</style></head><body><table><tr><td colspan="5" class="title-row">${title}</td></tr><tr><td colspan="5">報表生成時間：${generateTime}</td></tr><tr><th>活動日期</th><th>活動名稱</th><th>崗位</th><th>報名者</th><th>報名時間</th></tr>`;
-                finalData.forEach(row => {
+                dataToExport.forEach(row => {
                     htmlContent += `<tr><td>${row.eventDate||''}</td><td>${row.eventTitle||''}</td><td>${row.position||''}</td><td>${row.user||''}</td><td>'${row.timestamp||''}'</td></tr>`;
                 });
                 htmlContent += '</table></body></html>';
@@ -1606,54 +1610,98 @@
             setupMarqueeToggle();
             //【***** END OF MARQUEE TOGGLE LOGIC *****】
 
-
-            if (localStorage.getItem('av_signup_username')) document.getElementById('my-name-input').value = localStorage.getItem('av_signup_username');
-            
+            // Initialize search date inputs
             const today = new Date();
             const firstDayStr = new Date(today.getFullYear(), today.getMonth(), 1).toLocaleDateString('en-CA');
             const lastDayStr = new Date(today.getFullYear(), today.getMonth() + 1, 0).toLocaleDateString('en-CA');
 
-            ['all-signups-start-date', 'stats-start-date', 'export-start-date'].forEach(id => {
+            // Apply default dates to ALL date inputs
+            ['search-start-date', 'stats-start-date', 'export-start-date'].forEach(id => {
                 const el = document.getElementById(id); if(el) el.value = firstDayStr;
             });
-            ['all-signups-end-date', 'stats-end-date', 'export-end-date'].forEach(id => {
+            ['search-end-date', 'stats-end-date', 'export-end-date'].forEach(id => {
                  const el = document.getElementById(id); if(el) el.value = lastDayStr;
             });
             
             document.getElementById('version-number').textContent = new Date().toLocaleDateString('en-CA');
             document.querySelector('.tab-button').click();
 
-            document.getElementById('search-my-signups').addEventListener('click', () => {
-                const userName = document.getElementById('my-name-input').value.trim();
-                if (!userName) return Swal.fire('提示', '請先輸入您的姓名', 'info');
-                document.getElementById('all-signups-start-date').value = '';
-                document.getElementById('all-signups-end-date').value = '';
-                executeSignupQuery('byName', { userName });
+            // 【***** START OF UNIFIED SEARCH EVENT LISTENER *****】
+            document.getElementById('unified-search-btn').addEventListener('click', () => {
+                const searchText = document.getElementById('universal-search-input').value.trim();
+                const startDateStr = document.getElementById('search-start-date').value;
+                const endDateStr = document.getElementById('search-end-date').value;
+
+                if (!startDateStr || !endDateStr) {
+                    return Swal.fire('提示', '請選擇查詢的開始及結束日期。', 'info');
+                }
+                
+                // Update lastQuery to reflect the unified search
+                lastQuery = {
+                    type: 'unified', // New type
+                    params: {
+                        searchText: searchText,
+                        startDateStr: startDateStr,
+                        endDateStr: endDateStr
+                    }
+                };
+                executeUnifiedSignupQuery(searchText, startDateStr, endDateStr);
             });
-            document.getElementById('search-all-signups').addEventListener('click', () => {
-                const startDateStr = document.getElementById('all-signups-start-date').value;
-                const endDateStr = document.getElementById('all-signups-end-date').value;
-                if (!startDateStr || !endDateStr) return Swal.fire('提示', '請選擇開始及結束日期。', 'info');
-                executeSignupQuery('byDate', { startDateStr, endDateStr });
-            });
+            // 【***** END OF UNIFIED SEARCH EVENT LISTENER *****】
+
             document.getElementById('generate-stats').addEventListener('click', generateStatsReport);
             
-            document.getElementById('export-excel-btn').addEventListener('click', () => {
+            document.getElementById('export-excel-btn').addEventListener('click', async () => {
                 const startDateStr = document.getElementById('export-start-date').value;
                 const endDateStr = document.getElementById('export-end-date').value;
-                exportDataToExcel(startDateStr, endDateStr);
-            });
 
-            document.getElementById('export-from-query-btn').addEventListener('click', () => {
-                const { type, params } = lastQuery;
-                if (type === 'byName') {
-                    exportDataToExcel('', '');
-                } else if (type === 'byDate') {
-                    exportDataToExcel(params.startDateStr, params.endDateStr);
-                } else {
-                    Swal.fire('錯誤', '沒有可匯出的查詢條件。', 'error');
+                if (!startDateStr || !endDateStr) {
+                    return Swal.fire('提示', '請選擇匯出的開始及結束日期。', 'info');
+                }
+
+                showLoading();
+                try {
+                    // Call the backend with specific date range and empty searchText for admin export
+                    const dataToExport = await callAppsScript('getUnifiedSignups', {
+                        searchText: '',
+                        startDateStr: startDateStr,
+                        endDateStr: endDateStr
+                    });
+
+                    if (!dataToExport || dataToExport.length === 0) {
+                        hideLoading();
+                        return Swal.fire('無資料', '在選定的條件下沒有任何報名記錄可供匯出。', 'info');
+                    }
+
+                    const dateRangeText = (startDateStr && endDateStr) ? `${startDateStr} - ${endDateStr}` : '所有日期';
+                    const title = `AV放送立願報名記錄 (${dateRangeText})`;
+                    const generateTime = new Date().toLocaleString('zh-TW');
+                    
+                    let htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>table{border-collapse:collapse;width:100%;font-family:'Microsoft JhengHei',sans-serif}td,th{border:1px solid #ddd;text-align:left;padding:8px}th{background-color:#f2f2f2}.title-row{background-color:#FF8C42;color:white;font-weight:bold;font-size:16px;text-align:center}</style></head><body><table><tr><td colspan="5" class="title-row">${title}</td></tr><tr><td colspan="5">報表生成時間：${generateTime}</td></tr><tr><th>活動日期</th><th>活動名稱</th><th>崗位</th><th>報名者</th><th>報名時間</th></tr>`;
+                    dataToExport.forEach(row => {
+                        htmlContent += `<tr><td>${row.eventDate||''}</td><td>${row.eventTitle||''}</td><td>${row.position||''}</td><td>${row.user||''}</td><td>'${row.timestamp||''}'</td></tr>`;
+                    });
+                    htmlContent += '</table></body></html>';
+
+                    const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+                    const fileName = `AV立願報名記錄_${new Date().toISOString().slice(0,10)}.xls`;
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(link.href);
+                } catch (e) {
+                    Swal.fire('匯出失敗', e.message, 'error');
+                } finally {
+                    hideLoading();
                 }
             });
+
+            // 【***** START OF EXPORT FROM QUERY BUTTON LOGIC *****】
+            document.getElementById('export-from-query-btn').addEventListener('click', exportCurrentQueryResultToExcel);
+            // 【***** END OF EXPORT FROM QUERY BUTTON LOGIC *****】
 
             document.getElementById('share-today-line-btn').addEventListener('click', async () => {
                 showLoading();

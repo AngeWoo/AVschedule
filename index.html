@@ -813,36 +813,41 @@
         }
         /* -----【***** END OF MOBILE STYLES MODIFICATION *****】----- */
 
-        /* -----【***** START OF SIMPLE LIST VIEW TABLE FIX (V4 - Final Approach) *****】----- */
-        
-        /* 1. 讓簡易列表的容器可以水平滾動 */
-        #simple-list-view .table-responsive {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch; /* 在iOS上提供更平滑的滾動體驗 */
+        /* -----【***** START OF TABLE LAYOUT FIX FOR HORIZONTAL SCROLLING *****】----- */
+        /* 1. 讓需要滾動的表格容器可以水平滾動 */
+        #simple-list-view .table-responsive,
+        #my-signups-result.table-responsive {
+            overflow-x: auto !important;
+            -webkit-overflow-scrolling: touch;
         }
 
-        /* 2. 讓表格本身的寬度根據內容來決定，而不是被螢幕寬度限制 */
-        #simple-list-view .table-responsive table {
-            width: max-content; /* 關鍵！讓表格寬度擴展到其內容所需的最大寬度 */
-            min-width: 100%;    /* 確保在內容很少時，表格至少能填滿容器 */
+        /* 2. 讓表格本身的寬度根據內容來決定 */
+        #simple-list-view .table-responsive table,
+        #my-signups-result.table-responsive table {
+            width: max-content !important; 
+            min-width: 100%;    
         }
 
-        /* 3. 強制所有儲存格（標題和內容）都不換行 */
+        /* 3. 強制所有儲存格不換行 */
         #simple-list-view .table-responsive th,
-        #simple-list-view .table-responsive td {
+        #simple-list-view .table-responsive td,
+        #my-signups-result.table-responsive th,
+        #my-signups-result.table-responsive td {
             white-space: nowrap !important;
-            vertical-align: middle;
+            vertical-align: middle !important;
         }
 
-        /* 4. 針對手機視圖，強制使用統一的、固定的字體大小和內距 */
+        /* 4. 在手機上，強制使用統一的字體大小和內距 */
         @media (max-width: 768px) {
             #simple-list-view .table-responsive th,
-            #simple-list-view .table-responsive td {
-                font-size: 14px !important; /* 使用固定的14px，確保絕對一致 */
-                padding: 12px 10px !important; /* 統一內距 */
+            #simple-list-view .table-responsive td,
+            #my-signups-result.table-responsive th,
+            #my-signups-result.table-responsive td {
+                font-size: 14px !important; 
+                padding: 12px 10px !important;
             }
         }
-        /* -----【***** END OF SIMPLE LIST VIEW TABLE FIX (V4 - Final Approach) *****】----- */
+        /* -----【***** END OF TABLE LAYOUT FIX FOR HORIZONTAL SCROLLING *****】----- */
 
     </style>
 </head>

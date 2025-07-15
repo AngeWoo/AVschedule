@@ -306,7 +306,6 @@
             
             const props = eventObject.extendedProps;
             
-            // --- 前端時間檢查 (核心修改) ---
             const eventEndDateTime = eventObject.end ? new Date(eventObject.end) : new Date(eventObject.start);
             if (!eventObject.end) {
                 eventEndDateTime.setHours(23, 59, 59, 999);
@@ -320,7 +319,6 @@
                     confirmButtonColor: '#d33'
                 });
             }
-            // --- 前端時間檢查結束 ---
 
             const name = await promptForName();
             if (!name) return;
@@ -392,7 +390,15 @@
             currentMonthEvents.forEach(event => {
                 const props = event.extendedProps; const startDate = new Date(event.start); const dateString = startDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Taipei' }); const dayOfWeek = startDate.toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', weekday: 'short' }); const signupCount = props.signups ? props.signups.length : 0;
                 let signupsDetail = props.signups && props.signups.length > 0 ? props.signups.map(s => `${s.position}：${s.user}`).join('，') : '';
-                tableHtml += `<tr data-event-id="${event.id}"><td><span class="status-dot" style="background-color: ${event.backgroundColor};"></span>${dateString.substring(5)}</td><td>${dayOfWeek.replace('週', '')}</td><td>${event.title}</td><td>${props.startTime || ''}</td><td>${props.endTime || ''}</td><td>${props.maxAttendees} (${signupCount})</td><td>${signupsDetail}</td></tr>`;
+                tableHtml += `<tr data-event-id="${event.id}">
+                                <td><span class="status-dot" style="background-color: ${event.backgroundColor};"></span>${dateString.substring(5)}</td>
+                                <td>${dayOfWeek.replace('週', '')}</td>
+                                <td class="event-title-cell">${event.title}</td>
+                                <td>${props.startTime || ''}</td>
+                                <td>${props.endTime || ''}</td>
+                                <td>${props.maxAttendees} (${signupCount})</td>
+                                <td>${signupsDetail}</td>
+                              </tr>`;
             });
             container.innerHTML = `${tableHtml}</tbody></table></div>`;
 
@@ -400,8 +406,12 @@
                 const eventId = row.dataset.eventId; const eventObject = allCalendarEvents.find(e => e.id === eventId);
                 if (!eventObject) return;
                 row.addEventListener('click', (e) => handleEventClick({ event: { id: eventId, ...eventObject }, jsEvent: e }));
-                row.addEventListener('mouseenter', (e) => showEventPopover({ event: { extendedProps: eventObject.extendedProps, start: eventObject.start }, el: e.currentTarget }));
-                row.addEventListener('mouseleave', hideEventPopover);
+                
+                const titleCell = row.querySelector('.event-title-cell');
+                if (titleCell) {
+                    titleCell.addEventListener('mouseenter', (e) => showEventPopover({ event: { extendedProps: eventObject.extendedProps, start: eventObject.start }, el: e.currentTarget }));
+                    titleCell.addEventListener('mouseleave', hideEventPopover);
+                }
             });
         }
         
@@ -416,7 +426,7 @@
         }
 
         async function setupCalendarTab(forceRefresh = false) {
-            if (allCalendarEvents.length > 0 && !forceRefresh) return;
+            if (!forceRefresh && allCalendarEvents.length > 0) return;
             showLoading();
             try {
                 allCalendarEvents = await callAppsScript('getEventsAndSignups');
@@ -431,7 +441,12 @@
                     document.getElementById('custom-prev-btn')._isInitialized = true;
                 }
                 initializeFullCalendar();
-                if (isMobile) { document.getElementById('show-simple-view-btn').click(); } else { document.getElementById('show-full-view-btn').click(); }
+                if (document.getElementById('simple-list-view').style.display === 'block') {
+                    renderSimpleListView();
+                } else {
+                    if (isMobile) { document.getElementById('show-simple-view-btn').click(); } 
+                    else { document.getElementById('show-full-view-btn').click(); }
+                }
             } catch (error) { Swal.fire('載入失敗', error.message, 'error'); } 
             finally { hideLoading(); }
         }

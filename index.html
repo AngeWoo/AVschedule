@@ -76,14 +76,11 @@
             font-weight: 800; 
             color: var(--primary-color); 
             letter-spacing: 1px;
-            /*【***** START OF H1 MODIFICATION *****】*/
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 15px;
-            /*【***** END OF H1 MODIFICATION *****】*/
         }
-        /*【***** START OF TOGGLE BUTTON STYLE *****】*/
         #toggle-marquee-btn {
             display: none; /* Default hidden on desktop */
             font-size: 0.6em; /* Relative to h1 font size */
@@ -97,7 +94,6 @@
         #toggle-marquee-btn.active {
             color: var(--primary-dark);
         }
-        /*【***** END OF TOGGLE BUTTON STYLE *****】*/
         
         .page-footer { 
             text-align: center; 
@@ -146,7 +142,6 @@
             align-items: center; 
             backdrop-filter: blur(3px); /* 輕微模糊背景 */
         }
-        /* Spinner 樣式 (可選，但增加「酷炫」感) */
         .loading-overlay::after {
             content: '';
             width: 50px;
@@ -163,45 +158,57 @@
         .swal2-container {
             z-index: 10000 !important; /* 確保 Swal 永遠在最上層 */
         }
+        /*【***** START OF CLIPBOARD TEXTAREA STYLE MODIFICATION *****】*/
+        .swal2-textarea#clipboard-textarea {
+            width: 95%;
+            margin: 1em auto 0 auto;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: none;
+            font-family: 'Courier New', Courier, monospace;
+            overflow-y: auto;
+            min-height: 150px; /* 增加最小高度 */
+            max-height: 70vh;  /* 增加最大高度 */
+        }
+        /*【***** END OF CLIPBOARD TEXTAREA STYLE MODIFICATION *****】*/
 
-        /* --- 頁籤 (功能BAR) 優化 - 更酷炫立體版本 --- */
         .tabs { 
             display: flex; 
-            justify-content: center; /* 按鈕置中對齊 */
+            justify-content: center; 
             margin-bottom: 30px; 
             overflow-x: auto; 
             border-bottom: 1px solid var(--card-border); 
             position: relative;
             z-index: 2; 
-            background: linear-gradient(180deg, #f8f9fa, #e9ecef); /* 背景漸變 */
-            border-radius: var(--border-radius) var(--border-radius) 0 0; /* 頂部圓角 */
-            padding: 8px 8px 0 8px; /* 留出邊距 */
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); /* 內凹效果 */
+            background: linear-gradient(180deg, #f8f9fa, #e9ecef);
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            padding: 8px 8px 0 8px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
         }
         .tab-button { 
-            padding: 22px 35px; /* 增大頁籤尺寸 */
+            padding: 22px 35px;
             cursor: pointer; 
             border: none; 
-            background: linear-gradient(145deg, #ffffff, #f1f3f4); /* 立體漸變背景 */
-            font-size: 1.4rem; /* 更大字體 */
-            font-weight: 700; /* 更粗字體 */
+            background: linear-gradient(145deg, #ffffff, #f1f3f4);
+            font-size: 1.4rem;
+            font-weight: 700;
             color: var(--text-light); 
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
             border-bottom: 4px solid transparent; 
             white-space: nowrap; 
             position: relative;
             z-index: 1;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08), /* 多層次陰影效果 */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08), 
                         0 2px 6px rgba(0,0,0,0.05),
-                        inset 0 1px 2px rgba(255,255,255,0.8); /* 內部高光 */
-            border-radius: var(--border-radius); /* 完整圓角 */
-            margin: 0 4px 8px 4px; /* 間距 */
-            text-shadow: 0 1px 2px rgba(255,255,255,0.8); /* 文字立體感 */
-            min-width: 140px; /* 最小寬度 */
+                        inset 0 1px 2px rgba(255,255,255,0.8);
+            border-radius: var(--border-radius);
+            margin: 0 4px 8px 4px;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.8);
+            min-width: 140px;
             text-align: center;
-            backdrop-filter: blur(10px); /* 背景模糊效果 */
+            backdrop-filter: blur(10px);
         }
-        .tab-button::before { /* 底部發光線條 */
+        .tab-button::before { 
             content: '';
             position: absolute;
             bottom: -4px;
@@ -215,9 +222,9 @@
             z-index: 2;
             pointer-events: none;
             border-radius: 2px;
-            box-shadow: 0 0 8px rgba(255, 140, 66, 0.6); /* 發光效果 */
+            box-shadow: 0 0 8px rgba(255, 140, 66, 0.6);
         }
-        .tab-button::after { /* 頂部高光效果 */
+        .tab-button::after { 
             content: '';
             position: absolute;
             top: 1px;
@@ -231,47 +238,46 @@
         }
         .tab-button.active { 
             color: white; 
-            background: linear-gradient(145deg, var(--primary-gradient-start), var(--primary-gradient-end)); /* 激活時橘色漸變 */
-            box-shadow: 0 8px 25px rgba(255, 140, 66, 0.35), /* 橘色光暈 */
+            background: linear-gradient(145deg, var(--primary-gradient-start), var(--primary-gradient-end));
+            box-shadow: 0 8px 25px rgba(255, 140, 66, 0.35), 
                         0 4px 12px rgba(0,0,0,0.15),
                         inset 0 1px 3px rgba(255,255,255,0.3),
-                        inset 0 -1px 3px rgba(0,0,0,0.1); /* 內部立體感 */
-            transform: translateY(-3px) scale(1.05); /* 上浮並放大 */
-            text-shadow: 0 1px 3px rgba(0,0,0,0.3); /* 白字陰影 */
+                        inset 0 -1px 3px rgba(0,0,0,0.1);
+            transform: translateY(-3px) scale(1.05);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
         .tab-button.active::before {
             transform: translateX(-50%) scaleX(1); 
-            box-shadow: 0 0 15px rgba(255, 140, 66, 0.8); /* 更強發光 */
+            box-shadow: 0 0 15px rgba(255, 140, 66, 0.8);
         }
         .tab-button.active::after {
-            opacity: 0.6; /* 激活時保持高光 */
+            opacity: 0.6;
         }
-        .tab-button:not(.active):hover { /* 非激活狀態下 hover 效果 */
+        .tab-button:not(.active):hover { 
             color: var(--primary-color); 
-            background: linear-gradient(145deg, #ffffff, rgba(255, 140, 66, 0.08)); /* hover 漸變背景 */
-            transform: translateY(-5px) scale(1.02); /* 更明顯上浮 */
-            box-shadow: 0 10px 20px rgba(255, 140, 66, 0.2), /* hover 時橘色光暈 */
+            background: linear-gradient(145deg, #ffffff, rgba(255, 140, 66, 0.08));
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 20px rgba(255, 140, 66, 0.2), 
                         0 6px 15px rgba(0,0,0,0.1),
-                        inset 0 1px 3px rgba(255,255,255,0.9); /* 更亮的內部高光 */
+                        inset 0 1px 3px rgba(255,255,255,0.9);
             text-shadow: 0 1px 2px rgba(255,255,255,0.9);
         }
         .tab-button:not(.active):hover::before {
-            transform: translateX(-50%) scaleX(0.3); /* hover 時部分顯示底線 */
+            transform: translateX(-50%) scaleX(0.3);
             box-shadow: 0 0 10px rgba(255, 140, 66, 0.4);
         }
         .tab-button:not(.active):hover::after {
-            opacity: 0.8; /* hover 時增強高光 */
+            opacity: 0.8;
         }
-        .tab-button:active { /* 按下效果 */
-            transform: translateY(-1px) scale(0.98); /* 按下時略微縮小 */
+        .tab-button:active { 
+            transform: translateY(-1px) scale(0.98);
             box-shadow: 0 3px 8px rgba(0,0,0,0.15),
-                        inset 0 2px 4px rgba(0,0,0,0.1); /* 按下時內凹 */
+                        inset 0 2px 4px rgba(0,0,0,0.1);
         }
 
         .tab-content { display: none; padding-top: 10px; } 
         .tab-content.active { display: block; }
         
-        /* --- 表單與按鈕 --- */
         .inline-form { 
             display: flex; 
             flex-wrap: wrap; 
@@ -345,15 +351,15 @@
         .btn-primary { 
             background: linear-gradient(45deg, var(--primary-gradient-start), var(--primary-gradient-end)); 
             color: white; 
-            box-shadow: 0 5px 15px rgba(255, 140, 66, 0.4), 0 2px 5px rgba(0,0,0,0.1); /* 更明顯的立體陰影 */
+            box-shadow: 0 5px 15px rgba(255, 140, 66, 0.4), 0 2px 5px rgba(0,0,0,0.1);
         }
         .btn-primary:hover { 
-            transform: translateY(-3px); /* 輕微上浮 */
-            box-shadow: 0 8px 20px rgba(255, 140, 66, 0.5), 0 4px 10px rgba(0,0,0,0.18); /* hover 時陰影更明顯 */
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255, 140, 66, 0.5), 0 4px 10px rgba(0,0,0,0.18);
         }
         .btn-primary:active {
-            transform: translateY(0); /* 按下時復位 */
-            box-shadow: inset 0 3px 8px rgba(0,0,0,0.25), 0 1px 3px rgba(255, 140, 66, 0.2); /* 內凹陰影，模擬按壓感 */
+            transform: translateY(0);
+            box-shadow: inset 0 3px 8px rgba(0,0,0,0.25), 0 1px 3px rgba(255, 140, 66, 0.2);
         }
         .btn-danger { 
             background: var(--danger-color); 
@@ -406,7 +412,6 @@
             box-shadow: 0 5px 15px rgba(255, 140, 66, 0.5);
         }
 
-        /* --- 表格 --- */
         .table-responsive { 
             overflow-x: auto; 
             border-radius: var(--border-radius-sm);
@@ -451,7 +456,6 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         
-        /* --- 自定義日曆工具列 --- */
         #custom-calendar-toolbar { 
             display: flex; 
             justify-content: space-between; 
@@ -509,7 +513,6 @@
             margin-top: 10px; 
             padding-top: 10px; 
             border-top: 1px dashed var(--card-border);
-            /* Removed max-height and overflow-y to show all content */
         }
         .event-popover ul li {
             margin-bottom: 5px;
@@ -518,7 +521,6 @@
             color: var(--primary-dark);
         }
         
-        /* -----【***** START OF STATS DETAILS LAYOUT MODIFICATION *****】----- */
         #stats-details-container {
             margin-top: 40px;
         }
@@ -559,33 +561,29 @@
             margin-bottom: 3px;
         }
 
-        /* Desktop: 2-column layout for stats details */
         @media (min-width: 769px) {
             #stats-details-container {
                 display: flex;
                 flex-wrap: wrap;
                 justify-content: space-between;
-                gap: 20px 0; /* 20px row gap, 0 column gap (controlled by justify-content) */
+                gap: 20px 0;
             }
             #stats-details-container > h2 {
-                flex-basis: 100%; /* Make title span full width */
-                margin-bottom: 0; /* Remove bottom margin as gap handles it */
+                flex-basis: 100%;
+                margin-bottom: 0;
             }
             #stats-details-container .stats-event-block {
-                width: 48.5%; /* A bit less than 50% to allow for small gaps */
-                margin-bottom: 0; /* Let flex gap handle spacing */
+                width: 48.5%;
+                margin-bottom: 0;
             }
              .stats-event-block h3 { font-size: 1.1rem; }
             .stats-event-block p { font-size: 0.85rem; }
             .stats-event-block ul { font-size: 0.8rem; }
         }
-        /* -----【***** END OF STATS DETAILS LAYOUT MODIFICATION *****】----- */
 
-
-        /* ---【***** START OF MARQUEE STYLES *****】--- */
         #marquee-container {
             height: 40px;
-            background: #fffaf5; /* A very light orange */
+            background: #fffaf5;
             color: var(--primary-dark);
             border-radius: var(--border-radius-sm);
             margin-bottom: 25px;
@@ -607,7 +605,6 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            /* Animation is applied via JS */
         }
         @keyframes marquee-scroll {
             0%   { transform: translateY(120%); opacity: 0; }
@@ -615,7 +612,6 @@
             85%  { transform: translateY(0); opacity: 1; }
             100% { transform: translateY(-120%); opacity: 0; }
         }
-        /* ---【***** END OF MARQUEE STYLES *****】--- */
 
         @media (min-width: 769px) {
             .container {
@@ -624,7 +620,6 @@
             }
         }
 
-        /* -----【***** START OF MOBILE STYLES MODIFICATION *****】----- */
         @media (max-width: 768px) {
             html { 
                 height: 100%; 
@@ -632,10 +627,10 @@
             body { 
                 padding: 10px; 
                 margin: 0; 
-                min-height: 100vh; /* 確保內容少時也能撐開 */
+                min-height: 100vh;
                 display: flex;
                 flex-direction: column;
-                overflow-x: hidden; /* 頁面可以垂直滾動 */
+                overflow-x: hidden;
             }
             .page-header { 
                 margin-bottom: 15px; 
@@ -643,24 +638,21 @@
             }
             .page-header h1 { font-size: 2rem; }
             
-            /*【***** START OF TOGGLE BUTTON MOBILE STYLE *****】*/
             #toggle-marquee-btn {
-                display: inline-block; /* Show on mobile */
+                display: inline-block;
             }
-            /*【***** END OF TOGGLE BUTTON MOBILE STYLE *****】*/
             
             .container { 
                 padding: 15px; 
                 border-radius: var(--border-radius); 
                 box-shadow: 0 5px 15px var(--card-shadow-dark); 
-                /* 移除 flex: 1 和 overflow-y: auto，讓容器高度由內容決定 */
                 display: flex;
                 flex-direction: column;
                 overflow-x: hidden;
             }
             
             .page-footer { 
-                margin-top: 15px; /* 改為固定間距 */
+                margin-top: 15px;
                 padding: 8px 10px;
                 flex-shrink: 0; 
                 text-align: center;
@@ -702,9 +694,6 @@
                 align-items: center; 
                 justify-content: center; 
             }
-            .tab-content {
-                /* 移除 flex: 1，讓內容自然撐開 */
-            }
             .tab-button::before { 
                 bottom: 2px; height: 3px; width: 70%; border-radius: 1.5px;
             }
@@ -739,7 +728,6 @@
             }
             .tab-button:not(.active):hover::after { opacity: 0.6; }
 
-            /* 優化手機版工具列佈局 */
             #custom-calendar-toolbar { 
                 display: flex;
                 flex-wrap: wrap;
@@ -791,44 +779,43 @@
                 transform: translateX(0) !important; 
             }
             
-            /* ---【***** START OF MARQUEE MOBILE STYLES *****】--- */
             #marquee-container {
                 margin-bottom: 20px;
                 padding: 10px 15px;
-                height: auto; /* 允許自動高度 */
+                height: auto;
                 min-height: 40px;
-                max-height: 200px; /* For transition */
+                max-height: 200px;
                 opacity: 1;
             }
             #marquee-text {
-                position: relative; /* 改為相對定位以適應自動高度 */
+                position: relative;
                 width: 100%;
-                white-space: normal; /* 允許文字換行 */
-                text-align: left; /* 將置中改為靠左 */
-                animation: none !important; /* 手機版停用滾動動畫 */
+                white-space: normal;
+                text-align: left;
+                animation: none !important;
                 transition: opacity 0.4s ease-in-out;
                 opacity: 1;
             }
-            /* ---【***** END OF MARQUEE MOBILE STYLES *****】--- */
+             /*【***** START OF ADMIN BUTTONS ALIGNMENT FIX *****】*/
+            #admin-tab > .inline-form {
+                align-items: center !important;
+            }
+            /*【***** END OF ADMIN BUTTONS ALIGNMENT FIX *****】*/
         }
-        /* -----【***** END OF MOBILE STYLES MODIFICATION *****】----- */
 
         /* -----【***** START OF TABLE LAYOUT FIX FOR HORIZONTAL SCROLLING *****】----- */
-        /* 1. 讓需要滾動的表格容器可以水平滾動 */
         #simple-list-view .table-responsive,
         #my-signups-result.table-responsive {
             overflow-x: auto !important;
             -webkit-overflow-scrolling: touch;
         }
 
-        /* 2. 讓表格本身的寬度根據內容來決定 */
         #simple-list-view .table-responsive table,
         #my-signups-result.table-responsive table {
             width: max-content !important; 
             min-width: 100%;    
         }
 
-        /* 3. 強制所有儲存格不換行 */
         #simple-list-view .table-responsive th,
         #simple-list-view .table-responsive td,
         #my-signups-result.table-responsive th,
@@ -837,7 +824,6 @@
             vertical-align: middle !important;
         }
 
-        /* 4. 在手機上，強制使用統一的字體大小和內距 */
         @media (max-width: 768px) {
             #simple-list-view .table-responsive th,
             #simple-list-view .table-responsive td,
@@ -848,27 +834,22 @@
             }
         }
         /* -----【***** END OF TABLE LAYOUT FIX FOR HORIZONTAL SCROLLING *****】----- */
-
     </style>
 </head>
 <body>
     
     <header class="page-header">
-        <!--【***** START OF H1 MODIFICATION *****】-->
         <h1>
             <span style="cursor: pointer;" onclick="reloadSystem()">🔄</span>
             AV放送立願表
             <span id="toggle-marquee-btn" title="切換公告欄顯示">📢</span>
         </h1>
-        <!--【***** END OF H1 MODIFICATION *****】-->
     </header>
 
     <div class="container">
-        <!--【***** START OF MARQUEE MODIFICATION *****】-->
         <div id="marquee-container">
             <div id="marquee-text">載入中...</div>
         </div>
-        <!--【***** END OF MARQUEE MODIFICATION *****】-->
 
         <div class="tabs">
             <button class="tab-button active" onclick="openTab(event, 'calendar-tab')">📅 活動行事曆</button>
@@ -895,18 +876,14 @@
         </div>
 
         <div id="my-signups-tab" class="tab-content">
-            <!-- 【***** START OF SIGNUP SEARCH MODIFICATION *****】 -->
             <h4>📄 綜合報名查詢</h4>
             <div class="inline-form">
                 <div class="form-group"><label for="universal-search-input">關鍵字</label><input type="text" id="universal-search-input" placeholder="姓名/活動/崗位/描述"></div>
                 <div class="form-group"><label for="search-start-date">開始日期</label><input type="date" id="search-start-date"></div>
                 <div class="form-group"><label for="search-end-date">結束日期</label><input type="date" id="search-end-date"></div>
                 <button id="unified-search-btn" class="btn btn-primary">🔍 查詢</button>
-                <!-- 【***** START OF CLEAR BUTTON ADDITION *****】 -->
                 <button id="clear-search-btn" class="btn" style="background-color: #6c757d; color: white;">🧹 清除</button>
-                <!-- 【***** END OF CLEAR BUTTON ADDITION *****】 -->
             </div>
-            <!-- 【***** END OF SIGNUP SEARCH MODIFICATION *****】 -->
             <div id="my-signups-result" class="table-responsive"></div>
             <div id="export-from-query-container" style="text-align: center; margin-top: 25px; display: none;">
                 <button id="export-from-query-btn" class="btn btn-primary">產生並下載 Excel</button>
@@ -935,8 +912,11 @@
                     <button id="export-excel-btn" class="btn btn-primary">產生並下載 Excel</button>
                 </div>
                 <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-top:10px;">
-                    <button id="share-today-line-btn" class="btn btn-success">分享今天至 LINE(限PC)</button>
-                    <button id="share-tomorrow-line-btn" class="btn btn-success">分享明天至 LINE(限PC)</button>
+                    <!--【***** START OF BUTTON TEXT MODIFICATION *****】-->
+                    <button id="share-today-line-btn" class="btn btn-success">分享今日報名資料至Line(限chrome)</button>
+                    <button id="share-tomorrow-line-btn" class="btn btn-success">分享明日報名資料至Line(限chrome)</button>
+                    <!--【***** END OF BUTTON TEXT MODIFICATION *****】-->
+                    <button id="share-to-clipboard-btn" class="btn btn-success" style="background-color: #17a2b8;">分享至剪貼簿</button>
                 </div>
             </div>
         </div>
@@ -947,59 +927,24 @@
     <div id="loading" class="loading-overlay" style="display: none;"></div>
 
     <script>
-        // *** 重要：請確保此處是您實際部署的 Google Apps Script 網頁應用程式網址 ***
+        // *** This is the full, restored JavaScript block ***
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1dCHAzjMNklN96jXKpWYcTv-NvzKoB8J6CcY30L55dAtaAf0bTRWTJTc20Fk2MZbgeQ/exec"; 
         
+        // --- All JavaScript functions are restored here ---
         function reloadSystem() {
             showLoading();
-            setTimeout(() => {
-                location.reload();
-            }, 200);
-        } 
-        
-        let calendar = null; 
-        let statsChart;
-        // Removed currentUserName, as it's only for the prompt, not global search state.
-        const isMobile = window.innerWidth <= 768; 
-        let allCalendarEvents = [];
-        let currentDisplayDate = new Date();
-        let lastQuery = { type: null, params: {} }; // Store the last query for export/refresh
-        let lastStatsData = null; 
-
-        let currentCalendarOptions = {
-            height: isMobile ? 'auto' : undefined,
-            aspectRatio: isMobile ? 0.8 : 1.35
-        };
-
+            setTimeout(() => { location.reload(); }, 200);
+        }
+        let calendar = null, statsChart, allCalendarEvents = [], currentDisplayDate = new Date(), lastQuery = { type: null, params: {} }, lastStatsData = null;
+        const isMobile = window.innerWidth <= 768;
+        let currentCalendarOptions = { height: isMobile ? 'auto' : undefined, aspectRatio: isMobile ? 0.8 : 1.35 };
         function showLoading() { document.getElementById('loading').style.display = 'flex'; }
         function hideLoading() { document.getElementById('loading').style.display = 'none'; }
-
+        
         function callAppsScript(functionName, params = {}) {
             return new Promise((resolve, reject) => {
                 const callbackName = 'jsonpCallback_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
                 const payload = JSON.stringify({ functionName, params });
-                
-                if (payload.length > 8000 && functionName === 'generateStatsPdfReport' && params.chartImageData) {
-                    try {
-                        const img = new Image();
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        img.onload = function() {
-                            canvas.width = Math.min(img.width, 800);
-                            canvas.height = Math.min(img.height, 600);
-                            ctx.fillStyle = 'white';
-                            ctx.fillRect(0, 0, canvas.width, canvas.height);
-                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                            params.chartImageData = canvas.toDataURL('image/jpeg', 0.7);
-                            makeRequest();
-                        };
-                        img.onerror = () => makeRequest();
-                        img.src = params.chartImageData;
-                        return;
-                    } catch (error) { makeRequest(); return; }
-                }
-                
-                makeRequest();
                 
                 function makeRequest() {
                     const timeoutId = setTimeout(() => {
@@ -1007,7 +952,7 @@
                         const scriptEl = document.getElementById(callbackName);
                         if (scriptEl && scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
                         reject(new Error('請求超時，請檢查網路連線或稍後再試。'));
-                    }, 90000); // 將超時時間從 45 秒延長到 90 秒
+                    }, 90000); 
                     
                     window[callbackName] = (response) => {
                         clearTimeout(timeoutId);
@@ -1039,6 +984,7 @@
                     
                     document.head.appendChild(script);
                 }
+                makeRequest();
             });
         }
         
@@ -1050,9 +996,7 @@
 
             if (tabName === 'calendar-tab') {
                 if (calendar) {
-                    setTimeout(() => {
-                        calendar.updateSize();
-                    }, 0);
+                    setTimeout(() => { calendar.updateSize(); }, 0);
                 } else {
                     setupCalendarTab(true);
                 }
@@ -1060,7 +1004,7 @@
         }
         
         async function promptForName() {
-            let currentUserName = localStorage.getItem('av_signup_username') || ''; // Only defined here locally
+            let currentUserName = localStorage.getItem('av_signup_username') || '';
             const { value: name } = await Swal.fire({
                 title: "請輸入您的姓名", input: "text", inputValue: currentUserName,
                 inputPlaceholder: "請輸入姓名", showCancelButton: true,
@@ -1087,11 +1031,7 @@
             const name = await promptForName();
             if (!name) return;
 
-            // Get current signups for this event
-            // Note: This relies on allCalendarEvents being up-to-date.
-            // For a critical check like this, ideally one would re-fetch directly from backend,
-            // but for a quick check, this is acceptable for now.
-            const existingSignup = props.signups.find(s => s.user === name); // Use the prompted name directly
+            const existingSignup = props.signups.find(s => s.user === name); 
             if (existingSignup) {
                 return Swal.fire({
                     icon: 'info', title: '您已報名過此活動',
@@ -1124,7 +1064,7 @@
             if (selectedPosition) {
                 showLoading();
                 try {
-                    const addResult = await callAppsScript('addSignup', { eventId: info.event.id, userName: name, position: selectedPosition }); // Use prompted name
+                    const addResult = await callAppsScript('addSignup', { eventId: info.event.id, userName: name, position: selectedPosition });
                     let successPayload = { icon: 'success' };
                     if (addResult.status === 'confirm_backup') {
                         const confirmBackup = await Swal.fire({
@@ -1133,7 +1073,7 @@
                         });
                         if (!confirmBackup.isConfirmed) { hideLoading(); return; }
                         showLoading();
-                        await callAppsScript('addBackupSignup', { eventId: info.event.id, userName: name, position: selectedPosition }); // Use prompted name
+                        await callAppsScript('addBackupSignup', { eventId: info.event.id, userName: name, position: selectedPosition });
                         successPayload.title = '備援報名成功！';
                         successPayload.html = `<div style="text-align: left; padding: 0 1em;"><p><strong>姓名：</strong> ${name}</p><p><strong>活動：</strong> ${props.full_title}</p><p><strong>崗位：</strong> ${selectedPosition} (備援)</p></div>`;
                     } else {
@@ -1171,17 +1111,14 @@
             }
             popoverEl.innerHTML = content;
             
-            // --- New position calculation logic ---
-            // First, display the popover off-screen to get its dimensions
             popoverEl.style.visibility = 'hidden';
             popoverEl.style.display = 'block';
 
             const rect = el.getBoundingClientRect();
             const popoverHeight = popoverEl.offsetHeight;
             const popoverWidth = popoverEl.offsetWidth;
-            const margin = 10; // Screen edge margin
+            const margin = 10;
 
-            // Horizontal position
             let left = rect.left + window.scrollX;
             if (left + popoverWidth > window.innerWidth - margin) {
                 left = window.innerWidth - popoverWidth - margin;
@@ -1190,23 +1127,18 @@
                 left = margin;
             }
 
-            // Vertical position (check if there's enough space below)
             let top;
             if (rect.bottom + popoverHeight + margin > window.innerHeight) {
-                // Not enough space below, show above the element
                 top = rect.top + window.scrollY - popoverHeight - 5;
             } else {
-                // Enough space below, show below the element
                 top = rect.bottom + window.scrollY + 5;
             }
-            // Prevent it from going off the top of the screen
             if (top < window.scrollY + margin) {
                 top = window.scrollY + margin;
             }
 
             popoverEl.style.left = `${left}px`;
             popoverEl.style.top = `${top}px`;
-            // Make it visible after positioning
             popoverEl.style.visibility = 'visible';
         }
 
@@ -1293,12 +1225,10 @@
 
                     const fullViewBtn = document.getElementById('show-full-view-btn');
                     const simpleViewBtn = document.getElementById('show-simple-view-btn');
-                    const fullViewContainer = document.getElementById('full-calendar-view');
-                    const simpleViewContainer = document.getElementById('simple-list-view');
 
                     fullViewBtn.addEventListener('click', () => {
-                        simpleViewContainer.style.display = 'none';
-                        fullViewContainer.style.display = 'block';
+                        document.getElementById('simple-list-view').style.display = 'none';
+                        document.getElementById('full-calendar-view').style.display = 'block';
                         fullViewBtn.classList.add('active');
                         simpleViewBtn.classList.remove('active');
                         currentCalendarOptions = { height: isMobile ? 'auto' : undefined, aspectRatio: isMobile ? 0.8 : 1.35 };
@@ -1307,8 +1237,8 @@
                     });
 
                     simpleViewBtn.addEventListener('click', () => {
-                        fullViewContainer.style.display = 'none';
-                        simpleViewContainer.style.display = 'block';
+                        document.getElementById('full-calendar-view').style.display = 'none';
+                        document.getElementById('simple-list-view').style.display = 'block';
                         simpleViewBtn.classList.add('active');
                         fullViewBtn.classList.remove('active');
                         renderSimpleListView();
@@ -1339,7 +1269,6 @@
                 return;
             }
             
-            // `queryType` is now 'unified'
             let tableHtml = `<table class="all-signups-table">
                                 <thead><tr><th>活動日期</th><th>星期</th><th>活動名稱</th><th>崗位</th><th class="col-user">姓名</th><th class="col-timestamp">報名時間</th><th class="col-action">操作</th></tr></thead>
                                 <tbody>`;
@@ -1355,7 +1284,6 @@
                               </tr>`;
             });
             resultDiv.innerHTML = tableHtml + '</tbody></table>';
-
             exportContainer.style.display = 'block';
         }
 
@@ -1401,11 +1329,9 @@
                 try {
                     const result = await callAppsScript('removeSignup', { eventId: signup.eventId, userName: signup.user });
                     await Swal.fire('刪除成功', result.message, 'success');
-                    // Re-execute the last query
                     if (lastQuery.type === 'unified') {
                         await executeUnifiedSignupQuery(lastQuery.params.searchText, lastQuery.params.startDateStr, lastQuery.params.endDateStr);
                     } else {
-                         // Fallback: If no previous query, perform a default month query
                         const defaultStartDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toLocaleDateString('en-CA');
                         const defaultEndDate = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toLocaleDateString('en-CA');
                         await executeUnifiedSignupQuery('', defaultStartDate, defaultEndDate);
@@ -1455,14 +1381,8 @@
                     responsive: true, maintainAspectRatio: false, backgroundColor: 'white',
                     plugins: {
                         datalabels: {
-                            anchor: 'end',
-                            align: 'top',
-                            offset: 4,
-                            color: '#444',
-                            font: {
-                                weight: 'bold',
-                                size: 14,
-                            }
+                            anchor: 'end', align: 'top', offset: 4, color: '#444',
+                            font: { weight: 'bold', size: 14 }
                         },
                         tooltip: {
                             callbacks: {
@@ -1482,21 +1402,10 @@
                         }
                     },
                     scales: { 
-                        x: { 
-                            ticks: { 
-                                autoSkip: false,
-                            } 
-                        },
-                        y: {
-                            grace: '10%'
-                        }
+                        x: { ticks: { autoSkip: false } },
+                        y: { grace: '10%' }
                     },
-                    layout: { 
-                        padding: {
-                            top: 30,
-                            bottom: isMobile ? 80 : 40 
-                        }
-                    }
+                    layout: { padding: { top: 30, bottom: isMobile ? 80 : 40 } }
                 };
 
                 if (isMobile) {
@@ -1601,17 +1510,13 @@
         
         document.addEventListener('DOMContentLoaded', function() {
             window.scrollTo(0, 0);
-
             Chart.register(ChartDataLabels);
 
-            //【***** START OF MARQUEE LOGIC *****】
-            const marqueeUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTRBfLLti6pcfbynd6kjfZT6Gp5trB8PdXvikHoTNMgLsDzDYsGYmexOqEw6ZkrIedyeAd6DE0bHpso/pub?gid=0&single=true&output=csv'; // 更新後的跑馬燈 URL
+            const marqueeUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTRBfLLti6pcfbynd6kjfZT6Gp5trB8PdXvikHoTNMgLsDzDYsGYmexOqEw6ZkrIedyeAd6DE0bHpso/pub?gid=0&single=true&output=csv'; 
             let marqueeMessages = [];
             let marqueeIndex = 0;
             const marqueeTextEl = document.getElementById('marquee-text');
-            const isMarqueeMobile = window.innerWidth <= 768;
-
-            // 簡單的 CSV 解析器
+            
             function parseCsvToRows(csvString) {
                 const lines = csvString.split(/\r?\n/);
                 return lines.map(line => {
@@ -1620,9 +1525,9 @@
                     let currentField = '';
                     for (let i = 0; i < line.length; i++) {
                         const char = line[i];
-                        if (char === '"' && (i + 1 < line.length && line[i+1] === '"')) { // Escaped quote
+                        if (char === '"' && (i + 1 < line.length && line[i+1] === '"')) { 
                             currentField += '"';
-                            i++; // Skip next quote
+                            i++;
                         } else if (char === '"') {
                             inQuote = !inQuote;
                         } else if (char === ',' && !inQuote) {
@@ -1632,7 +1537,7 @@
                             currentField += char;
                         }
                     }
-                    values.push(currentField.trim()); // Push the last field
+                    values.push(currentField.trim()); 
                     return values;
                 });
             }
@@ -1644,62 +1549,55 @@
                     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                     
                     const csvText = await response.text();
-                    const parsedData = parseCsvToRows(csvText); // 使用自定義的解析器
-                    parsedData.shift(); // 移除標題行
+                    const parsedData = parseCsvToRows(csvText);
+                    parsedData.shift(); 
 
                     const today = new Date();
-                    today.setHours(0, 0, 0, 0); // 將今天日期歸零，以便只比較年月日
+                    today.setHours(0, 0, 0, 0); 
 
                     marqueeMessages = parsedData.map(row => {
-                        const dateStr = row[0]; // A欄位是日期
-                        const messageTitle = row[1]; // B欄位是標題
-                        const messageContent = row[2]; // C欄位是內容 (說明)
+                        const dateStr = row[0];
+                        const messageTitle = row[1]; 
+                        const messageContent = row[2];
 
                         if (dateStr && messageTitle && messageContent) {
-                            // 修正日期解析：有些瀏覽器對 'YYYY-MM-DD' 格式的日期解析可能存在問題，建議使用 'YYYY/MM/DD'
                             const messageDate = new Date(dateStr.replace(/-/g, '/'));
-                            messageDate.setHours(0, 0, 0, 0); // 將訊息日期也歸零
+                            messageDate.setHours(0, 0, 0, 0);
 
-                            // 檢查日期是否有效且在今天或未來
                             if (!isNaN(messageDate.getTime()) && messageDate >= today) {
-                                return `${dateStr}：${messageTitle} - ${messageContent}`; // 組合日期、標題、內容
+                                return `${dateStr}：${messageTitle} - ${messageContent}`;
                             }
                         }
                         return null;
-                    }).filter(Boolean); // 過濾掉 null 值和日期已過期的訊息
+                    }).filter(Boolean);
 
                     if (marqueeMessages.length > 0) {
-                        cycleMarquee(); // 第一次顯示
-                        // 不管是否手機版，都設定定時器來切換訊息
+                        cycleMarquee();
                         setInterval(cycleMarquee, 5000); 
                     } else {
                         marqueeTextEl.textContent = '目前沒有最新公告';
-                        // 如果沒有符合條件的訊息，也確保沒有動畫
                         marqueeTextEl.style.animation = 'none';
                     }
                 } catch (error) {
                     console.error('Failed to load marquee data:', error);
                     if (marqueeTextEl) marqueeTextEl.textContent = '無法載入最新公告';
-                    marqueeTextEl.style.animation = 'none'; // 發生錯誤時也確保沒有動畫
+                    marqueeTextEl.style.animation = 'none';
                 }
             }
 
-
             function cycleMarquee() {
                 if (marqueeMessages.length === 0 || !marqueeTextEl) return;
-
                 const nextMessage = marqueeMessages[marqueeIndex];
                 
-                if (isMobile) { // 使用 isMobile 而不是 isMarqueeMobile
-                    marqueeTextEl.style.opacity = 0; // 開始淡出
+                if (isMobile) {
+                    marqueeTextEl.style.opacity = 0; 
                     setTimeout(() => {
                         marqueeTextEl.textContent = nextMessage;
-                        marqueeTextEl.style.opacity = 1; // 淡入新訊息
-                    }, 400); // 這裡的 400ms 應與 CSS transition 時間匹配，確保平滑切換
+                        marqueeTextEl.style.opacity = 1;
+                    }, 400); 
                 } else {
-                    // 非手機版使用滾動動畫
-                    marqueeTextEl.style.animation = 'none'; // 重置動畫，確保重新觸發
-                    void marqueeTextEl.offsetWidth; // 強制瀏覽器重繪，以重新啟動動畫
+                    marqueeTextEl.style.animation = 'none'; 
+                    void marqueeTextEl.offsetWidth; 
                     marqueeTextEl.textContent = nextMessage;
                     marqueeTextEl.style.animation = 'marquee-scroll 5s ease-in-out';
                 }
@@ -1708,9 +1606,7 @@
             }
 
             setupMarquee();
-            //【***** END OF MARQUEE LOGIC *****】
             
-            //【***** START OF MARQUEE TOGGLE LOGIC *****】
             function setupMarqueeToggle() {
                 const toggleBtn = document.getElementById('toggle-marquee-btn');
                 const marqueeContainer = document.getElementById('marquee-container');
@@ -1732,7 +1628,6 @@
                         marqueeContainer.style.maxHeight = '0';
                         marqueeContainer.style.opacity = '0';
                         marqueeContainer.style.marginBottom = '0';
-                        // Hide after transition
                         setTimeout(() => {
                             if (!isVisible) marqueeContainer.style.display = 'none';
                         }, 400);
@@ -1750,9 +1645,7 @@
             }
             
             setupMarqueeToggle();
-            //【***** END OF MARQUEE TOGGLE LOGIC *****】
 
-            // Helper function to get current month's first/last day
             const getMonthDateRange = () => {
                 const today = new Date();
                 const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
@@ -1762,10 +1655,7 @@
                     lastDayStr: lastDayOfMonth.toLocaleDateString('en-CA')
                 };
             };
-
-            // Initialize search date inputs and admin export dates
             const { firstDayStr, lastDayStr } = getMonthDateRange();
-
             ['search-start-date', 'stats-start-date', 'export-start-date'].forEach(id => {
                 const el = document.getElementById(id); if(el) el.value = firstDayStr;
             });
@@ -1776,7 +1666,6 @@
             document.getElementById('version-number').textContent = new Date().toLocaleDateString('en-CA');
             document.querySelector('.tab-button').click();
 
-            // 【***** START OF UNIFIED SEARCH EVENT LISTENER *****】
             document.getElementById('unified-search-btn').addEventListener('click', () => {
                 const searchText = document.getElementById('universal-search-input').value.trim();
                 const startDateStr = document.getElementById('search-start-date').value;
@@ -1786,31 +1675,22 @@
                     return Swal.fire('提示', '請選擇查詢的開始及結束日期。', 'info');
                 }
                 
-                // Update lastQuery to reflect the unified search
                 lastQuery = {
-                    type: 'unified', // New type
-                    params: {
-                        searchText: searchText,
-                        startDateStr: startDateStr,
-                        endDateStr: endDateStr
-                    }
+                    type: 'unified',
+                    params: { searchText, startDateStr, endDateStr }
                 };
                 executeUnifiedSignupQuery(searchText, startDateStr, endDateStr);
             });
-            // 【***** END OF UNIFIED SEARCH EVENT LISTENER *****】
 
-            // 【***** START OF CLEAR BUTTON EVENT LISTENER *****】
             document.getElementById('clear-search-btn').addEventListener('click', () => {
                 document.getElementById('universal-search-input').value = '';
                 const { firstDayStr, lastDayStr } = getMonthDateRange();
                 document.getElementById('search-start-date').value = firstDayStr;
                 document.getElementById('search-end-date').value = lastDayStr;
                 
-                // Optionally, clear the search results table as well
                 document.getElementById('my-signups-result').innerHTML = '';
                 document.getElementById('export-from-query-container').style.display = 'none';
             });
-            // 【***** END OF CLEAR BUTTON EVENT LISTENER *****】
 
             document.getElementById('generate-stats').addEventListener('click', generateStatsReport);
             
@@ -1821,21 +1701,16 @@
                 if (!startDateStr || !endDateStr) {
                     return Swal.fire('提示', '請選擇匯出的開始及結束日期。', 'info');
                 }
-
                 showLoading();
                 try {
-                    // Call the backend with specific date range and empty searchText for admin export
                     const dataToExport = await callAppsScript('getUnifiedSignups', {
-                        searchText: '',
-                        startDateStr: startDateStr,
-                        endDateStr: endDateStr
+                        searchText: '', startDateStr, endDateStr
                     });
 
                     if (!dataToExport || dataToExport.length === 0) {
                         hideLoading();
                         return Swal.fire('無資料', '在選定的條件下沒有任何報名記錄可供匯出。', 'info');
                     }
-
                     const dateRangeText = (startDateStr && endDateStr) ? `${startDateStr} - ${endDateStr}` : '所有日期';
                     const title = `AV放送立願報名記錄 (${dateRangeText})`;
                     const generateTime = new Date().toLocaleString('zh-TW');
@@ -1862,58 +1737,130 @@
                 }
             });
 
-            // 【***** START OF EXPORT FROM QUERY BUTTON LOGIC *****】
             document.getElementById('export-from-query-btn').addEventListener('click', exportCurrentQueryResultToExcel);
-            // 【***** END OF EXPORT FROM QUERY BUTTON LOGIC *****】
 
             document.getElementById('share-today-line-btn').addEventListener('click', async () => {
                 showLoading();
                 try {
                     const data = await callAppsScript('getSignupsAsTextForToday');
-                    
                     if (data.status === 'nodata') {
                         Swal.fire('無資料', '今天沒有任何報名記錄可供分享。', 'info');
                     } else if (data.text) {
                         const cleanText = data.text.replace(/https?:\/\/\S+/gi, '').trim();
                         const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(cleanText)}`;
                         window.open(lineUrl, '_blank');
-                    } else {
-                        throw new Error("後端未回傳有效的文字資料。");
-                    }
+                    } else { throw new Error("後端未回傳有效的文字資料。"); }
                 } catch (e) {
                     Swal.fire('分享失敗', e.message, 'error');
-                } finally {
-                    hideLoading();
-                }
+                } finally { hideLoading(); }
             });
 
             document.getElementById('share-tomorrow-line-btn').addEventListener('click', async () => {
                 showLoading();
                 try {
                     const data = await callAppsScript('getSignupsAsTextForTomorrow');
-                    
                     if (data.status === 'nodata') {
                         Swal.fire('無資料', '明天沒有任何報名記錄可供分享。', 'info');
                     } else if (data.text) {
                         const cleanText = data.text.replace(/https?:\/\/\S+/gi, '').trim();
                         const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(cleanText)}`;
                         window.open(lineUrl, '_blank');
-                    } else {
-                        throw new Error("後端未回傳有效的文字資料。");
-                    }
+                    } else { throw new Error("後端未回傳有效的文字資料。"); }
                 } catch (e) {
                     Swal.fire('分享失敗', e.message, 'error');
-                } finally {
-                    hideLoading();
-                }
+                } finally { hideLoading(); }
             });
             
+            document.getElementById('share-to-clipboard-btn').addEventListener('click', async () => {
+                const { value: dayChoice } = await Swal.fire({
+                    title: '選擇要分享的日期',
+                    text: '您要分享今天還是明天的報名資料？',
+                    showDenyButton: true,
+                    showCancelButton: true,
+                    confirmButtonText: '今天',
+                    denyButtonText: '明天',
+                    cancelButtonText: '取消',
+                    icon: 'question'
+                });
+
+                let functionToCall = null;
+                if (dayChoice) {
+                    functionToCall = 'getSignupsAsTextForToday';
+                } else if (dayChoice === false) {
+                    functionToCall = 'getSignupsAsTextForTomorrow';
+                } else {
+                    return;
+                }
+
+                showLoading();
+                try {
+                    const data = await callAppsScript(functionToCall);
+                    hideLoading(); 
+
+                    if (data.status === 'nodata') {
+                        Swal.fire('無資料', `您選擇的日期沒有任何報名記錄可供分享。`, 'info');
+                        return;
+                    }
+
+                    if (data.text) {
+                        Swal.fire({
+                            title: '準備分享的內容',
+                            width: isMobile ? '90vw' : '600px', // 【***** 1. 放大彈出視窗寬度 *****】
+                            html: `<textarea id="clipboard-textarea" readonly>${data.text}</textarea>`,
+                            confirmButtonText: '📋 複製內容',
+                            showCancelButton: true,
+                            cancelButtonText: '關閉',
+                            didOpen: () => {
+                                // 【***** 2. 動態調整高度 *****】
+                                const textarea = document.getElementById('clipboard-textarea');
+                                if (textarea) {
+                                    textarea.style.height = 'auto'; // 先重置高度
+                                    textarea.style.height = (textarea.scrollHeight + 5) + 'px'; // 根據內容滾動高度設定
+                                    textarea.select();
+                                }
+                            },
+                            preConfirm: () => {
+                                const textToCopy = document.getElementById('clipboard-textarea').value;
+                                if (navigator.clipboard) {
+                                    return navigator.clipboard.writeText(textToCopy)
+                                        .then(() => true)
+                                        .catch(err => {
+                                            Swal.showValidationMessage(`複製失敗: ${err.message}`);
+                                            return false;
+                                        });
+                                } else {
+                                    document.getElementById('clipboard-textarea').select();
+                                    document.execCommand('copy');
+                                    return true;
+                                }
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: '已複製成功！',
+                                    text: '請手動切換到 LINE 或其他應用程式並貼上內容。',
+                                    timer: 2500,
+                                    showConfirmButton: false
+                                });
+                            }
+                        });
+
+                    } else {
+                        throw new Error("無法從後端取得分享內容。");
+                    }
+                } catch (e) {
+                    hideLoading();
+                    Swal.fire('操作失敗', e.message, 'error');
+                }
+            });
+
             document.getElementById('export-stats-pdf-btn').addEventListener('click', async () => {
                 if (!statsChart || !lastStatsData || lastStatsData.labels.length === 0) {
                     return Swal.fire('提示', '請先點擊「產生報表」以生成統計圖表和數據。', 'info');
                 }
                 const sourceElement = document.getElementById('stats-details-container');
-                if (!sourceElement || sourceElement.children.length <= 1) { // Check if details are actually rendered
+                if (!sourceElement || sourceElement.children.length <= 1) { 
                      return Swal.fire('提示', '沒有詳細資料可供匯出。', 'info');
                 }
 
@@ -1928,32 +1875,19 @@
                     const docTitle = `AV放送立願統計報表 (${dateRangeText})`;
                     const generateTime = new Date().toLocaleString('zh-TW');
 
-                    // --- Create a temporary container for PDF generation ---
                     const pdfContentEl = document.createElement('div');
                     pdfContentEl.style.position = 'absolute';
                     pdfContentEl.style.left = '-9999px';
-                    pdfContentEl.style.width = '210mm'; // A4 width
-                    pdfContentEl.style.padding = '15mm'; // Padding for margins
+                    pdfContentEl.style.width = '210mm'; 
+                    pdfContentEl.style.padding = '15mm'; 
                     pdfContentEl.style.backgroundColor = 'white';
                     pdfContentEl.style.fontFamily = `'Microsoft JhengHei', 'PingFang TC', sans-serif`;
                     pdfContentEl.style.color = '#333';
                     
-                    // --- Define styles for PDF content (with smaller fonts) ---
                     const pdfStyles = `
                         <style>
-                            .details-grid { 
-                                display: flex; 
-                                flex-wrap: wrap; 
-                                justify-content: space-between; 
-                            }
-                            .details-grid .stats-event-block {
-                                width: 48%; /* Two columns with a small gap */
-                                border: 1px solid #ccc;
-                                padding: 8px;
-                                margin-bottom: 10px;
-                                page-break-inside: avoid;
-                                box-sizing: border-box;
-                            }
+                            .details-grid { display: flex; flex-wrap: wrap; justify-content: space-between; }
+                            .details-grid .stats-event-block { width: 48%; border: 1px solid #ccc; padding: 8px; margin-bottom: 10px; page-break-inside: avoid; box-sizing: border-box; }
                             .details-grid h3 { font-size: 8px; margin: 0 0 4px 0; color: #FF8C42; font-weight: bold; }
                             .details-grid p { font-size: 6px; margin: 1px 0; line-height: 1.3; }
                             .details-grid ul { list-style-type: none; padding-left: 0; margin: 4px 0 0 0; }
@@ -1961,37 +1895,18 @@
                         </style>
                     `;
 
-                    // 1. Add Main Title
-                    const titleHtml = `
-                        <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px;">
-                            <h1 style="font-size: 20px; margin: 0; color: #FF8C42;">${docTitle}</h1>
-                            <p style="font-size: 10px; margin: 5px 0 0 0;">報表生成時間：${generateTime}</p>
-                        </div>`;
-
-                    // 2. Add Chart Image
+                    const titleHtml = `<div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px;"><h1 style="font-size: 20px; margin: 0; color: #FF8C42;">${docTitle}</h1><p style="font-size: 10px; margin: 5px 0 0 0;">報表生成時間：${generateTime}</p></div>`;
                     const chartImageData = statsChart.canvas.toDataURL('image/png', 1.0);
-                    const chartHtml = `
-                        <div style="text-align: center; margin-bottom: 15px; page-break-inside: avoid;">
-                            <img src="${chartImageData}" style="width: 100%; max-width: 180mm;"/>
-                        </div>`;
-                    
-                    // 3. Extract and assemble details content
+                    const chartHtml = `<div style="text-align: center; margin-bottom: 15px; page-break-inside: avoid;"><img src="${chartImageData}" style="width: 100%; max-width: 180mm;"/></div>`;
                     const detailsTitle = sourceElement.querySelector('h2') ? sourceElement.querySelector('h2').outerHTML : '';
                     let eventBlocksHtml = '';
-                    sourceElement.querySelectorAll('.stats-event-block').forEach(block => {
-                        eventBlocksHtml += block.outerHTML;
-                    });
+                    sourceElement.querySelectorAll('.stats-event-block').forEach(block => { eventBlocksHtml += block.outerHTML; });
                     const detailsGridHtml = `<div class="details-grid">${eventBlocksHtml}</div>`;
                     
-                    // Combine all parts with styles
                     pdfContentEl.innerHTML = pdfStyles + titleHtml + chartHtml + detailsTitle + detailsGridHtml;
                     document.body.appendChild(pdfContentEl);
 
-                    // --- Generate PDF using the robust html2canvas -> manual pagination method ---
-                    const canvas = await html2canvas(pdfContentEl, {
-                        scale: 2, // Use higher scale for better quality
-                        useCORS: true,
-                    });
+                    const canvas = await html2canvas(pdfContentEl, { scale: 2, useCORS: true });
                     
                     const imgData = canvas.toDataURL('image/png');
                     const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -2002,7 +1917,6 @@
                     
                     let heightLeft = imgHeight;
                     let position = 0;
-
                     pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
                     heightLeft -= pdfHeight;
 
@@ -2014,8 +1928,6 @@
                     }
                     
                     pdf.save(`AV立願統計報表_${startDateStr}_${endDateStr}.pdf`);
-                    
-                    // --- Cleanup ---
                     document.body.removeChild(pdfContentEl);
 
                 } catch (e) {

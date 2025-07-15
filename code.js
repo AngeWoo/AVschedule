@@ -1,9 +1,9 @@
 // ====================================================================
 //  檔案：code.gs (AV放送立願報名行事曆 - 後端 API)
-//  版本：6.26 (在API回應中加入後端版本號)
+//  版本：6.27 (新增操作日誌寫入 Logs 分頁)
 // ====================================================================
 
-const BACKEND_VERSION = "6.26"; // *** 後端版本號 ***
+const BACKEND_VERSION = "0715-2"; // *** 後端版本號 ***
 
 // --- 已填入您提供的 CSV 網址 ---
 const EVENTS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRT5YNZcSXbE6ULGft15cba4Mx8kK1Eb7bLftucmkmUGmTxkrA8vw5uerAP2dYqptBHnbmq_3QNOOJx/pub?gid=795926947&single=true&output=csv";
@@ -14,6 +14,7 @@ const SIGNUPS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRT5YNZ
 const SHEET_ID = '1gBIlhEKPQHBvslY29veTdMEJeg2eVcaJx_7A-8cTWIM';
 const EVENTS_SHEET_NAME = 'Events';
 const SIGNUPS_SHEET_NAME = 'Signups';
+const LOGS_SHEET_NAME = 'Logs'; // 新增 Logs 分頁名稱
 
 // -------------------- API 核心路由函式 --------------------
 
@@ -81,6 +82,37 @@ function padTime(timeStr) {
   if (/^\d:\d\d$/.test(trimmedTime)) { return '0' + trimmedTime; }
   return trimmedTime;
 }
+
+/**
+ * 將操作日誌記錄到 Google Sheet 的 Logs 分頁。
+ * @param {string} action 操作類型 (例如: 'addSignup', 'removeSignup', 'modifySignup')
+ * @param {string} eventId 相關活動的 ID
+ * @param {string} userName 執行操作的使用者名稱
+ * @param {string} position 相關的崗位 (例如: 新崗位, 舊崗位 -> 新崗位)
+ * @param {string} result 操作結果 (例如: '成功', '失敗', '重複報名', '額滿', '找不到')
+ * @param {string} details 操作的詳細描述
+ */
+function logOperation(action, eventId, userName, position, result, details) {
+  try {
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    const logSheet = ss.getSheetByName(LOGS_SHEET_NAME);
+    if (!logSheet) {
+      console.error(`Log sheet '${LOGS_SHEET_NAME}' not found. Cannot log operation.`);
+      return;
+    }
+    const timestamp = new Date();
+    const scriptTimeZone = Session.getScriptTimeZone();
+    const formattedTimestamp = Utilities.formatDate(timestamp, scriptTimeZone, 'yyyy/MM/dd HH:mm:ss');
+    
+    logSheet.appendRow([formattedTimestamp, action, eventId, userName, position, result, details]);
+    // 立即刷新，確保日誌被寫入
+    SpreadsheetApp.flush(); 
+    console.log(`Logged: ${action} for Event ${eventId}, User ${userName}, Position ${position}, Result: ${result}, Details: ${details}`);
+  } catch (logError) {
+    console.error(`Failed to log operation to sheet: ${logError.message}\n${logError.stack}`);
+  }
+}
+
 
 // -------------------- 資料獲取與處理函式 --------------------
 function getMasterData() {
@@ -399,48 +431,104 @@ function getSignupsAsText(startDateStr, endDateStr) {
 // -------------------- 主要資料寫入函式 --------------------
 
 function addSignup(eventId, userName, position) {
-  if (!eventId || !userName || !position) { return { status: 'error', message: '缺少必要資訊。' }; }
+  if (!eventId || !userName || !position) { 
+    logOperation('addSignup', eventId, userName, position, '失敗', '缺少必要資訊');
+    return { status: 'error', message: '缺少必要資訊。' }; 
+  }
   const lock = LockService.getScriptLock();
-  if (!lock.tryLock(15000)) { return { status: 'error', message: '系統忙碌中，請稍後再試。' }; }
+  if (!lock.tryLock(15000)) { 
+    logOperation('addSignup', eventId, userName, position, '失敗', '系統忙碌中，鎖定失敗');
+    return { status: 'error', message: '系統忙碌中，請稍後再試。' }; 
+  }
   try {
     const ss = SpreadsheetApp.openById(SHEET_ID);
     const eventsSheet = ss.getSheetByName(EVENTS_SHEET_NAME);
     const signupsSheet = ss.getSheetByName(SIGNUPS_SHEET_NAME);
+    
+    // 檢查活動是否存在
     const eventData = eventsSheet.getDataRange().getValues().find(row => row[0] === eventId);
-    if (!eventData) return { status: 'error', message: '找不到此活動。' };
+    if (!eventData) {
+      logOperation('addSignup', eventId, userName, position, '失敗', '找不到此活動');
+      return { status: 'error', message: '找不到此活動。' };
+    }
+
+    // 檢查活動日期時間是否有效且未結束
     const eventDatePart = new Date(eventData[2]);
-    if (isNaN(eventDatePart.getTime())) { return { status: 'error', message: `活動 (${eventData[1]}) 的日期格式無效，請管理者檢查。` }; }
+    if (isNaN(eventDatePart.getTime())) { 
+      logOperation('addSignup', eventId, userName, position, '失敗', `活動日期格式無效: ${eventData[2]}`);
+      return { status: 'error', message: `活動 (${eventData[1]}) 的日期格式無效，請管理者檢查。` }; 
+    }
     const endTimeStr = padTime(eventData[4] || '23:59');
-    if (!/^\d\d:\d\d$/.test(endTimeStr)) { return { status: 'error', message: `活動 (${eventData[1]}) 的結束時間格式錯誤，請管理者檢查。應為 HH:mm 格式。` }; }
+    if (!/^\d\d:\d\d$/.test(endTimeStr)) { 
+      logOperation('addSignup', eventId, userName, position, '失敗', `活動結束時間格式錯誤: ${endTimeStr}`);
+      return { status: 'error', message: `活動 (${eventData[1]}) 的結束時間格式錯誤，請管理者檢查。應為 HH:mm 格式。` }; 
+    }
     const [hours, minutes] = endTimeStr.split(':').map(Number);
     const eventEndDateTime = new Date(eventDatePart.getFullYear(), eventDatePart.getMonth(), eventDatePart.getDate(), hours, minutes, 0);
-    if (new Date() > eventEndDateTime) { return { status: 'error', message: '此活動已結束，無法報名。' }; }
+    if (new Date() > eventEndDateTime) { 
+      logOperation('addSignup', eventId, userName, position, '失敗', '活動已結束，無法報名');
+      return { status: 'error', message: '此活動已結束，無法報名。' }; 
+    }
+
     const currentSignups = signupsSheet.getDataRange().getValues().filter(row => row[1] === eventId);
-    if (currentSignups.some(row => row[2] === userName)) { return { status: 'error', message: '您已經報名過此活動了。' }; }
+    
+    // 檢查是否已報名
+    if (currentSignups.some(row => row[2] === userName)) { 
+      logOperation('addSignup', eventId, userName, position, '重複報名', '您已經報名過此活動了');
+      return { status: 'error', message: '您已經報名過此活動了。' }; 
+    }
+    
     const existingPositionHolder = currentSignups.find(row => row[4] === position);
-    if (existingPositionHolder) { return { status: 'confirm_backup', message: `此崗位目前由 [${existingPositionHolder[2]}] 報名，您要改為報名備援嗎？` }; }
+    // 檢查崗位是否被佔用
+    if (existingPositionHolder) { 
+      logOperation('addSignup', eventId, userName, position, '崗位重複', `此崗位已被 ${existingPositionHolder[2]} 報名`);
+      return { status: 'confirm_backup', message: `此崗位目前由 [${existingPositionHolder[2]}] 報名，您要改為報名備援嗎？` }; 
+    }
+
     const maxAttendees = eventData[5];
-    if (currentSignups.length >= maxAttendees) { return { status: 'error', message: '活動總人數已額滿。' }; }
+    // 檢查是否額滿
+    if (currentSignups.length >= maxAttendees) { 
+      logOperation('addSignup', eventId, userName, position, '額滿', '活動總人數已額滿');
+      return { status: 'error', message: '活動總人數已額滿。' }; 
+    }
+
     const newSignupId = 'su' + new Date().getTime();
     const newRowData = [newSignupId, eventId, userName, new Date(), position];
     signupsSheet.appendRow(newRowData);
-    SpreadsheetApp.flush(); 
+    SpreadsheetApp.flush(); // 確保資料寫入
+
+    // 寫入驗證 (再次確認是否成功寫入，並與日誌同步)
     const lastRowValues = signupsSheet.getRange(signupsSheet.getLastRow(), 1, 1, 5).getValues()[0];
     if (lastRowValues[0] === newSignupId && lastRowValues[2] === userName) {
+      logOperation('addSignup', eventId, userName, position, '成功', '報名資料寫入並驗證成功');
       return { status: 'success', message: '報名成功！' };
     } else {
       console.error(`寫入驗證失敗！預期寫入 [${newSignupId}, ${userName}]，但最後一列是 [${lastRowValues[0]}, ${lastRowValues[2]}]`);
-      if (lastRowValues[0] === newSignupId) { signupsSheet.deleteRow(signupsSheet.getLastRow()); }
+      if (lastRowValues[0] === newSignupId) { 
+        signupsSheet.deleteRow(signupsSheet.getLastRow()); // 嘗試回滾
+        logOperation('addSignup', eventId, userName, position, '失敗', '報名資料寫入驗證失敗，已嘗試回滾');
+      } else {
+        logOperation('addSignup', eventId, userName, position, '失敗', '報名資料寫入驗證失敗，無法回滾');
+      }
       throw new Error('報名資料寫入驗證失敗，請稍後再試。');
     }
-  } catch(err) { console.error("addSignup 失敗:", err.message, err.stack); throw new Error('報名時發生後端錯誤，請聯繫管理員。');
+  } catch(err) { 
+    console.error("addSignup 失敗:", err.message, err.stack); 
+    logOperation('addSignup', eventId, userName, position, '失敗', `後端錯誤: ${err.message}`);
+    throw new Error('報名時發生後端錯誤，請聯繫管理員。');
   } finally { lock.releaseLock(); }
 }
 
 function addBackupSignup(eventId, userName, position) {
-  if (!eventId || !userName || !position) return { status: 'error', message: '缺少必要資訊。' };
+  if (!eventId || !userName || !position) {
+    logOperation('addBackupSignup', eventId, userName, position, '失敗', '缺少必要資訊');
+    return { status: 'error', message: '缺少必要資訊。' };
+  }
   const lock = LockService.getScriptLock();
-  if (!lock.tryLock(15000)) { return { status: 'error', message: '系統忙碌中，請稍後再試。' }; }
+  if (!lock.tryLock(15000)) { 
+    logOperation('addBackupSignup', eventId, userName, position, '失敗', '系統忙碌中，鎖定失敗');
+    return { status: 'error', message: '系統忙碌中，請稍後再試。' }; 
+  }
   try {
     const ss = SpreadsheetApp.openById(SHEET_ID);
     const signupsSheet = ss.getSheetByName(SIGNUPS_SHEET_NAME);
@@ -448,68 +536,120 @@ function addBackupSignup(eventId, userName, position) {
     const backupPosition = `${position} (備援)`;
     const newRowData = [newSignupId, eventId, userName, new Date(), backupPosition];
     signupsSheet.appendRow(newRowData);
-    SpreadsheetApp.flush();
+    SpreadsheetApp.flush(); // 確保資料寫入
+
     const lastRowValues = signupsSheet.getRange(signupsSheet.getLastRow(), 1, 1, 5).getValues()[0];
     if (lastRowValues[0] === newSignupId && lastRowValues[2] === userName) {
+      logOperation('addBackupSignup', eventId, userName, backupPosition, '成功', '備援報名資料寫入並驗證成功');
       return { status: 'success' };
     } else {
       console.error(`備援寫入驗證失敗！預期寫入 [${newSignupId}, ${userName}]，但最後一列是 [${lastRowValues[0]}, ${lastRowValues[2]}]`);
-      if (lastRowValues[0] === newSignupId) { signupsSheet.deleteRow(signupsSheet.getLastRow()); }
+      if (lastRowValues[0] === newSignupId) { 
+        signupsSheet.deleteRow(signupsSheet.getLastRow()); // 嘗試回滾
+        logOperation('addBackupSignup', eventId, userName, backupPosition, '失敗', '備援報名資料寫入驗證失敗，已嘗試回滾');
+      } else {
+        logOperation('addBackupSignup', eventId, userName, backupPosition, '失敗', '備援報名資料寫入驗證失敗，無法回滾');
+      }
       throw new Error('備援報名資料寫入驗證失敗，請稍後再試。');
     }
   } catch (err) {
     console.error("addBackupSignup 失敗:", err.message, err.stack);
+    logOperation('addBackupSignup', eventId, userName, position, '失敗', `後端錯誤: ${err.message}`);
     throw new Error('備援報名時發生後端錯誤。');
   } finally { lock.releaseLock(); }
 }
 
 function removeSignup(eventId, userName) {
-  if (!eventId || !userName) return { status: 'error', message: '缺少事件ID或姓名。' };
+  if (!eventId || !userName) {
+    logOperation('removeSignup', eventId, userName, '', '失敗', '缺少事件ID或姓名');
+    return { status: 'error', message: '缺少事件ID或姓名。' };
+  }
   const lock = LockService.getScriptLock();
-  if (!lock.tryLock(15000)) { return { status: 'error', message: '系統忙碌中，無法取消報名，請稍後再試。' }; }
+  if (!lock.tryLock(15000)) { 
+    logOperation('removeSignup', eventId, userName, '', '失敗', '系統忙碌中，鎖定失敗');
+    return { status: 'error', message: '系統忙碌中，無法取消報名，請稍後再試。' }; 
+  }
+  let removedPosition = '';
+  let rowToDeleteIndex = -1;
   try {
     const ss = SpreadsheetApp.openById(SHEET_ID);
     const signupsSheet = ss.getSheetByName(SIGNUPS_SHEET_NAME);
     const signupsData = signupsSheet.getDataRange().getValues();
-    let found = false;
+    
+    // 從後往前找，避免刪除行後索引變動
     for (let i = signupsData.length - 1; i >= 1; i--) { 
       if (signupsData[i][1] === eventId && signupsData[i][2] === userName) { 
-        signupsSheet.deleteRow(i + 1); 
-        found = true; 
-        break; 
+        rowToDeleteIndex = i + 1; // Apps Script 的行號是 1-based
+        removedPosition = signupsData[i][4]; // 獲取崗位信息
+        signupsSheet.deleteRow(rowToDeleteIndex); 
+        logOperation('removeSignup', eventId, userName, removedPosition, '成功', `已刪除行 ${rowToDeleteIndex}`);
+        return { status: 'success', message: '已為您取消報名。' }; 
       } 
     }
-    if (found) { return { status: 'success', message: '已為您取消報名。' }; }
+    // 如果找不到
+    logOperation('removeSignup', eventId, userName, '', '找不到', '找不到您的報名紀錄');
     return { status: 'error', message: '找不到您的報名紀錄。' };
-  } catch(err) { console.error("removeSignup 失敗:", err.message, err.stack); throw new Error('取消報名時發生錯誤。');
+  } catch(err) { 
+    console.error("removeSignup 失敗:", err.message, err.stack); 
+    logOperation('removeSignup', eventId, userName, removedPosition, '失敗', `後端錯誤: ${err.message}`);
+    throw new Error('取消報名時發生錯誤。');
   } finally { lock.releaseLock(); }
 }
 
 function modifySignup(signupId, newPosition) {
-  if (!signupId || !newPosition) { return { status: 'error', message: '缺少報名ID或新崗位資訊。' }; }
+  if (!signupId || !newPosition) { 
+    logOperation('modifySignup', signupId, '', newPosition, '失敗', '缺少報名ID或新崗位資訊');
+    return { status: 'error', message: '缺少報名ID或新崗位資訊。' }; 
+  }
   const lock = LockService.getScriptLock();
-  if (!lock.tryLock(15000)) { return { status: 'error', message: '系統忙碌中，請稍後再試。' }; }
+  if (!lock.tryLock(15000)) { 
+    logOperation('modifySignup', signupId, '', newPosition, '失敗', '系統忙碌中，鎖定失敗');
+    return { status: 'error', message: '系統忙碌中，請稍後再試。' }; 
+  }
+  let eventId = '';
+  let userName = '';
+  let oldPosition = '';
+  let targetRowIndex = -1;
   try {
     const ss = SpreadsheetApp.openById(SHEET_ID);
     const signupsSheet = ss.getSheetByName(SIGNUPS_SHEET_NAME);
     const signupsData = signupsSheet.getDataRange().getValues();
-    let targetRowIndex = -1;
-    let eventId = '';
-    for (let i = 1; i < signupsData.length; i++) {
+    
+    // 尋找目標行
+    for (let i = 1; i < signupsData.length; i++) { // 從第2行(索引1)開始
       if (signupsData[i][0] === signupId) {
-        targetRowIndex = i + 1;
+        targetRowIndex = i + 1; // Google Sheet 的行號是 1-based
         eventId = signupsData[i][1];
+        userName = signupsData[i][2];
+        oldPosition = signupsData[i][4];
         break;
       }
     }
-    if (targetRowIndex === -1) { throw new Error('找不到指定的報名紀錄ID。'); }
-    const positionTaken = signupsData.some(row => row[1] === eventId && row[4] === newPosition && row[0] !== signupId);
-    if (positionTaken) { return { status: 'error', message: `無法修改，崗位 [${newPosition}] 已被其他人報名。` }; }
-    signupsSheet.getRange(targetRowIndex, 5).setValue(newPosition);
-    SpreadsheetApp.flush();
+    if (targetRowIndex === -1) { 
+      logOperation('modifySignup', '', '', newPosition, '失敗', `找不到指定的報名紀錄ID: ${signupId}`);
+      throw new Error('找不到指定的報名紀錄ID。'); 
+    }
+
+    // 檢查新崗位是否已被佔用
+    const positionTaken = signupsData.some(row => 
+      row[1] === eventId && // 同一個活動
+      row[4] === newPosition && // 新崗位已存在
+      row[0] !== signupId // 但不是目前正在修改的這一行
+    );
+
+    if (positionTaken) { 
+      logOperation('modifySignup', eventId, userName, `${oldPosition} -> ${newPosition}`, '崗位重複', `無法修改，崗位 [${newPosition}] 已被其他人報名`);
+      return { status: 'error', message: `無法修改，崗位 [${newPosition}] 已被其他人報名。` }; 
+    }
+
+    signupsSheet.getRange(targetRowIndex, 5).setValue(newPosition); // 修改崗位 (第5欄)
+    SpreadsheetApp.flush(); // 確保資料寫入
+
+    logOperation('modifySignup', eventId, userName, `${oldPosition} -> ${newPosition}`, '成功', '崗位已成功修改');
     return { status: 'success', message: '崗位已成功修改！' };
   } catch (err) {
     console.error("modifySignup 失敗:", err.message, err.stack);
+    logOperation('modifySignup', eventId, userName, `${oldPosition || ''} -> ${newPosition}`, '失敗', `後端錯誤: ${err.message}`);
     throw new Error('修改報名時發生後端錯誤。');
   } finally {
     lock.releaseLock();

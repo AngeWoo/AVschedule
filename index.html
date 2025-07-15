@@ -506,9 +506,8 @@
             list-style: none; 
             margin-top: 10px; 
             padding-top: 10px; 
-            border-top: 1px dashed var(--card-border); 
-            max-height: 150px;
-            overflow-y: auto;
+            border-top: 1px dashed var(--card-border);
+            /* Removed max-height and overflow-y to show all content */
         }
         .event-popover ul li {
             margin-bottom: 5px;
@@ -1116,9 +1115,11 @@
             }
         }
         
-        function showEventPopover(event, element) {
+        function showEventPopover(info) {
+            const { event, el } = info;
             const props = event.extendedProps;
             const popoverEl = document.getElementById('event-popover');
+            
             let content = `<h5>${props.full_title}</h5><p><b>日期:</b> ${new Date(event.start).toLocaleDateString('en-CA')}</p>`; 
             content += `<p><b>時間:</b> ${props.startTime}${props.endTime ? ' - ' + props.endTime : ''}</p>`; 
             content += `<p><b>額滿人數:</b> ${props.maxAttendees} 人</p>`;
@@ -1137,19 +1138,43 @@
             }
             popoverEl.innerHTML = content;
             
-            const rect = element.getBoundingClientRect();
-            let left = rect.left + window.scrollX;
-            let top = rect.bottom + window.scrollY + 5;
-
-            const popoverWidth = popoverEl.offsetWidth;
-            if (left + popoverWidth > window.innerWidth - 10) { 
-                left = window.innerWidth - popoverWidth - 10;
-            }
-            if (left < 10) left = 10;
-            
-            popoverEl.style.left = `${left}px`; 
-            popoverEl.style.top = `${top}px`; 
+            // --- New position calculation logic ---
+            // First, display the popover off-screen to get its dimensions
+            popoverEl.style.visibility = 'hidden';
             popoverEl.style.display = 'block';
+
+            const rect = el.getBoundingClientRect();
+            const popoverHeight = popoverEl.offsetHeight;
+            const popoverWidth = popoverEl.offsetWidth;
+            const margin = 10; // Screen edge margin
+
+            // Horizontal position
+            let left = rect.left + window.scrollX;
+            if (left + popoverWidth > window.innerWidth - margin) {
+                left = window.innerWidth - popoverWidth - margin;
+            }
+            if (left < margin) {
+                left = margin;
+            }
+
+            // Vertical position (check if there's enough space below)
+            let top;
+            if (rect.bottom + popoverHeight + margin > window.innerHeight) {
+                // Not enough space below, show above the element
+                top = rect.top + window.scrollY - popoverHeight - 5;
+            } else {
+                // Enough space below, show below the element
+                top = rect.bottom + window.scrollY + 5;
+            }
+            // Prevent it from going off the top of the screen
+            if (top < window.scrollY + margin) {
+                top = window.scrollY + margin;
+            }
+
+            popoverEl.style.left = `${left}px`;
+            popoverEl.style.top = `${top}px`;
+            // Make it visible after positioning
+            popoverEl.style.visibility = 'visible';
         }
 
         function hideEventPopover() { document.getElementById('event-popover').style.display = 'none'; }
@@ -1185,7 +1210,7 @@
                 const eventObject = allCalendarEvents.find(e => e.id === eventId);
                 if (!eventObject) return;
                 row.addEventListener('click', (e) => handleEventClick({ event: { id: eventId, ...eventObject }, jsEvent: e }));
-                row.addEventListener('mouseenter', (e) => showEventPopover({ extendedProps: eventObject.extendedProps, start: eventObject.start }, e.currentTarget));
+                row.addEventListener('mouseenter', (e) => showEventPopover({ event: { extendedProps: eventObject.extendedProps, start: eventObject.start }, el: e.currentTarget }));
                 row.addEventListener('mouseleave', hideEventPopover);
             });
         }
@@ -1207,7 +1232,7 @@
                     }
                 },
                 eventClick: handleEventClick,
-                eventMouseEnter: (info) => showEventPopover(info.event, info.el),
+                eventMouseEnter: showEventPopover,
                 eventMouseLeave: hideEventPopover,
                 ...currentCalendarOptions 
             };
@@ -1454,7 +1479,7 @@
                 });
                 
                 let detailsHtml = '<h2>詳細活動報名資訊</h2>';
-                data.fullDetails.forEach((eventData, index) => { // Added index for numbering
+                data.fullDetails.forEach((eventData, index) => {
                     const dayOfWeekText = eventData.eventInfo.dayOfWeek ? `(${eventData.eventInfo.dayOfWeek})` : '';
                     detailsHtml += `
                         <div class="stats-event-block">
@@ -1465,7 +1490,7 @@
                     if (eventData.signups && eventData.signups.length > 0) {
                         detailsHtml += '<ul>';
                         eventData.signups.forEach(signup => {
-                            detailsHtml += `<li style="background: #f9f9f9; padding: 5px 10px; border-radius: 3px; margin-bottom: 3px;"><strong>${signup.position}:</strong> ${signup.user}</li>`;
+                            detailsHtml += `<li><strong>${signup.position}:</strong> ${signup.user}</li>`;
                         });
                         detailsHtml += '</ul>';
                     } else {

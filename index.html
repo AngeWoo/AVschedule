@@ -1431,22 +1431,22 @@
                 let detailsHtml = '<h2>詳細活動報名資訊</h2>';
                 data.fullDetails.forEach(eventData => {
                     const dayOfWeekText = eventData.eventInfo.dayOfWeek ? `(${eventData.eventInfo.dayOfWeek})` : '';
-                    html += `
+                    detailsHtml += `
                         <div class="stats-event-block">
                             <h3>${eventData.eventInfo.title}</h3>
                             <p><strong>日期:</strong> ${eventData.eventInfo.date} ${dayOfWeekText}</p>
                             <p><strong>時間:</strong> ${eventData.eventInfo.startTime}${eventData.eventInfo.endTime ? ' - ' + eventData.eventInfo.endTime : ''}</p>
                             <p><strong>報名狀況:</strong> ${eventData.signups.length} / ${eventData.eventInfo.maxAttendees}</p>`;
                     if (eventData.signups && eventData.signups.length > 0) {
-                        html += '<ul>';
+                        detailsHtml += '<ul>';
                         eventData.signups.forEach(signup => {
-                            html += `<li style="background: #f9f9f9; padding: 5px 10px; border-radius: 3px; margin-bottom: 3px;"><strong>${signup.position}:</strong> ${signup.user}</li>`;
+                            detailsHtml += `<li style="background: #f9f9f9; padding: 5px 10px; border-radius: 3px; margin-bottom: 3px;"><strong>${signup.position}:</strong> ${signup.user}</li>`;
                         });
-                        html += '</ul>';
+                        detailsHtml += '</ul>';
                     } else {
-                        html += '<p>無人報名</p>';
+                        detailsHtml += '<p>無人報名</p>';
                     }
-                    html += '</div>';
+                    detailsHtml += '</div>';
                 });
                 detailsContainer.innerHTML = detailsHtml;
                 

@@ -158,7 +158,6 @@
         .swal2-container {
             z-index: 10000 !important; /* 確保 Swal 永遠在最上層 */
         }
-        /*【***** START OF CLIPBOARD TEXTAREA STYLE MODIFICATION *****】*/
         .swal2-textarea#clipboard-textarea {
             width: 95%;
             margin: 1em auto 0 auto;
@@ -167,10 +166,9 @@
             resize: none;
             font-family: 'Courier New', Courier, monospace;
             overflow-y: auto;
-            min-height: 150px; /* 增加最小高度 */
-            max-height: 70vh;  /* 增加最大高度 */
+            min-height: 150px;
+            max-height: 70vh;
         }
-        /*【***** END OF CLIPBOARD TEXTAREA STYLE MODIFICATION *****】*/
 
         .tabs { 
             display: flex; 
@@ -612,6 +610,19 @@
             85%  { transform: translateY(0); opacity: 1; }
             100% { transform: translateY(-120%); opacity: 0; }
         }
+        
+        /*【***** START OF ADMIN BUTTONS LAYOUT FIX *****】*/
+        #admin-tab .button-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        #admin-tab .button-grid .btn {
+            flex-grow: 1; /* Allow buttons to grow */
+        }
+        /*【***** END OF ADMIN BUTTONS LAYOUT FIX *****】*/
 
         @media (min-width: 769px) {
             .container {
@@ -758,6 +769,15 @@
                 width: 90% !important;
                 max-width: 450px;
             }
+            #admin-tab > .inline-form {
+                align-items: center !important;
+            }
+            /*【***** START OF ADMIN BUTTONS MOBILE LAYOUT FIX *****】*/
+            #admin-tab .button-grid .btn {
+                flex-basis: calc(50% - 7.5px); /* 2 buttons per row with 15px gap */
+                flex-grow: 1;
+            }
+            /*【***** END OF ADMIN BUTTONS MOBILE LAYOUT FIX *****】*/
 
             .btn { 
                 padding: 12px 15px;
@@ -796,11 +816,6 @@
                 transition: opacity 0.4s ease-in-out;
                 opacity: 1;
             }
-             /*【***** START OF ADMIN BUTTONS ALIGNMENT FIX *****】*/
-            #admin-tab > .inline-form {
-                align-items: center !important;
-            }
-            /*【***** END OF ADMIN BUTTONS ALIGNMENT FIX *****】*/
         }
 
         /* -----【***** START OF TABLE LAYOUT FIX FOR HORIZONTAL SCROLLING *****】----- */
@@ -885,8 +900,9 @@
                 <button id="clear-search-btn" class="btn" style="background-color: #6c757d; color: white;">🧹 清除</button>
             </div>
             <div id="my-signups-result" class="table-responsive"></div>
-            <div id="export-from-query-container" style="text-align: center; margin-top: 25px; display: none;">
+            <div id="query-actions-container" style="text-align: center; margin-top: 25px; display: none; flex-wrap: wrap; gap: 15px; justify-content: center;">
                 <button id="export-from-query-btn" class="btn btn-primary">產生並下載 Excel</button>
+                <button id="share-query-to-clipboard-btn" class="btn btn-success" style="background-color: #17a2b8;">分享至剪貼簿</button>
             </div>
         </div>
 
@@ -909,15 +925,17 @@
                     <div class="form-group"><label for="export-end-date">結束日期</label><input type="date" id="export-end-date"></div>
                 </div>
                  <div class="inline-form" style="justify-content: center;">
-                    <button id="export-excel-btn" class="btn btn-primary">產生並下載 Excel</button>
-                </div>
-                <div style="display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-top:10px;">
                     <!--【***** START OF BUTTON TEXT MODIFICATION *****】-->
+                    <button id="export-excel-btn" class="btn btn-primary">產生並下載Excel(限chrome)</button>
+                    <!--【***** END OF BUTTON TEXT MODIFICATION *****】-->
+                </div>
+                <!--【***** START OF BUTTON LAYOUT MODIFICATION *****】-->
+                <div class="button-grid">
                     <button id="share-today-line-btn" class="btn btn-success">分享今日報名資料至Line(限chrome)</button>
                     <button id="share-tomorrow-line-btn" class="btn btn-success">分享明日報名資料至Line(限chrome)</button>
-                    <!--【***** END OF BUTTON TEXT MODIFICATION *****】-->
                     <button id="share-to-clipboard-btn" class="btn btn-success" style="background-color: #17a2b8;">分享至剪貼簿</button>
                 </div>
+                <!--【***** END OF BUTTON LAYOUT MODIFICATION *****】-->
             </div>
         </div>
     </div>
@@ -935,7 +953,7 @@
             showLoading();
             setTimeout(() => { location.reload(); }, 200);
         }
-        let calendar = null, statsChart, allCalendarEvents = [], currentDisplayDate = new Date(), lastQuery = { type: null, params: {} }, lastStatsData = null;
+        let calendar = null, statsChart, allCalendarEvents = [], currentDisplayDate = new Date(), lastQuery = { type: null, params: {}, data: [] }, lastStatsData = null;
         const isMobile = window.innerWidth <= 768;
         let currentCalendarOptions = { height: isMobile ? 'auto' : undefined, aspectRatio: isMobile ? 0.8 : 1.35 };
         function showLoading() { document.getElementById('loading').style.display = 'flex'; }
@@ -1260,14 +1278,17 @@
         
         function renderMySignupsTable(signups, queryType) {
             const resultDiv = document.getElementById('my-signups-result');
-            const exportContainer = document.getElementById('export-from-query-container');
+            const actionsContainer = document.getElementById('query-actions-container');
             resultDiv.innerHTML = '';
-            exportContainer.style.display = 'none';
+            actionsContainer.style.display = 'none';
 
             if (!signups || signups.length === 0) {
                 Swal.fire({ icon: 'info', title: '查無資料', text: '在您指定的條件下，找不到相關的報名紀錄。' });
+                lastQuery.data = []; // 清空上次查詢結果
                 return;
             }
+            
+            lastQuery.data = signups; // 保存當前查詢結果
             
             let tableHtml = `<table class="all-signups-table">
                                 <thead><tr><th>活動日期</th><th>星期</th><th>活動名稱</th><th>崗位</th><th class="col-user">姓名</th><th class="col-timestamp">報名時間</th><th class="col-action">操作</th></tr></thead>
@@ -1284,7 +1305,8 @@
                               </tr>`;
             });
             resultDiv.innerHTML = tableHtml + '</tbody></table>';
-            exportContainer.style.display = 'block';
+
+            actionsContainer.style.display = 'flex';
         }
 
         async function executeUnifiedSignupQuery(searchText, startDateStr, endDateStr) {
@@ -1677,7 +1699,8 @@
                 
                 lastQuery = {
                     type: 'unified',
-                    params: { searchText, startDateStr, endDateStr }
+                    params: { searchText, startDateStr, endDateStr },
+                    data: [] // Reset data on new query
                 };
                 executeUnifiedSignupQuery(searchText, startDateStr, endDateStr);
             });
@@ -1689,7 +1712,8 @@
                 document.getElementById('search-end-date').value = lastDayStr;
                 
                 document.getElementById('my-signups-result').innerHTML = '';
-                document.getElementById('export-from-query-container').style.display = 'none';
+                document.getElementById('query-actions-container').style.display = 'none';
+                lastQuery.data = [];
             });
 
             document.getElementById('generate-stats').addEventListener('click', generateStatsReport);
@@ -1788,9 +1812,7 @@
                     functionToCall = 'getSignupsAsTextForToday';
                 } else if (dayChoice === false) {
                     functionToCall = 'getSignupsAsTextForTomorrow';
-                } else {
-                    return;
-                }
+                } else { return; }
 
                 showLoading();
                 try {
@@ -1805,25 +1827,23 @@
                     if (data.text) {
                         Swal.fire({
                             title: '準備分享的內容',
-                            width: isMobile ? '90vw' : '600px', // 【***** 1. 放大彈出視窗寬度 *****】
+                            width: isMobile ? '90vw' : '600px',
                             html: `<textarea id="clipboard-textarea" readonly>${data.text}</textarea>`,
                             confirmButtonText: '📋 複製內容',
                             showCancelButton: true,
                             cancelButtonText: '關閉',
                             didOpen: () => {
-                                // 【***** 2. 動態調整高度 *****】
                                 const textarea = document.getElementById('clipboard-textarea');
                                 if (textarea) {
-                                    textarea.style.height = 'auto'; // 先重置高度
-                                    textarea.style.height = (textarea.scrollHeight + 5) + 'px'; // 根據內容滾動高度設定
+                                    textarea.style.height = 'auto';
+                                    textarea.style.height = (textarea.scrollHeight + 5) + 'px';
                                     textarea.select();
                                 }
                             },
                             preConfirm: () => {
                                 const textToCopy = document.getElementById('clipboard-textarea').value;
                                 if (navigator.clipboard) {
-                                    return navigator.clipboard.writeText(textToCopy)
-                                        .then(() => true)
+                                    return navigator.clipboard.writeText(textToCopy).then(() => true)
                                         .catch(err => {
                                             Swal.showValidationMessage(`複製失敗: ${err.message}`);
                                             return false;
@@ -1845,14 +1865,78 @@
                                 });
                             }
                         });
-
-                    } else {
-                        throw new Error("無法從後端取得分享內容。");
-                    }
+                    } else { throw new Error("無法從後端取得分享內容。"); }
                 } catch (e) {
                     hideLoading();
                     Swal.fire('操作失敗', e.message, 'error');
                 }
+            });
+
+            document.getElementById('share-query-to-clipboard-btn').addEventListener('click', () => {
+                if (!lastQuery || !lastQuery.data || lastQuery.data.length === 0) {
+                    return Swal.fire('無資料', '沒有可分享的查詢結果。', 'info');
+                }
+
+                const { searchText, startDateStr, endDateStr } = lastQuery.params;
+                const titleKeyword = searchText ? `，關鍵字：「${searchText}」` : '';
+                const title = `【AV放送立願報名查詢結果】\n日期：${startDateStr} ~ ${endDateStr}${titleKeyword}\n----------\n`;
+                
+                const eventsGroup = {};
+                lastQuery.data.forEach(signup => {
+                    const key = `${signup.eventDate} ${signup.eventTitle}`;
+                    if (!eventsGroup[key]) {
+                        eventsGroup[key] = [];
+                    }
+                    eventsGroup[key].push(`- ${signup.position}: ${signup.user}`);
+                });
+
+                let shareText = title;
+                Object.keys(eventsGroup).sort().forEach(eventKey => {
+                    shareText += `\n【${eventKey}】\n`;
+                    shareText += eventsGroup[eventKey].join('\n');
+                    shareText += '\n';
+                });
+
+                Swal.fire({
+                    title: '準備分享的內容',
+                    width: isMobile ? '90vw' : '600px',
+                    html: `<textarea id="clipboard-textarea" readonly>${shareText}</textarea>`,
+                    confirmButtonText: '📋 複製內容',
+                    showCancelButton: true,
+                    cancelButtonText: '關閉',
+                    didOpen: () => {
+                        const textarea = document.getElementById('clipboard-textarea');
+                        if (textarea) {
+                            textarea.style.height = 'auto';
+                            textarea.style.height = (textarea.scrollHeight + 5) + 'px';
+                            textarea.select();
+                        }
+                    },
+                    preConfirm: () => {
+                        const textToCopy = document.getElementById('clipboard-textarea').value;
+                        if (navigator.clipboard) {
+                            return navigator.clipboard.writeText(textToCopy).then(() => true)
+                                .catch(err => {
+                                    Swal.showValidationMessage(`複製失敗: ${err.message}`);
+                                    return false;
+                                });
+                        } else {
+                            document.getElementById('clipboard-textarea').select();
+                            document.execCommand('copy');
+                            return true;
+                        }
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '已複製成功！',
+                            text: '請手動切換到 LINE 或其他應用程式並貼上內容。',
+                            timer: 2500,
+                            showConfirmButton: false
+                        });
+                    }
+                });
             });
 
             document.getElementById('export-stats-pdf-btn').addEventListener('click', async () => {

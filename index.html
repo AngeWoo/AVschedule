@@ -1344,6 +1344,7 @@
 
                 if (!data || data.labels.length === 0) {
                     document.getElementById('stats-chart').style.display = 'none';
+                    detailsContainer.innerHTML = '<p style="text-align:center; padding: 20px;">在選定的日期範圍內沒有任何報名記錄可供統計。</p>';
                     Swal.fire('提示', '在選定的日期範圍內沒有任何報名記錄可供統計。', 'info');
                     return;
                 }
@@ -1821,87 +1822,85 @@
                 if (!statsChart || !lastStatsData || lastStatsData.labels.length === 0) {
                     return Swal.fire('提示', '請先點擊「產生報表」以生成統計圖表和數據。', 'info');
                 }
+                const sourceElement = document.getElementById('stats-details-container');
+                if (!sourceElement || sourceElement.children.length <= 1) { // Check if details are actually rendered
+                     return Swal.fire('提示', '沒有詳細資料可供匯出。', 'info');
+                }
+
                 showLoading();
                 try {
                     const { jsPDF } = window.jspdf;
-                    const reportElement = document.createElement('div');
-                    
-                    reportElement.style.position = 'absolute';
-                    reportElement.style.left = '-9999px';
-                    reportElement.style.width = '210mm';
-                    reportElement.style.padding = '20mm';
-                    reportElement.style.backgroundColor = 'white';
-                    reportElement.style.fontFamily = `'Microsoft JhengHei', 'PingFang TC', sans-serif`;
-                    reportElement.style.fontSize = '12px';
-                    reportElement.style.color = '#333';
-                    reportElement.style.lineHeight = '1.6';
+                    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
                     const startDateStr = document.getElementById('stats-start-date').value;
                     const endDateStr = document.getElementById('stats-end-date').value;
                     const dateRangeText = `${startDateStr || '所有'} - ${endDateStr || '所有'}`;
                     const docTitle = `AV放送立願統計報表 (${dateRangeText})`;
                     const generateTime = new Date().toLocaleString('zh-TW');
-                    const chartImageData = statsChart.canvas.toDataURL('image/png', 1.0);
 
-                    let html = `
-                        <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 20px;">
-                            <h1 style="font-size: 24px; margin: 0; color: #FF8C42;">${docTitle}</h1>
-                            <p style="font-size: 12px; margin: 5px 0 0 0;">報表生成時間：${generateTime}</p>
-                        </div>
-                        <div style="text-align: center; margin: 30px 0;">
-                            <h2 style="font-size: 18px; text-align: left; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 15px;">統計圖表</h2>
-                            <img src="${chartImageData}" style="width: 100%; max-width: 170mm; border: 1px solid #eee;"/>
-                        </div>
-                        <div>
-                            <h2 style="font-size: 18px; text-align: left; border-bottom: 1px solid #ccc; padding-bottom: 5px; margin-bottom: 15px;">詳細活動報名資訊</h2>`;
-
-                    lastStatsData.fullDetails.forEach(eventData => {
-                         const dayOfWeekText = eventData.eventInfo.dayOfWeek ? `(${eventData.eventInfo.dayOfWeek})` : '';
-                        html += `
-                            <div style="page-break-inside: avoid; margin-bottom: 15px; border: 1px solid #eee; padding: 15px; border-radius: 5px;">
-                                <h3 style="font-size: 16px; margin: 0 0 10px 0; color: #FF8C42;">${eventData.eventInfo.title}</h3>
-                                <p><strong>日期:</strong> ${eventData.eventInfo.date} ${dayOfWeekText}</p>
-                                <p><strong>時間:</strong> ${eventData.eventInfo.startTime}${eventData.eventInfo.endTime ? ' - ' + eventData.eventInfo.endTime : ''}</p>
-                                <p><strong>報名狀況:</strong> ${eventData.signups.length} / ${eventData.eventInfo.maxAttendees}</p>`;
-                        if (eventData.signups && eventData.signups.length > 0) {
-                            html += '<ul style="list-style-type: none; padding-left: 0; margin: 0; font-size: 10px;">';
-                            eventData.signups.forEach(signup => {
-                                html += `<li style="background: #f9f9f9; padding: 5px 10px; border-radius: 3px; margin-bottom: 3px;"><strong>${signup.position}:</strong> ${signup.user}</li>`;
-                            });
-                            html += '</ul>';
-                        } else {
-                            html += '<p>無人報名</p>';
-                        }
-                        html += '</div>';
-                    });
-
-                    html += '</div>';
-                    reportElement.innerHTML = html;
-                    document.body.appendChild(reportElement);
-
-                    const canvas = await html2canvas(reportElement, { scale: 2 });
-                    const imgData = canvas.toDataURL('image/png');
+                    // --- Create a temporary container for PDF generation ---
+                    const pdfContentEl = document.createElement('div');
+                    pdfContentEl.style.position = 'absolute';
+                    pdfContentEl.style.left = '-9999px';
+                    pdfContentEl.style.width = '210mm'; // A4 width
+                    pdfContentEl.style.padding = '15mm'; // Padding for margins
+                    pdfContentEl.style.backgroundColor = 'white';
+                    pdfContentEl.style.fontFamily = `'Microsoft JhengHei', 'PingFang TC', sans-serif`;
+                    pdfContentEl.style.fontSize = '10px';
+                    pdfContentEl.style.color = '#333';
                     
-                    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                    // 1. Add Title
+                    const titleHtml = `
+                        <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px;">
+                            <h1 style="font-size: 20px; margin: 0; color: #FF8C42;">${docTitle}</h1>
+                            <p style="font-size: 10px; margin: 5px 0 0 0;">報表生成時間：${generateTime}</p>
+                        </div>`;
+
+                    // 2. Add Chart Image
+                    const chartImageData = statsChart.canvas.toDataURL('image/png', 1.0);
+                    const chartHtml = `
+                        <div style="text-align: center; margin-bottom: 15px; page-break-after: auto;">
+                            <img src="${chartImageData}" style="width: 100%; max-width: 180mm;"/>
+                        </div>`;
+
+                    // 3. Clone the details content to keep original styles and structure
+                    const detailsClone = sourceElement.cloneNode(true);
+                    
+                    // Combine all parts
+                    pdfContentEl.innerHTML = titleHtml + chartHtml + detailsClone.outerHTML;
+                    document.body.appendChild(pdfContentEl);
+
+                    // --- Generate PDF using the robust html2canvas -> manual pagination method ---
+                    const canvas = await html2canvas(pdfContentEl, {
+                        scale: 2,
+                        useCORS: true,
+                        willReadFrequently: true
+                    });
+                    
+                    const imgData = canvas.toDataURL('image/png');
                     const pdfWidth = pdf.internal.pageSize.getWidth();
                     const pdfHeight = pdf.internal.pageSize.getHeight();
                     const imgProps = pdf.getImageProperties(imgData);
-                    const imgHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                    const imgWidth = pdfWidth;
+                    const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+                    
                     let heightLeft = imgHeight;
                     let position = 0;
 
-                    pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
                     heightLeft -= pdfHeight;
 
                     while (heightLeft > 0) {
-                        position = -heightLeft;
+                        position -= pdfHeight;
                         pdf.addPage();
-                        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+                        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
                         heightLeft -= pdfHeight;
                     }
                     
                     pdf.save(`AV立願統計報表_${startDateStr}_${endDateStr}.pdf`);
-                    document.body.removeChild(reportElement);
+                    
+                    // --- Cleanup ---
+                    document.body.removeChild(pdfContentEl);
 
                 } catch (e) {
                     console.error("PDF generation failed:", e);

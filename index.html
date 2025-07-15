@@ -63,6 +63,8 @@
             flex-direction: column;
             min-height: 100vh; /* 讓 footer 可以推到底部 */
             overflow-x: hidden; /* 防止水平滾動 */
+            -webkit-text-size-adjust: 100%; /* 全局禁用字體自動調整 */
+            text-size-adjust: 100%;       /* 標準屬性 */
         }
         .page-header { 
             text-align: center; 
@@ -783,12 +785,6 @@
                 box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
             }
 
-            .table-responsive th, .table-responsive td { 
-                padding: 12px 8px;
-                font-size: 0.9rem;
-                white-space: nowrap;
-            }
-
             .event-popover {
                 width: 95vw; 
                 left: 2.5vw !important; 
@@ -816,6 +812,38 @@
             /* ---【***** END OF MARQUEE MOBILE STYLES *****】--- */
         }
         /* -----【***** END OF MOBILE STYLES MODIFICATION *****】----- */
+
+        /* -----【***** START OF SIMPLE LIST VIEW TABLE FIX (V4 - Final Approach) *****】----- */
+        
+        /* 1. 讓簡易列表的容器可以水平滾動 */
+        #simple-list-view .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch; /* 在iOS上提供更平滑的滾動體驗 */
+        }
+
+        /* 2. 讓表格本身的寬度根據內容來決定，而不是被螢幕寬度限制 */
+        #simple-list-view .table-responsive table {
+            width: max-content; /* 關鍵！讓表格寬度擴展到其內容所需的最大寬度 */
+            min-width: 100%;    /* 確保在內容很少時，表格至少能填滿容器 */
+        }
+
+        /* 3. 強制所有儲存格（標題和內容）都不換行 */
+        #simple-list-view .table-responsive th,
+        #simple-list-view .table-responsive td {
+            white-space: nowrap !important;
+            vertical-align: middle;
+        }
+
+        /* 4. 針對手機視圖，強制使用統一的、固定的字體大小和內距 */
+        @media (max-width: 768px) {
+            #simple-list-view .table-responsive th,
+            #simple-list-view .table-responsive td {
+                font-size: 14px !important; /* 使用固定的14px，確保絕對一致 */
+                padding: 12px 10px !important; /* 統一內距 */
+            }
+        }
+        /* -----【***** END OF SIMPLE LIST VIEW TABLE FIX (V4 - Final Approach) *****】----- */
+
     </style>
 </head>
 <body>
@@ -1194,14 +1222,22 @@
                 return;
             }
             
-            let tableHtml = `<div class="table-responsive" style="margin-top:0;"><table><thead><tr><th>日期</th><th>星期</th><th>標題</th><th>開始</th><th>結束</th><th>上限 (已報)</th></tr></thead><tbody>`;
+            let tableHtml = `<div class="table-responsive" style="margin-top:0;"><table><thead><tr><th>日期</th><th>星期</th><th>標題</th><th>開始</th><th>結束</th><th>上限 (已報)</th><th>報名詳情</th></tr></thead><tbody>`;
             currentMonthEvents.forEach(event => {
                 const props = event.extendedProps;
                 const startDate = new Date(event.start);
                 const dateString = startDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Taipei' });
                 const dayOfWeek = startDate.toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', weekday: 'short' });
                 const signupCount = props.signups ? props.signups.length : 0;
-                tableHtml += `<tr data-event-id="${event.id}"><td><span class="status-dot" style="background-color: ${event.backgroundColor};"></span>${dateString.substring(5)}</td><td>${dayOfWeek.replace('週', '')}</td><td>${event.title}</td><td>${props.startTime || ''}</td><td>${props.endTime || ''}</td><td>${props.maxAttendees} (${signupCount})</td></tr>`;
+                
+                let signupsDetail = '';
+                if (props.signups && props.signups.length > 0) {
+                    signupsDetail = props.signups
+                        .map(s => `${s.position}：${s.user}`)
+                        .join('，'); 
+                }
+
+                tableHtml += `<tr data-event-id="${event.id}"><td><span class="status-dot" style="background-color: ${event.backgroundColor};"></span>${dateString.substring(5)}</td><td>${dayOfWeek.replace('週', '')}</td><td>${event.title}</td><td>${props.startTime || ''}</td><td>${props.endTime || ''}</td><td>${props.maxAttendees} (${signupCount})</td><td>${signupsDetail}</td></tr>`;
             });
             container.innerHTML = `${tableHtml}</tbody></table></div>`;
 

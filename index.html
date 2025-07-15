@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!--【***** START OF CACHE CONTROL MODIFICATION *****】-->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-    <!--【***** END OF CACHE CONTROL MODIFICATION *****】-->
     
     <title>AV放送立願表</title>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
@@ -19,836 +16,134 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <style>
-        /* --- 全新的單色淺色系立體主題變數 --- */
         :root {
-            --primary-color: #FF8C42; /* 主要橘色 */
-            --primary-dark: #D47432;  /* 主要橘色深色變體 */
-            --primary-light: #FFDAB3; /* 主要橘色淺色變體，用於背景或高光 */
-            --primary-gradient-start: #FF9B5D; /* 漸變起始色 */
-            --primary-gradient-end: #FF7D2B;   /* 漸變結束色 */
-
-            --bg-color: #F0F4F8; /* 柔和的淺藍灰色背景 */
-            --card-bg-start: #FFFFFF; /* 卡片背景漸變起始色 */
-            --card-bg-end: #FDFDFD;   /* 卡片背景漸變結束色 */
-            --card-border: #E0E6EE; /* 柔和的邊框色 */
-            --card-shadow-light: rgba(174, 174, 192, 0.25); /* 淺陰影 */
-            --card-shadow-dark: rgba(0, 0, 0, 0.15); /* 深陰影 */
-
-            --text-color: #334455; /* 深色文字 */
-            --text-light: #7B8D9F; /* 淺色次要文字 */
-            --danger-color: #E74C3C; /* 警示紅色 */
-            --danger-dark: #C0392B;   /* 警示紅色深色變體 */
-
-            --border-radius-sm: 8px;
-            --border-radius: 16px; 
-            --border-radius-lg: 24px; /* 較大圓角 */
-
-            --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-medium: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --primary-color: #FF8C42; --primary-dark: #D47432; --primary-light: #FFDAB3; --primary-gradient-start: #FF9B5D; --primary-gradient-end: #FF7D2B;
+            --bg-color: #F0F4F8; --card-bg-start: #FFFFFF; --card-bg-end: #FDFDFD; --card-border: #E0E6EE; --card-shadow-light: rgba(174, 174, 192, 0.25); --card-shadow-dark: rgba(0, 0, 0, 0.15);
+            --text-color: #334455; --text-light: #7B8D9F; --danger-color: #E74C3C; --danger-dark: #C0392B;
+            --border-radius-sm: 8px; --border-radius: 16px; --border-radius-lg: 24px;
+            --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); --transition-medium: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-
-        /* --- 全局重置與基礎樣式 --- */
-        * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
-        }
-        body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, "Microsoft JhengHei", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-            background: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.7;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh; /* 讓 footer 可以推到底部 */
-            overflow-x: hidden; /* 防止水平滾動 */
-            -webkit-text-size-adjust: 100%; /* 全局禁用字體自動調整 */
-            text-size-adjust: 100%;       /* 標準屬性 */
-        }
-        .page-header { 
-            text-align: center; 
-            margin-bottom: 40px; 
-            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.1)); /* 標題輕微陰影 */
-        }
-        .page-header h1 { 
-            font-size: clamp(2.2rem, 5vw, 3.5rem); 
-            font-weight: 800; 
-            color: var(--primary-color); 
-            letter-spacing: 1px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-        }
-        #toggle-marquee-btn {
-            display: none; /* Default hidden on desktop */
-            font-size: 0.6em; /* Relative to h1 font size */
-            cursor: pointer;
-            transition: transform 0.2s ease, color 0.2s ease;
-            user-select: none; /* Prevent text selection */
-        }
-        #toggle-marquee-btn:hover {
-            transform: scale(1.1);
-        }
-        #toggle-marquee-btn.active {
-            color: var(--primary-dark);
-        }
-        
-        .page-footer { 
-            text-align: center; 
-            margin-top: auto; /* 將 footer 推到底部 */
-            padding: 20px; 
-            color: var(--text-light); 
-            font-size: 0.9em; 
-        }
-        .container { 
-            margin: 0 auto; 
-            width: 100%; /* 預設寬度，適用於手機 */
-            max-width: 960px; /* 預設最大寬度，適用於手機 */
-            background: linear-gradient(135deg, var(--card-bg-start), var(--card-bg-end)); /* 立體漸變背景 */
-            padding: 30px; 
-            border-radius: var(--border-radius-lg); 
-            border: 1px solid var(--card-border); 
-            box-shadow: 0 10px 30px var(--card-shadow-dark), /* 多層次陰影，營造浮動感 */
-                        0 5px 15px var(--card-shadow-light);
-            position: relative; /* 為了 Z-index */
-            z-index: 1;
-            flex-grow: 1; /* 讓容器在必要時擴展 */
-        }
-        h4 { 
-            font-size: 1.5rem; 
-            font-weight: 700; 
-            margin-bottom: 1.5rem; 
-            color: var(--text-color);
-        }
-        hr { 
-            border: none; 
-            height: 1px; 
-            background: var(--card-border); 
-            margin: 2.5rem 0; 
-            opacity: 0.7; /* 讓分隔線更柔和 */
-        }
-        .loading-overlay { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100%; 
-            background: rgba(255, 255, 255, 0.85); /* 稍微不透明 */
-            z-index: 9999; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            backdrop-filter: blur(3px); /* 輕微模糊背景 */
-        }
-        .loading-overlay::after {
-            content: '';
-            width: 50px;
-            height: 50px;
-            border: 5px solid var(--primary-light);
-            border-top-color: var(--primary-color);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .swal2-container {
-            z-index: 10000 !important; /* 確保 Swal 永遠在最上層 */
-        }
-        .swal2-textarea#clipboard-textarea {
-            width: 95%;
-            margin: 1em auto 0 auto;
-            font-size: 14px;
-            line-height: 1.6;
-            resize: none;
-            font-family: 'Courier New', Courier, monospace;
-            overflow-y: auto;
-            min-height: 150px;
-            max-height: 70vh;
-        }
-
-        .tabs { 
-            display: flex; 
-            justify-content: center; 
-            margin-bottom: 30px; 
-            overflow-x: auto; 
-            border-bottom: 1px solid var(--card-border); 
-            position: relative;
-            z-index: 2; 
-            background: linear-gradient(180deg, #f8f9fa, #e9ecef);
-            border-radius: var(--border-radius) var(--border-radius) 0 0;
-            padding: 8px 8px 0 8px;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .tab-button { 
-            padding: 22px 35px;
-            cursor: pointer; 
-            border: none; 
-            background: linear-gradient(145deg, #ffffff, #f1f3f4);
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: var(--text-light); 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            border-bottom: 4px solid transparent; 
-            white-space: nowrap; 
-            position: relative;
-            z-index: 1;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08), 
-                        0 2px 6px rgba(0,0,0,0.05),
-                        inset 0 1px 2px rgba(255,255,255,0.8);
-            border-radius: var(--border-radius);
-            margin: 0 4px 8px 4px;
-            text-shadow: 0 1px 2px rgba(255,255,255,0.8);
-            min-width: 140px;
-            text-align: center;
-            backdrop-filter: blur(10px);
-        }
-        .tab-button::before { 
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 50%;
-            width: 80%;
-            height: 4px; 
-            background: linear-gradient(90deg, var(--primary-gradient-start), var(--primary-gradient-end));
-            transform: translateX(-50%) scaleX(0);
-            transform-origin: center;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 2;
-            pointer-events: none;
-            border-radius: 2px;
-            box-shadow: 0 0 8px rgba(255, 140, 66, 0.6);
-        }
-        .tab-button::after { 
-            content: '';
-            position: absolute;
-            top: 1px;
-            left: 1px;
-            right: 1px;
-            height: 50%;
-            background: linear-gradient(180deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1));
-            border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-        .tab-button.active { 
-            color: white; 
-            background: linear-gradient(145deg, var(--primary-gradient-start), var(--primary-gradient-end));
-            box-shadow: 0 8px 25px rgba(255, 140, 66, 0.35), 
-                        0 4px 12px rgba(0,0,0,0.15),
-                        inset 0 1px 3px rgba(255,255,255,0.3),
-                        inset 0 -1px 3px rgba(0,0,0,0.1);
-            transform: translateY(-3px) scale(1.05);
-            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-        }
-        .tab-button.active::before {
-            transform: translateX(-50%) scaleX(1); 
-            box-shadow: 0 0 15px rgba(255, 140, 66, 0.8);
-        }
-        .tab-button.active::after {
-            opacity: 0.6;
-        }
-        .tab-button:not(.active):hover { 
-            color: var(--primary-color); 
-            background: linear-gradient(145deg, #ffffff, rgba(255, 140, 66, 0.08));
-            transform: translateY(-5px) scale(1.02);
-            box-shadow: 0 10px 20px rgba(255, 140, 66, 0.2), 
-                        0 6px 15px rgba(0,0,0,0.1),
-                        inset 0 1px 3px rgba(255,255,255,0.9);
-            text-shadow: 0 1px 2px rgba(255,255,255,0.9);
-        }
-        .tab-button:not(.active):hover::before {
-            transform: translateX(-50%) scaleX(0.3);
-            box-shadow: 0 0 10px rgba(255, 140, 66, 0.4);
-        }
-        .tab-button:not(.active):hover::after {
-            opacity: 0.8;
-        }
-        .tab-button:active { 
-            transform: translateY(-1px) scale(0.98);
-            box-shadow: 0 3px 8px rgba(0,0,0,0.15),
-                        inset 0 2px 4px rgba(0,0,0,0.1);
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, "Microsoft JhengHei", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; background: var(--bg-color); color: var(--text-color); line-height: 1.7; padding: 20px; display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+        .page-header { text-align: center; margin-bottom: 40px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.1)); }
+        .page-header h1 { font-size: clamp(2.2rem, 5vw, 3.5rem); font-weight: 800; color: var(--primary-color); letter-spacing: 1px; display: flex; justify-content: center; align-items: center; gap: 15px; }
+        #toggle-marquee-btn { display: none; font-size: 0.6em; cursor: pointer; transition: transform 0.2s ease, color 0.2s ease; user-select: none; }
+        #toggle-marquee-btn:hover { transform: scale(1.1); }
+        #toggle-marquee-btn.active { color: var(--primary-dark); }
+        .page-footer { text-align: center; margin-top: auto; padding: 20px; color: var(--text-light); font-size: 0.9em; }
+        .container { margin: 0 auto; width: 100%; max-width: 960px; background: linear-gradient(135deg, var(--card-bg-start), var(--card-bg-end)); padding: 30px; border-radius: var(--border-radius-lg); border: 1px solid var(--card-border); box-shadow: 0 10px 30px var(--card-shadow-dark), 0 5px 15px var(--card-shadow-light); position: relative; z-index: 1; flex-grow: 1; }
+        h4 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-color); }
+        hr { border: none; height: 1px; background: var(--card-border); margin: 2.5rem 0; opacity: 0.7; }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.85); z-index: 9999; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
+        .loading-overlay::after { content: ''; width: 50px; height: 50px; border: 5px solid var(--primary-light); border-top-color: var(--primary-color); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .swal2-container { z-index: 10000 !important; }
+        .swal2-textarea#clipboard-textarea { width: 95%; margin: 1em auto 0 auto; font-size: 14px; line-height: 1.6; resize: none; font-family: 'Courier New', Courier, monospace; overflow-y: auto; min-height: 150px; max-height: 70vh; }
+        .tabs { display: flex; justify-content: center; margin-bottom: 30px; overflow-x: auto; border-bottom: 1px solid var(--card-border); position: relative; z-index: 2; background: linear-gradient(180deg, #f8f9fa, #e9ecef); border-radius: var(--border-radius) var(--border-radius) 0 0; padding: 8px 8px 0 8px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+        .tab-button { padding: 22px 35px; cursor: pointer; border: none; background: linear-gradient(145deg, #ffffff, #f1f3f4); font-size: 1.4rem; font-weight: 700; color: var(--text-light); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-bottom: 4px solid transparent; white-space: nowrap; position: relative; z-index: 1; box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.05), inset 0 1px 2px rgba(255,255,255,0.8); border-radius: var(--border-radius); margin: 0 4px 8px 4px; text-shadow: 0 1px 2px rgba(255,255,255,0.8); min-width: 140px; text-align: center; backdrop-filter: blur(10px); }
+        .tab-button::before { content: ''; position: absolute; bottom: -4px; left: 50%; width: 80%; height: 4px; background: linear-gradient(90deg, var(--primary-gradient-start), var(--primary-gradient-end)); transform: translateX(-50%) scaleX(0); transform-origin: center; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2; pointer-events: none; border-radius: 2px; box-shadow: 0 0 8px rgba(255, 140, 66, 0.6); }
+        .tab-button::after { content: ''; position: absolute; top: 1px; left: 1px; right: 1px; height: 50%; background: linear-gradient(180deg, rgba(255,255,255,0.4), rgba(255,255,255,0.1)); border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .tab-button.active { color: white; background: linear-gradient(145deg, var(--primary-gradient-start), var(--primary-gradient-end)); box-shadow: 0 8px 25px rgba(255, 140, 66, 0.35), 0 4px 12px rgba(0,0,0,0.15), inset 0 1px 3px rgba(255,255,255,0.3), inset 0 -1px 3px rgba(0,0,0,0.1); transform: translateY(-3px) scale(1.05); text-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+        .tab-button.active::before { transform: translateX(-50%) scaleX(1); box-shadow: 0 0 15px rgba(255, 140, 66, 0.8); }
+        .tab-button.active::after { opacity: 0.6; }
+        .tab-button:not(.active):hover { color: var(--primary-color); background: linear-gradient(145deg, #ffffff, rgba(255, 140, 66, 0.08)); transform: translateY(-5px) scale(1.02); box-shadow: 0 10px 20px rgba(255, 140, 66, 0.2), 0 6px 15px rgba(0,0,0,0.1), inset 0 1px 3px rgba(255,255,255,0.9); text-shadow: 0 1px 2px rgba(255,255,255,0.9); }
+        .tab-button:not(.active):hover::before { transform: translateX(-50%) scaleX(0.3); box-shadow: 0 0 10px rgba(255, 140, 66, 0.4); }
+        .tab-button:not(.active):hover::after { opacity: 0.8; }
+        .tab-button:active { transform: translateY(-1px) scale(0.98); box-shadow: 0 3px 8px rgba(0,0,0,0.15), inset 0 2px 4px rgba(0,0,0,0.1); }
         .tab-content { display: none; padding-top: 10px; } 
         .tab-content.active { display: block; }
-        
-        .inline-form { 
-            display: flex; 
-            flex-wrap: wrap; 
-            align-items: end; 
-            gap: 15px; 
-            margin-bottom: 25px; 
-        }
-        .inline-form .form-group { 
-            flex: 1; 
-            margin-bottom: 0; 
-            min-width: 150px; 
-        }
+        .inline-form { display: flex; flex-wrap: wrap; align-items: end; gap: 15px; margin-bottom: 25px; }
+        .inline-form .form-group { flex: 1; margin-bottom: 0; min-width: 150px; }
         .inline-form .btn { flex-shrink: 0; }
         .form-group { margin-bottom: 20px; }
-        .form-group label { 
-            display: block; 
-            margin-bottom: 8px; 
-            font-weight: 600; 
-            color: var(--text-color);
-        }
-        .form-group input, 
-        .form-group select { 
-            width: 100%; 
-            padding: 12px 15px; 
-            border: 1px solid var(--card-border); 
-            border-radius: var(--border-radius-sm); 
-            background: var(--bg-color); 
-            font-size: 1rem; 
-            color: var(--text-color);
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08); 
-            transition: var(--transition-fast);
-        }
-        .form-group input:focus, 
-        .form-group select:focus { 
-            outline: none; 
-            border-color: var(--primary-color); 
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.1), 
-                        0 0 0 4px rgba(255, 140, 66, 0.2); 
-        }
-        .btn { 
-            padding: 12px 25px; 
-            font-size: 1rem; 
-            font-weight: 600; 
-            border-radius: var(--border-radius-sm); 
-            border: none; 
-            cursor: pointer; 
-            transition: var(--transition-medium); 
-            position: relative;
-            overflow: hidden; 
-            backface-visibility: hidden; 
-            transform: translateZ(0);
-        }
-        .btn::before { 
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(255,255,255,0.1);
-            z-index: 1;
-            opacity: 0;
-            transform: scale(0.5);
-            border-radius: var(--border-radius-sm);
-            transition: var(--transition-fast);
-        }
-        .btn:hover::before {
-            opacity: 1;
-            transform: scale(1);
-        }
-        .btn-primary { 
-            background: linear-gradient(45deg, var(--primary-gradient-start), var(--primary-gradient-end)); 
-            color: white; 
-            box-shadow: 0 5px 15px rgba(255, 140, 66, 0.4), 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .btn-primary:hover { 
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(255, 140, 66, 0.5), 0 4px 10px rgba(0,0,0,0.18);
-        }
-        .btn-primary:active {
-            transform: translateY(0);
-            box-shadow: inset 0 3px 8px rgba(0,0,0,0.25), 0 1px 3px rgba(255, 140, 66, 0.2);
-        }
-        .btn-danger { 
-            background: var(--danger-color); 
-            color: white; 
-            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4), 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .btn-danger:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(231, 76, 60, 0.5), 0 4px 10px rgba(0,0,0,0.18);
-        }
-        .btn-danger:active {
-            transform: translateY(0);
-            box-shadow: inset 0 3px 8px rgba(0,0,0,0.25), 0 1px 3px rgba(231, 76, 60, 0.2);
-        }
-        .btn-success {
-            background: #06C755;
-            color: white;
-            box-shadow: 0 5px 15px rgba(6, 199, 85, 0.4), 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .btn-success:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(6, 199, 85, 0.5), 0 4px 10px rgba(0,0,0,0.18);
-        }
-        .btn-success:active {
-            transform: translateY(0);
-            box-shadow: inset 0 3px 8px rgba(0,0,0,0.25), 0 1px 3px rgba(6, 199, 85, 0.2);
-        }
-        .toolbar-chunk .btn, .view-switcher-btn { 
-            background: var(--card-bg-start); 
-            color: var(--text-color); 
-            border: 1px solid var(--card-border); 
-            box-shadow: 0 2px 6px var(--card-shadow-light);
-            font-weight: 500;
-        }
-        .toolbar-chunk .btn:hover, .view-switcher-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px var(--card-shadow-light);
-        }
-        .toolbar-chunk .btn:active, .view-switcher-btn:active {
-            transform: translateY(0);
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.15);
-        }
-        .view-switcher-btn.active { 
-            background-color: var(--primary-color); 
-            color: white; 
-            border-color: var(--primary-color); 
-            box-shadow: 0 3px 10px rgba(255, 140, 66, 0.4);
-        }
-        .view-switcher-btn.active:hover {
-            box-shadow: 0 5px 15px rgba(255, 140, 66, 0.5);
-        }
-
-        .table-responsive { 
-            overflow-x: auto; 
-            border-radius: var(--border-radius-sm);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        .table-responsive table { 
-            width: 100%; 
-            border-collapse: separate;
-            border-spacing: 0;
-        }
-        .table-responsive th, .table-responsive td { 
-            padding: 15px; 
-            text-align: left; 
-            border-bottom: 1px solid var(--card-border); 
-            background-color: var(--card-bg-start);
-        }
-        .table-responsive th { 
-            background-color: var(--bg-color);
-            font-weight: 600;
-            color: var(--text-color);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        .table-responsive tbody tr:last-child td {
-            border-bottom: none;
-        }
-        #my-signups-result tbody tr:hover, 
-        #simple-list-view .table-responsive tbody tr:hover { 
-            background-color: var(--primary-light); 
-            cursor: pointer;
-        }
-
-        .status-dot { 
-            display: inline-block; 
-            width: 10px; 
-            height: 10px; 
-            border-radius: 50%; 
-            margin-right: 12px; 
-            vertical-align: middle; 
-            border: 1px solid rgba(0,0,0,0.15);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        
-        #custom-calendar-toolbar { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 10px 0; 
-            margin-bottom: 20px; 
-        }
-        #custom-calendar-title { 
-            margin: 0; 
-            font-size: 1.7em; 
-            font-weight: 700; 
-            color: var(--text-color);
-        }
-        .toolbar-chunk { 
-            display: flex; 
-            gap: 8px; 
-        }
-
-        .fc-event { 
-            cursor: pointer; 
-            border-radius: var(--border-radius-sm);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transition: var(--transition-fast);
-        }
-        .fc-event:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-        }
-        
-        .event-popover { 
-            display: none; 
-            position: absolute; 
-            z-index: 10000; 
-            background: linear-gradient(135deg, var(--card-bg-start), var(--card-bg-end));
-            border: 1px solid var(--card-border); 
-            border-radius: var(--border-radius); 
-            box-shadow: 0 12px 35px rgba(0,0,0,0.2), 0 6px 15px rgba(0,0,0,0.1);
-            padding: 20px;
-            width: 320px;
-            max-width: 90vw; 
-            color: var(--text-color);
-        }
-        .event-popover h5 { 
-            font-size: 1.3rem; 
-            margin-bottom: 10px; 
-            color: var(--primary-dark);
-        }
-        .event-popover p, .event-popover ul { 
-            margin:0; 
-            padding:0; 
-            font-size: 0.95rem;
-        }
-        .event-popover ul { 
-            list-style: none; 
-            margin-top: 10px; 
-            padding-top: 10px; 
-            border-top: 1px dashed var(--card-border);
-        }
-        .event-popover ul li {
-            margin-bottom: 5px;
-        }
-        .event-popover strong {
-            color: var(--primary-dark);
-        }
-        
-        #stats-details-container {
-            margin-top: 40px;
-        }
-        #stats-details-container h2 {
-            font-size: 1.5rem;
-            text-align: left;
-            border-bottom: 1px solid var(--card-border);
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-        .stats-event-block {
-            page-break-inside: avoid;
-            margin-bottom: 15px;
-            border: 1px solid #eee;
-            padding: 15px;
-            border-radius: 8px;
-            background: #fdfdfd;
-        }
-        .stats-event-block h3 {
-            font-size: 1.2rem;
-            margin: 0 0 10px 0;
-            color: var(--primary-dark);
-        }
-        .stats-event-block p {
-            margin: 0 0 5px 0;
-            font-size: 0.9rem;
-        }
-        .stats-event-block ul {
-            list-style-type: none;
-            padding-left: 0;
-            margin: 10px 0 0 0;
-            font-size: 0.85rem;
-        }
-        .stats-event-block li {
-            background: #f8f9fa;
-            padding: 5px 10px;
-            border-radius: 3px;
-            margin-bottom: 3px;
-        }
-
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-color); }
+        .form-group input, .form-group select { width: 100%; padding: 12px 15px; border: 1px solid var(--card-border); border-radius: var(--border-radius-sm); background: var(--bg-color); font-size: 1rem; color: var(--text-color); box-shadow: inset 0 1px 3px rgba(0,0,0,0.08); transition: var(--transition-fast); }
+        .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary-color); box-shadow: inset 0 1px 3px rgba(0,0,0,0.1), 0 0 0 4px rgba(255, 140, 66, 0.2); }
+        .btn { padding: 12px 25px; font-size: 1rem; font-weight: 600; border-radius: var(--border-radius-sm); border: none; cursor: pointer; transition: var(--transition-medium); position: relative; overflow: hidden; backface-visibility: hidden; transform: translateZ(0); }
+        .btn::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.1); z-index: 1; opacity: 0; transform: scale(0.5); border-radius: var(--border-radius-sm); transition: var(--transition-fast); }
+        .btn:hover::before { opacity: 1; transform: scale(1); }
+        .btn-primary { background: linear-gradient(45deg, var(--primary-gradient-start), var(--primary-gradient-end)); color: white; box-shadow: 0 5px 15px rgba(255, 140, 66, 0.4), 0 2px 5px rgba(0,0,0,0.1); }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(255, 140, 66, 0.5), 0 4px 10px rgba(0,0,0,0.18); }
+        .btn-primary:active { transform: translateY(0); box-shadow: inset 0 3px 8px rgba(0,0,0,0.25), 0 1px 3px rgba(255, 140, 66, 0.2); }
+        .btn-danger { background: var(--danger-color); color: white; box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4), 0 2px 5px rgba(0,0,0,0.1); }
+        .btn-danger:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(231, 76, 60, 0.5), 0 4px 10px rgba(0,0,0,0.18); }
+        .btn-danger:active { transform: translateY(0); box-shadow: inset 0 3px 8px rgba(0,0,0,0.25), 0 1px 3px rgba(231, 76, 60, 0.2); }
+        .btn-success { background: #06C755; color: white; box-shadow: 0 5px 15px rgba(6, 199, 85, 0.4), 0 2px 5px rgba(0,0,0,0.1); }
+        .btn-success:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(6, 199, 85, 0.5), 0 4px 10px rgba(0,0,0,0.18); }
+        .btn-success:active { transform: translateY(0); box-shadow: inset 0 3px 8px rgba(0,0,0,0.25), 0 1px 3px rgba(6, 199, 85, 0.2); }
+        .toolbar-chunk .btn, .view-switcher-btn { background: var(--card-bg-start); color: var(--text-color); border: 1px solid var(--card-border); box-shadow: 0 2px 6px var(--card-shadow-light); font-weight: 500; }
+        .toolbar-chunk .btn:hover, .view-switcher-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px var(--card-shadow-light); }
+        .toolbar-chunk .btn:active, .view-switcher-btn:active { transform: translateY(0); box-shadow: inset 0 2px 5px rgba(0,0,0,0.15); }
+        .view-switcher-btn.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); box-shadow: 0 3px 10px rgba(255, 140, 66, 0.4); }
+        .view-switcher-btn.active:hover { box-shadow: 0 5px 15px rgba(255, 140, 66, 0.5); }
+        .table-responsive { overflow-x: auto; border-radius: var(--border-radius-sm); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .table-responsive table { width: 100%; border-collapse: separate; border-spacing: 0; }
+        .table-responsive th, .table-responsive td { padding: 15px; text-align: left; border-bottom: 1px solid var(--card-border); background-color: var(--card-bg-start); }
+        .table-responsive th { background-color: var(--bg-color); font-weight: 600; color: var(--text-color); position: sticky; top: 0; z-index: 10; }
+        .table-responsive tbody tr:last-child td { border-bottom: none; }
+        #my-signups-result tbody tr:hover, #simple-list-view .table-responsive tbody tr:hover { background-color: var(--primary-light); cursor: pointer; }
+        .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 12px; vertical-align: middle; border: 1px solid rgba(0,0,0,0.15); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        #custom-calendar-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; margin-bottom: 20px; }
+        #custom-calendar-title { margin: 0; font-size: 1.7em; font-weight: 700; color: var(--text-color); }
+        .toolbar-chunk { display: flex; gap: 8px; }
+        .fc-event { cursor: pointer; border-radius: var(--border-radius-sm); box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: var(--transition-fast); }
+        .fc-event:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+        .event-popover { display: none; position: absolute; z-index: 10000; background: linear-gradient(135deg, var(--card-bg-start), var(--card-bg-end)); border: 1px solid var(--card-border); border-radius: var(--border-radius); box-shadow: 0 12px 35px rgba(0,0,0,0.2), 0 6px 15px rgba(0,0,0,0.1); padding: 20px; width: 320px; max-width: 90vw; color: var(--text-color); }
+        .event-popover h5 { font-size: 1.3rem; margin-bottom: 10px; color: var(--primary-dark); }
+        .event-popover p, .event-popover ul { margin:0; padding:0; font-size: 0.95rem; }
+        .event-popover ul { list-style: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--card-border); }
+        .event-popover ul li { margin-bottom: 5px; }
+        .event-popover strong { color: var(--primary-dark); }
+        #stats-details-container { margin-top: 40px; }
+        #stats-details-container h2 { font-size: 1.5rem; text-align: left; border-bottom: 1px solid var(--card-border); padding-bottom: 10px; margin-bottom: 20px; }
+        .stats-event-block { page-break-inside: avoid; margin-bottom: 15px; border: 1px solid #eee; padding: 15px; border-radius: 8px; background: #fdfdfd; }
+        .stats-event-block h3 { font-size: 1.2rem; margin: 0 0 10px 0; color: var(--primary-dark); }
+        .stats-event-block p { margin: 0 0 5px 0; font-size: 0.9rem; }
+        .stats-event-block ul { list-style-type: none; padding-left: 0; margin: 10px 0 0 0; font-size: 0.85rem; }
+        .stats-event-block li { background: #f8f9fa; padding: 5px 10px; border-radius: 3px; margin-bottom: 3px; }
         @media (min-width: 769px) {
-            #stats-details-container {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: space-between;
-                gap: 20px 0;
-            }
-            #stats-details-container > h2 {
-                flex-basis: 100%;
-                margin-bottom: 0;
-            }
-            #stats-details-container .stats-event-block {
-                width: 48.5%;
-                margin-bottom: 0;
-            }
-             .stats-event-block h3 { font-size: 1.1rem; }
-            .stats-event-block p { font-size: 0.85rem; }
-            .stats-event-block ul { font-size: 0.8rem; }
+            #stats-details-container { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px 0; }
+            #stats-details-container > h2 { flex-basis: 100%; margin-bottom: 0; }
+            #stats-details-container .stats-event-block { width: 48.5%; margin-bottom: 0; }
+            .stats-event-block h3 { font-size: 1.1rem; } .stats-event-block p { font-size: 0.85rem; } .stats-event-block ul { font-size: 0.8rem; }
         }
-
-        #marquee-container {
-            height: 40px;
-            background: #fffaf5;
-            color: var(--primary-dark);
-            border-radius: var(--border-radius-sm);
-            margin-bottom: 25px;
-            padding: 0 20px;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
-            border: 1px solid var(--primary-light);
-            transition: max-height 0.4s ease-out, opacity 0.3s ease-out, margin-bottom 0.4s ease-out;
-        }
-        #marquee-text {
-            position: absolute;
-            width: calc(100% - 40px);
-            text-align: center;
-            font-weight: 600;
-            font-size: 1rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        @keyframes marquee-scroll {
-            0%   { transform: translateY(120%); opacity: 0; }
-            15%  { transform: translateY(0); opacity: 1; }
-            85%  { transform: translateY(0); opacity: 1; }
-            100% { transform: translateY(-120%); opacity: 0; }
-        }
-        
-        /*【***** START OF ADMIN BUTTONS LAYOUT FIX *****】*/
-        #admin-tab .button-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 10px;
-        }
-        #admin-tab .button-grid .btn {
-            flex-grow: 1; /* Allow buttons to grow */
-        }
-        /*【***** END OF ADMIN BUTTONS LAYOUT FIX *****】*/
-
-        @media (min-width: 769px) {
-            .container {
-                width: 90vw;
-                max-width: 1600px;
-            }
-        }
-
+        #marquee-container { height: 40px; background: #fffaf5; color: var(--primary-dark); border-radius: var(--border-radius-sm); margin-bottom: 25px; padding: 0 20px; position: relative; overflow: hidden; display: flex; align-items: center; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--primary-light); transition: max-height 0.4s ease-out, opacity 0.3s ease-out, margin-bottom 0.4s ease-out; }
+        #marquee-text { position: absolute; width: calc(100% - 40px); text-align: center; font-weight: 600; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        @keyframes marquee-scroll { 0% { transform: translateY(120%); opacity: 0; } 15% { transform: translateY(0); opacity: 1; } 85% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-120%); opacity: 0; } }
+        #admin-tab .button-grid { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-top: 10px; }
+        #admin-tab .button-grid .btn { flex-grow: 1; }
+        @media (min-width: 769px) { .container { width: 90vw; max-width: 1600px; } }
         @media (max-width: 768px) {
-            html { 
-                height: 100%; 
-            }
-            body { 
-                padding: 10px; 
-                margin: 0; 
-                min-height: 100vh;
-                display: flex;
-                flex-direction: column;
-                overflow-x: hidden;
-            }
-            .page-header { 
-                margin-bottom: 15px; 
-                flex-shrink: 0; 
-            }
-            .page-header h1 { font-size: 2rem; }
-            
-            #toggle-marquee-btn {
-                display: inline-block;
-            }
-            
-            .container { 
-                padding: 15px; 
-                border-radius: var(--border-radius); 
-                box-shadow: 0 5px 15px var(--card-shadow-dark); 
-                display: flex;
-                flex-direction: column;
-                overflow-x: hidden;
-            }
-            
-            .page-footer { 
-                margin-top: 15px;
-                padding: 8px 10px;
-                flex-shrink: 0; 
-                text-align: center;
-                background: var(--bg-color);
-            }
-
-            .tabs { 
-                flex-wrap: wrap; 
-                gap: 12px; 
-                padding: 12px; 
-                border: none; 
-                justify-content: center; 
-                background: linear-gradient(135deg, #f8f9fa, #e9ecef); 
-                border-radius: var(--border-radius); 
-                box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); 
-                margin-bottom: 15px;
-                flex-shrink: 0; 
-            }
-            .tab-button { 
-                flex-basis: calc(50% - 6px); 
-                min-width: unset; 
-                flex-grow: 1; 
-                font-size: 1.1rem; 
-                font-weight: 700; 
-                padding: 15px 10px;
-                border-radius: var(--border-radius); 
-                border-bottom: none !important; 
-                box-shadow: 0 4px 12px rgba(0,0,0,0.08), 
-                            0 2px 6px rgba(0,0,0,0.05),
-                            inset 0 1px 2px rgba(255,255,255,0.8); 
-                transform: translateY(0); 
-                background: linear-gradient(145deg, #ffffff, #f1f3f4); 
-                color: var(--text-light); 
-                text-shadow: 0 1px 2px rgba(255,255,255,0.8); 
-                margin: 0; 
-                backdrop-filter: blur(5px); 
-                position: relative;
-                display: flex; 
-                align-items: center; 
-                justify-content: center; 
-            }
-            .tab-button::before { 
-                bottom: 2px; height: 3px; width: 70%; border-radius: 1.5px;
-            }
-            .tab-button::after { 
-                top: 1px; left: 1px; right: 1px; height: 40%;
-                background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(255,255,255,0.05));
-                border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
-            }
-            .tab-button.active { 
-                background: linear-gradient(145deg, var(--primary-gradient-start), var(--primary-gradient-end));
-                color: white; 
-                box-shadow: 0 6px 20px rgba(255, 140, 66, 0.4), 0 3px 10px rgba(0,0,0,0.15), inset 0 1px 3px rgba(255,255,255,0.3);
-                border: none; 
-                transform: translateY(-2px) scale(1.03); 
-                text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-            }
-            .tab-button.active::before {
-                transform: translateX(-50%) scaleX(1); 
-                box-shadow: 0 0 12px rgba(255, 140, 66, 0.8);
-            }
+            html { height: 100%; } body { padding: 10px; margin: 0; min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+            .page-header { margin-bottom: 15px; flex-shrink: 0; } .page-header h1 { font-size: 2rem; } #toggle-marquee-btn { display: inline-block; }
+            .container { padding: 15px; border-radius: var(--border-radius); box-shadow: 0 5px 15px var(--card-shadow-dark); display: flex; flex-direction: column; overflow-x: hidden; }
+            .page-footer { margin-top: 15px; padding: 8px 10px; flex-shrink: 0; text-align: center; background: var(--bg-color); }
+            .tabs { flex-wrap: wrap; gap: 12px; padding: 12px; border: none; justify-content: center; background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-radius: var(--border-radius); box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 15px; flex-shrink: 0; }
+            .tab-button { flex-basis: calc(50% - 6px); min-width: unset; flex-grow: 1; font-size: 1.1rem; font-weight: 700; padding: 15px 10px; border-radius: var(--border-radius); border-bottom: none !important; box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.05), inset 0 1px 2px rgba(255,255,255,0.8); transform: translateY(0); background: linear-gradient(145deg, #ffffff, #f1f3f4); color: var(--text-light); text-shadow: 0 1px 2px rgba(255,255,255,0.8); margin: 0; backdrop-filter: blur(5px); position: relative; display: flex; align-items: center; justify-content: center; }
+            .tab-button::before { bottom: 2px; height: 3px; width: 70%; border-radius: 1.5px; } .tab-button::after { top: 1px; left: 1px; right: 1px; height: 40%; background: linear-gradient(180deg, rgba(255,255,255,0.3), rgba(255,255,255,0.05)); border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0; }
+            .tab-button.active { background: linear-gradient(145deg, var(--primary-gradient-start), var(--primary-gradient-end)); color: white; box-shadow: 0 6px 20px rgba(255, 140, 66, 0.4), 0 3px 10px rgba(0,0,0,0.15), inset 0 1px 3px rgba(255,255,255,0.3); border: none; transform: translateY(-2px) scale(1.03); text-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+            .tab-button.active::before { transform: translateX(-50%) scaleX(1); box-shadow: 0 0 12px rgba(255, 140, 66, 0.8); }
             .tab-button.active::after { opacity: 0.5; }
-            .tab-button:not(.active):hover { 
-                color: var(--primary-color); 
-                background: linear-gradient(145deg, #ffffff, rgba(255, 140, 66, 0.08)); 
-                transform: translateY(-1px) scale(1.01); 
-                box-shadow: 0 6px 15px rgba(255, 140, 66, 0.2), 0 3px 8px rgba(0,0,0,0.1), inset 0 1px 3px rgba(255,255,255,0.9); 
-                text-shadow: 0 1px 2px rgba(255,255,255,0.9);
-            }
-            .tab-button:not(.active):hover::before {
-                transform: translateX(-50%) scaleX(0.2); 
-                box-shadow: 0 0 8px rgba(255, 140, 66, 0.3);
-            }
+            .tab-button:not(.active):hover { color: var(--primary-color); background: linear-gradient(145deg, #ffffff, rgba(255, 140, 66, 0.08)); transform: translateY(-1px) scale(1.01); box-shadow: 0 6px 15px rgba(255, 140, 66, 0.2), 0 3px 8px rgba(0,0,0,0.1), inset 0 1px 3px rgba(255,255,255,0.9); text-shadow: 0 1px 2px rgba(255,255,255,0.9); }
+            .tab-button:not(.active):hover::before { transform: translateX(-50%) scaleX(0.2); box-shadow: 0 0 8px rgba(255, 140, 66, 0.3); }
             .tab-button:not(.active):hover::after { opacity: 0.6; }
-
-            #custom-calendar-toolbar { 
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: space-between;
-                align-items: center;
-                gap: 10px 15px;
-            }
-            #custom-calendar-title { 
-                order: 1; 
-                flex-basis: 100%;
-                font-size: 1.5rem; 
-                text-align: center; 
-            } 
-            .toolbar-chunk {
-                flex-grow: 1;
-                justify-content: center;
-            }
-            .toolbar-chunk:nth-of-type(1) { order: 2; } 
-            .toolbar-chunk:nth-of-type(2) { order: 3; } 
-            
-            .inline-form {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                gap: 15px;
-            }
-            .inline-form > * {
-                width: 90% !important;
-                max-width: 450px;
-            }
-            #admin-tab > .inline-form {
-                align-items: center !important;
-            }
-            /*【***** START OF ADMIN BUTTONS MOBILE LAYOUT FIX *****】*/
-            #admin-tab .button-grid .btn {
-                flex-basis: calc(50% - 7.5px); /* 2 buttons per row with 15px gap */
-                flex-grow: 1;
-            }
-            /*【***** END OF ADMIN BUTTONS MOBILE LAYOUT FIX *****】*/
-
-            .btn { 
-                padding: 12px 15px;
-                font-size: 1rem;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
-                transform: translateY(0); 
-            }
-            .btn-primary:hover, .btn-danger:hover, .toolbar-chunk .btn:hover, .view-switcher-btn:hover {
-                transform: translateY(0); 
-                box-shadow: 0 2px 5px rgba(0,0,0,0.15); 
-            }
-            .btn-primary:active, .btn-danger:active, .toolbar-chunk .btn:active, .view-switcher-btn:active {
-                box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-            }
-
-            .event-popover {
-                width: 95vw; 
-                left: 2.5vw !important; 
-                transform: translateX(0) !important; 
-            }
-            
-            #marquee-container {
-                margin-bottom: 20px;
-                padding: 10px 15px;
-                height: auto;
-                min-height: 40px;
-                max-height: 200px;
-                opacity: 1;
-            }
-            #marquee-text {
-                position: relative;
-                width: 100%;
-                white-space: normal;
-                text-align: left;
-                animation: none !important;
-                transition: opacity 0.4s ease-in-out;
-                opacity: 1;
-            }
+            #custom-calendar-toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 15px; }
+            #custom-calendar-title { order: 1; flex-basis: 100%; font-size: 1.5rem; text-align: center; } .toolbar-chunk { flex-grow: 1; justify-content: center; } .toolbar-chunk:nth-of-type(1) { order: 2; } .toolbar-chunk:nth-of-type(2) { order: 3; }
+            .inline-form { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+            .inline-form > * { width: 90% !important; max-width: 450px; }
+            #admin-tab > .inline-form { align-items: center !important; }
+            #admin-tab .button-grid .btn { flex-basis: calc(50% - 7.5px); flex-grow: 1; }
+            .btn { padding: 12px 15px; font-size: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transform: translateY(0); }
+            .btn-primary:hover, .btn-danger:hover, .toolbar-chunk .btn:hover, .view-switcher-btn:hover { transform: translateY(0); box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
+            .btn-primary:active, .btn-danger:active, .toolbar-chunk .btn:active, .view-switcher-btn:active { box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
+            .event-popover { width: 95vw; left: 2.5vw !important; transform: translateX(0) !important; }
+            #marquee-container { margin-bottom: 20px; padding: 10px 15px; height: auto; min-height: 40px; max-height: 200px; opacity: 1; }
+            #marquee-text { position: relative; width: 100%; white-space: normal; text-align: left; animation: none !important; transition: opacity 0.4s ease-in-out; opacity: 1; }
         }
-
-        /* -----【***** START OF TABLE LAYOUT FIX FOR HORIZONTAL SCROLLING *****】----- */
-        #simple-list-view .table-responsive,
-        #my-signups-result.table-responsive {
-            overflow-x: auto !important;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        #simple-list-view .table-responsive table,
-        #my-signups-result.table-responsive table {
-            width: max-content !important; 
-            min-width: 100%;    
-        }
-
-        #simple-list-view .table-responsive th,
-        #simple-list-view .table-responsive td,
-        #my-signups-result.table-responsive th,
-        #my-signups-result.table-responsive td {
-            white-space: nowrap !important;
-            vertical-align: middle !important;
-        }
-
-        @media (max-width: 768px) {
-            #simple-list-view .table-responsive th,
-            #simple-list-view .table-responsive td,
-            #my-signups-result.table-responsive th,
-            #my-signups-result.table-responsive td {
-                font-size: 14px !important; 
-                padding: 12px 10px !important;
-            }
-        }
-        /* -----【***** END OF TABLE LAYOUT FIX FOR HORIZONTAL SCROLLING *****】----- */
+        #simple-list-view .table-responsive, #my-signups-result.table-responsive { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+        #simple-list-view .table-responsive table, #my-signups-result.table-responsive table { width: max-content !important; min-width: 100%; }
+        #simple-list-view .table-responsive th, #simple-list-view .table-responsive td, #my-signups-result.table-responsive th, #my-signups-result.table-responsive td { white-space: nowrap !important; vertical-align: middle !important; }
+        @media (max-width: 768px) { #simple-list-view .table-responsive th, #simple-list-view .table-responsive td, #my-signups-result.table-responsive th, #my-signups-result.table-responsive td { font-size: 14px !important; padding: 12px 10px !important; } }
     </style>
 </head>
 <body>
@@ -925,17 +220,13 @@
                     <div class="form-group"><label for="export-end-date">結束日期</label><input type="date" id="export-end-date"></div>
                 </div>
                  <div class="inline-form" style="justify-content: center;">
-                    <!--【***** START OF BUTTON TEXT MODIFICATION *****】-->
                     <button id="export-excel-btn" class="btn btn-primary">產生並下載Excel(限chrome)</button>
-                    <!--【***** END OF BUTTON TEXT MODIFICATION *****】-->
                 </div>
-                <!--【***** START OF BUTTON LAYOUT MODIFICATION *****】-->
                 <div class="button-grid">
                     <button id="share-today-line-btn" class="btn btn-success">分享今日報名資料至Line(限chrome)</button>
                     <button id="share-tomorrow-line-btn" class="btn btn-success">分享明日報名資料至Line(限chrome)</button>
                     <button id="share-to-clipboard-btn" class="btn btn-success" style="background-color: #17a2b8;">分享至剪貼簿</button>
                 </div>
-                <!--【***** END OF BUTTON LAYOUT MODIFICATION *****】-->
             </div>
         </div>
     </div>
@@ -945,14 +236,9 @@
     <div id="loading" class="loading-overlay" style="display: none;"></div>
 
     <script>
-        // *** This is the full, restored JavaScript block ***
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1dCHAzjMNklN96jXKpWYcTv-NvzKoB8J6CcY30L55dAtaAf0bTRWTJTc20Fk2MZbgeQ/exec"; 
         
-        // --- All JavaScript functions are restored here ---
-        function reloadSystem() {
-            showLoading();
-            setTimeout(() => { location.reload(); }, 200);
-        }
+        function reloadSystem() { showLoading(); setTimeout(() => { location.reload(); }, 200); }
         let calendar = null, statsChart, allCalendarEvents = [], currentDisplayDate = new Date(), lastQuery = { type: null, params: {}, data: [] }, lastStatsData = null;
         const isMobile = window.innerWidth <= 768;
         let currentCalendarOptions = { height: isMobile ? 'auto' : undefined, aspectRatio: isMobile ? 0.8 : 1.35 };
@@ -962,7 +248,6 @@
         function callAppsScript(functionName, params = {}) {
             return new Promise((resolve, reject) => {
                 const callbackName = 'jsonpCallback_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                const payload = JSON.stringify({ functionName, params });
                 
                 function makeRequest() {
                     const timeoutId = setTimeout(() => {
@@ -978,28 +263,22 @@
                             const scriptEl = document.getElementById(callbackName);
                             if (scriptEl && scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
                             delete window[callbackName];
-                        } catch (e) { console.error("Error cleaning up JSONP script or callback:", e); }
+                        } catch (e) { console.error("清理 JSONP 腳本時出錯:", e); }
                         
-                        if (response && response.status === 'success') {
-                            resolve(response.data);
-                        } else {
-                            reject(new Error(response.message || '後端服務回傳錯誤。'));
-                        }
+                        if (response && response.status === 'success') { resolve(response.data); } 
+                        else { reject(new Error(response.message || '後端服務回傳錯誤。')); }
                     };
                     
                     const script = document.createElement('script');
                     script.id = callbackName;
                     const encodedPayload = encodeURIComponent(JSON.stringify({ functionName, params }));
                     script.src = `${SCRIPT_URL}?callback=${callbackName}&payload=${encodedPayload}&_t=${Date.now()}`;
-                    
                     script.onerror = () => {
-                        clearTimeout(timeoutId);
-                        hideLoading();
+                        clearTimeout(timeoutId); hideLoading();
                         if (window[callbackName]) delete window[callbackName];
                         if (script.parentNode) script.parentNode.removeChild(script);
                         reject(new Error('網路請求失敗，請檢查部署網址與權限設定。'));
                     };
-                    
                     document.head.appendChild(script);
                 }
                 makeRequest();
@@ -1011,26 +290,13 @@
             document.querySelectorAll('.tab-button').forEach(tb => tb.classList.remove('active'));
             document.getElementById(tabName).style.display = 'block';
             evt.currentTarget.classList.add('active');
-
-            if (tabName === 'calendar-tab') {
-                if (calendar) {
-                    setTimeout(() => { calendar.updateSize(); }, 0);
-                } else {
-                    setupCalendarTab(true);
-                }
-            }
+            if (tabName === 'calendar-tab' && calendar) { setTimeout(() => { calendar.updateSize(); }, 0); }
         }
         
         async function promptForName() {
             let currentUserName = localStorage.getItem('av_signup_username') || '';
-            const { value: name } = await Swal.fire({
-                title: "請輸入您的姓名", input: "text", inputValue: currentUserName,
-                inputPlaceholder: "請輸入姓名", showCancelButton: true,
-                inputValidator: (v) => !v && "姓名不能為空！"
-            });
-            if (name) {
-                localStorage.setItem('av_signup_username', name);
-            }
+            const { value: name } = await Swal.fire({ title: "請輸入您的姓名", input: "text", inputValue: currentUserName, inputPlaceholder: "請輸入姓名", showCancelButton: true, inputValidator: (v) => !v && "姓名不能為空！" });
+            if (name) { localStorage.setItem('av_signup_username', name); }
             return name;
         }
 
@@ -1039,43 +305,38 @@
             if (!eventObject) return;
             
             const props = eventObject.extendedProps;
-            const eventStart = new Date(eventObject.start);
-            const now = new Date();
-            now.setHours(0, 0, 0, 0);
-            eventStart.setHours(0, 0, 0, 0);
+            
+            // --- 前端時間檢查 (核心修改) ---
+            const eventEndDateTime = eventObject.end ? new Date(eventObject.end) : new Date(eventObject.start);
+            if (!eventObject.end) {
+                eventEndDateTime.setHours(23, 59, 59, 999);
+            }
 
-            if (eventStart < now) return Swal.fire('無法報名', '此活動時間已過。', 'warning');
+            if (new Date() > eventEndDateTime) {
+                return Swal.fire({
+                    icon: 'warning',
+                    title: '活動已結束',
+                    text: '此活動的報名時間已截止，無法進行操作。',
+                    confirmButtonColor: '#d33'
+                });
+            }
+            // --- 前端時間檢查結束 ---
 
             const name = await promptForName();
             if (!name) return;
 
             const existingSignup = props.signups.find(s => s.user === name); 
-            if (existingSignup) {
-                return Swal.fire({
-                    icon: 'info', title: '您已報名過此活動',
-                    html: `<div style="text-align: left; padding: 0 1em;"><p><strong>活動：</strong> ${props.full_title}</p><p><strong>日期：</strong> ${new Date(eventObject.start).toLocaleDateString('en-CA')}</p><p><strong>您報名的崗位：</strong> ${existingSignup.position}</p></div>`
-                });
-            }
+            if (existingSignup) { return Swal.fire({ icon: 'info', title: '您已報名過此活動', html: `<div style="text-align: left; padding: 0 1em;"><p><strong>活動：</strong> ${props.full_title}</p><p><strong>日期：</strong> ${new Date(eventObject.start).toLocaleDateString('en-CA')}</p><p><strong>您報名的崗位：</strong> ${existingSignup.position}</p></div>` }); }
             
             const allBackendPositions = props.positions; 
-
-            if (!allBackendPositions || allBackendPositions.length === 0) {
-                return Swal.fire('無可報名崗位', '此活動尚未設定任何可報名的崗位。', 'info');
-            }
+            if (!allBackendPositions || allBackendPositions.length === 0) { return Swal.fire('無可報名崗位', '此活動尚未設定任何可報名的崗位。', 'info'); }
             
             const positionOptions = allBackendPositions.reduce((obj, pos) => ({...obj, [pos]: pos}), {});
-            
             let timeText = `<b>開始時間:</b> ${props.startTime}${props.endTime ? '<br><b>結束時間:</b> ' + props.endTime : ''}`;
 
             const { value: selectedPosition } = await Swal.fire({
-                title: props.full_title, 
-                html: `${timeText}<br><br><b>說明:</b> ${props.description || '無'}<br><br><p style="color: red; font-weight: bold;">當立願崗位重複時，在法會當天奉仕讀經結束後，因準備工作需要，始可由其他人員遞補。您的立願崗位優先保留至奉仕讀經結束。</p>`, 
-                input: 'select', 
-                inputOptions: positionOptions, 
-                inputPlaceholder: '選擇崗位',
-                showCancelButton: true, 
-                confirmButtonText: '確認報名', 
-                cancelButtonText: '取消',
+                title: props.full_title, html: `${timeText}<br><br><b>說明:</b> ${props.description || '無'}<br><br><p style="color: red; font-weight: bold;">當立願崗位重複時，在法會當天奉仕讀經結束後，因準備工作需要，始可由其他人員遞補。您的立願崗位優先保留至奉仕讀經結束。</p>`, 
+                input: 'select', inputOptions: positionOptions, inputPlaceholder: '選擇崗位', showCancelButton: true, confirmButtonText: '確認報名', cancelButtonText: '取消',
                 preConfirm: p => !p ? Swal.showValidationMessage('請選擇一個崗位') : p
             });
 
@@ -1085,11 +346,8 @@
                     const addResult = await callAppsScript('addSignup', { eventId: info.event.id, userName: name, position: selectedPosition });
                     let successPayload = { icon: 'success' };
                     if (addResult.status === 'confirm_backup') {
-                        const confirmBackup = await Swal.fire({
-                            title: '崗位已被報名', text: addResult.message, icon: 'question',
-                            showCancelButton: true, confirmButtonText: '是, 我要報名備援', cancelButtonText: '取消'
-                        });
-                        if (!confirmBackup.isConfirmed) { hideLoading(); return; }
+                        const { isConfirmed } = await Swal.fire({ title: '崗位已被報名', text: addResult.message, icon: 'question', showCancelButton: true, confirmButtonText: '是, 我要報名備援', cancelButtonText: '取消' });
+                        if (!isConfirmed) { hideLoading(); return; }
                         showLoading();
                         await callAppsScript('addBackupSignup', { eventId: info.event.id, userName: name, position: selectedPosition });
                         successPayload.title = '備援報名成功！';
@@ -1100,934 +358,191 @@
                     }
                     await Swal.fire(successPayload);
                     setupCalendarTab(true); 
-                } catch(error) {
-                    Swal.fire('報名失敗', error.message, 'error');
-                } finally { hideLoading(); }
+                } catch(error) { Swal.fire('報名失敗', error.message, 'error'); } 
+                finally { hideLoading(); }
             }
         }
         
         function showEventPopover(info) {
-            const { event, el } = info;
-            const props = event.extendedProps;
-            const popoverEl = document.getElementById('event-popover');
-            
-            let content = `<h5>${props.full_title}</h5><p><b>日期:</b> ${new Date(event.start).toLocaleDateString('en-CA')}</p>`; 
-            content += `<p><b>時間:</b> ${props.startTime}${props.endTime ? ' - ' + props.endTime : ''}</p>`; 
-            content += `<p><b>額滿人數:</b> ${props.maxAttendees} 人</p>`;
-            if (props.description) {
-                content += `<p><b>說明:</b> ${props.description}</p>`;
-            }
-
-            if (props.signups && props.signups.length > 0) {
-                content += '<hr style="margin: 8px 0; border-top: 1px dashed var(--card-border);"><ul>';
-                props.signups.forEach(s => { 
-                    content += `<li><strong>${s.position}:</strong> ${s.user}</li>`; 
-                });
-                content += '</ul>';
-            } else {
-                content += '<p style="margin-top: 8px;">目前尚無人報名</p>';
-            }
-            popoverEl.innerHTML = content;
-            
-            popoverEl.style.visibility = 'hidden';
-            popoverEl.style.display = 'block';
-
-            const rect = el.getBoundingClientRect();
-            const popoverHeight = popoverEl.offsetHeight;
-            const popoverWidth = popoverEl.offsetWidth;
-            const margin = 10;
-
-            let left = rect.left + window.scrollX;
-            if (left + popoverWidth > window.innerWidth - margin) {
-                left = window.innerWidth - popoverWidth - margin;
-            }
-            if (left < margin) {
-                left = margin;
-            }
-
-            let top;
-            if (rect.bottom + popoverHeight + margin > window.innerHeight) {
-                top = rect.top + window.scrollY - popoverHeight - 5;
-            } else {
-                top = rect.bottom + window.scrollY + 5;
-            }
-            if (top < window.scrollY + margin) {
-                top = window.scrollY + margin;
-            }
-
-            popoverEl.style.left = `${left}px`;
-            popoverEl.style.top = `${top}px`;
-            popoverEl.style.visibility = 'visible';
+            const { event, el } = info; const props = event.extendedProps; const popoverEl = document.getElementById('event-popover');
+            let content = `<h5>${props.full_title}</h5><p><b>日期:</b> ${new Date(event.start).toLocaleDateString('en-CA')}</p><p><b>時間:</b> ${props.startTime}${props.endTime ? ' - ' + props.endTime : ''}</p><p><b>額滿人數:</b> ${props.maxAttendees} 人</p>`;
+            if (props.description) { content += `<p><b>說明:</b> ${props.description}</p>`; }
+            if (props.signups && props.signups.length > 0) { content += '<hr style="margin: 8px 0; border-top: 1px dashed var(--card-border);"><ul>'; props.signups.forEach(s => { content += `<li><strong>${s.position}:</strong> ${s.user}</li>`; }); content += '</ul>'; } 
+            else { content += '<p style="margin-top: 8px;">目前尚無人報名</p>'; }
+            popoverEl.innerHTML = content; popoverEl.style.visibility = 'hidden'; popoverEl.style.display = 'block';
+            const rect = el.getBoundingClientRect(); const popoverHeight = popoverEl.offsetHeight; const popoverWidth = popoverEl.offsetWidth; const margin = 10;
+            let left = rect.left + window.scrollX; if (left + popoverWidth > window.innerWidth - margin) { left = window.innerWidth - popoverWidth - margin; } if (left < margin) { left = margin; }
+            let top; if (rect.bottom + popoverHeight + margin > window.innerHeight) { top = rect.top + window.scrollY - popoverHeight - 5; } else { top = rect.bottom + window.scrollY + 5; } if (top < window.scrollY + margin) { top = window.scrollY + margin; }
+            popoverEl.style.left = `${left}px`; popoverEl.style.top = `${top}px`; popoverEl.style.visibility = 'visible';
         }
 
         function hideEventPopover() { document.getElementById('event-popover').style.display = 'none'; }
 
         function renderSimpleListView() {
             const container = document.getElementById('simple-list-view');
-            const titleEl = document.getElementById('custom-calendar-title');
-            titleEl.textContent = `${currentDisplayDate.getFullYear()}年 ${currentDisplayDate.getMonth() + 1}月`;
-            
+            document.getElementById('custom-calendar-title').textContent = `${currentDisplayDate.getFullYear()}年 ${currentDisplayDate.getMonth() + 1}月`;
             const viewStart = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth(), 1);
             const viewEnd = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth() + 1, 0);
             viewEnd.setHours(23, 59, 59, 999);
             const currentMonthEvents = allCalendarEvents.filter(e => new Date(e.start) >= viewStart && new Date(e.start) <= viewEnd).sort((a, b) => new Date(a.start) - new Date(b.start));
 
-            if (currentMonthEvents.length === 0) {
-                container.innerHTML = '<div class="table-responsive" style="margin-top:0;"><p style="text-align:center; padding: 20px;">本月尚無活動。</p></div>';
-                return;
-            }
+            if (currentMonthEvents.length === 0) { container.innerHTML = '<div class="table-responsive" style="margin-top:0;"><p style="text-align:center; padding: 20px;">本月尚無活動。</p></div>'; return; }
             
             let tableHtml = `<div class="table-responsive" style="margin-top:0;"><table><thead><tr><th>日期</th><th>星期</th><th>標題</th><th>開始</th><th>結束</th><th>上限 (已報)</th><th>報名詳情</th></tr></thead><tbody>`;
             currentMonthEvents.forEach(event => {
-                const props = event.extendedProps;
-                const startDate = new Date(event.start);
-                const dateString = startDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Taipei' });
-                const dayOfWeek = startDate.toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', weekday: 'short' });
-                const signupCount = props.signups ? props.signups.length : 0;
-                
-                let signupsDetail = '';
-                if (props.signups && props.signups.length > 0) {
-                    signupsDetail = props.signups
-                        .map(s => `${s.position}：${s.user}`)
-                        .join('，'); 
-                }
-
-                tableHtml += `<tr data-event-id="${event.id}"><td><span class="status-dot" style="background-color: ${event.backgroundColor};"></span>${dateString.substring(5)}</td><td>${dayOfWeek.replace('週', '')}</td><td class="event-title-cell" style="cursor: help;">${event.title}</td><td>${props.startTime || ''}</td><td>${props.endTime || ''}</td><td>${props.maxAttendees} (${signupCount})</td><td>${signupsDetail}</td></tr>`;
+                const props = event.extendedProps; const startDate = new Date(event.start); const dateString = startDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Taipei' }); const dayOfWeek = startDate.toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', weekday: 'short' }); const signupCount = props.signups ? props.signups.length : 0;
+                let signupsDetail = props.signups && props.signups.length > 0 ? props.signups.map(s => `${s.position}：${s.user}`).join('，') : '';
+                tableHtml += `<tr data-event-id="${event.id}"><td><span class="status-dot" style="background-color: ${event.backgroundColor};"></span>${dateString.substring(5)}</td><td>${dayOfWeek.replace('週', '')}</td><td>${event.title}</td><td>${props.startTime || ''}</td><td>${props.endTime || ''}</td><td>${props.maxAttendees} (${signupCount})</td><td>${signupsDetail}</td></tr>`;
             });
             container.innerHTML = `${tableHtml}</tbody></table></div>`;
 
             container.querySelectorAll('tbody tr').forEach(row => {
-                const eventId = row.dataset.eventId;
-                const eventObject = allCalendarEvents.find(e => e.id === eventId);
+                const eventId = row.dataset.eventId; const eventObject = allCalendarEvents.find(e => e.id === eventId);
                 if (!eventObject) return;
-
-                // The whole row is still clickable to sign up
                 row.addEventListener('click', (e) => handleEventClick({ event: { id: eventId, ...eventObject }, jsEvent: e }));
-                
-                // But the popover preview is only on the title cell
-                const titleCell = row.querySelector('.event-title-cell');
-                if (titleCell) {
-                    titleCell.addEventListener('mouseenter', (e) => showEventPopover({ event: { extendedProps: eventObject.extendedProps, start: eventObject.start }, el: e.currentTarget }));
-                    titleCell.addEventListener('mouseleave', hideEventPopover);
-                }
+                row.addEventListener('mouseenter', (e) => showEventPopover({ event: { extendedProps: eventObject.extendedProps, start: eventObject.start }, el: e.currentTarget }));
+                row.addEventListener('mouseleave', hideEventPopover);
             });
         }
         
         function initializeFullCalendar() {
-            const calendarEl = document.getElementById('calendar');
-            if (calendar) calendar.destroy();
-            
-            let options = {
-                headerToolbar: false,
-                initialDate: currentDisplayDate,
-                locale: 'zh-tw',
-                events: allCalendarEvents,
+            const calendarEl = document.getElementById('calendar'); if (calendar) calendar.destroy();
+            let options = { headerToolbar: false, initialDate: currentDisplayDate, locale: 'zh-tw', events: allCalendarEvents,
                 datesSet: (dateInfo) => {
-                    currentDisplayDate = dateInfo.view.currentStart;
-                    document.getElementById('custom-calendar-title').textContent = dateInfo.view.title;
-                    if (document.getElementById('simple-list-view').style.display === 'block') {
-                        renderSimpleListView();
-                    }
-                },
-                eventClick: handleEventClick,
-                eventMouseEnter: showEventPopover,
-                eventMouseLeave: hideEventPopover,
-                ...currentCalendarOptions 
-            };
-            calendar = new FullCalendar.Calendar(calendarEl, options);
-            calendar.render();
+                    currentDisplayDate = dateInfo.view.currentStart; document.getElementById('custom-calendar-title').textContent = dateInfo.view.title;
+                    if (document.getElementById('simple-list-view').style.display === 'block') { renderSimpleListView(); }
+                }, eventClick: handleEventClick, eventMouseEnter: showEventPopover, eventMouseLeave: hideEventPopover, ...currentCalendarOptions };
+            calendar = new FullCalendar.Calendar(calendarEl, options); calendar.render();
         }
 
         async function setupCalendarTab(forceRefresh = false) {
-            if (allCalendarEvents.length > 0 && !forceRefresh && calendar) return;
+            if (allCalendarEvents.length > 0 && !forceRefresh) return;
             showLoading();
             try {
                 allCalendarEvents = await callAppsScript('getEventsAndSignups');
                 if (!document.getElementById('custom-prev-btn')._isInitialized) {
-                    document.getElementById('custom-prev-btn').addEventListener('click', () => calendar.prev());
-                    document.getElementById('custom-next-btn').addEventListener('click', () => calendar.next());
-                    document.getElementById('custom-today-btn').addEventListener('click', () => calendar.today());
-
-                    const fullViewBtn = document.getElementById('show-full-view-btn');
-                    const simpleViewBtn = document.getElementById('show-simple-view-btn');
-
+                    document.getElementById('custom-prev-btn').addEventListener('click', () => calendar.prev()); document.getElementById('custom-next-btn').addEventListener('click', () => calendar.next()); document.getElementById('custom-today-btn').addEventListener('click', () => calendar.today());
+                    const fullViewBtn = document.getElementById('show-full-view-btn'); const simpleViewBtn = document.getElementById('show-simple-view-btn');
                     fullViewBtn.addEventListener('click', () => {
-                        document.getElementById('simple-list-view').style.display = 'none';
-                        document.getElementById('full-calendar-view').style.display = 'block';
-                        fullViewBtn.classList.add('active');
-                        simpleViewBtn.classList.remove('active');
-                        currentCalendarOptions = { height: isMobile ? 'auto' : undefined, aspectRatio: isMobile ? 0.8 : 1.35 };
-                        initializeFullCalendar();
-                        calendar.updateSize();
+                        document.getElementById('simple-list-view').style.display = 'none'; document.getElementById('full-calendar-view').style.display = 'block'; fullViewBtn.classList.add('active'); simpleViewBtn.classList.remove('active');
+                        currentCalendarOptions = { height: isMobile ? 'auto' : undefined, aspectRatio: isMobile ? 0.8 : 1.35 }; initializeFullCalendar(); calendar.updateSize();
                     });
-
-                    simpleViewBtn.addEventListener('click', () => {
-                        document.getElementById('full-calendar-view').style.display = 'none';
-                        document.getElementById('simple-list-view').style.display = 'block';
-                        simpleViewBtn.classList.add('active');
-                        fullViewBtn.classList.remove('active');
-                        renderSimpleListView();
-                    });
+                    simpleViewBtn.addEventListener('click', () => { document.getElementById('full-calendar-view').style.display = 'none'; document.getElementById('simple-list-view').style.display = 'block'; simpleViewBtn.classList.add('active'); fullViewBtn.classList.remove('active'); renderSimpleListView(); });
                     document.getElementById('custom-prev-btn')._isInitialized = true;
                 }
                 initializeFullCalendar();
-                if (isMobile) {
-                    document.getElementById('show-simple-view-btn').click();
-                } else {
-                    document.getElementById('show-full-view-btn').click();
-                }
-            } catch (error) {
-                Swal.fire('載入失敗', error.message, 'error');
-            } finally {
-                hideLoading();
-            }
+                if (isMobile) { document.getElementById('show-simple-view-btn').click(); } else { document.getElementById('show-full-view-btn').click(); }
+            } catch (error) { Swal.fire('載入失敗', error.message, 'error'); } 
+            finally { hideLoading(); }
         }
         
-        function renderMySignupsTable(signups, queryType) {
-            const resultDiv = document.getElementById('my-signups-result');
-            const actionsContainer = document.getElementById('query-actions-container');
-            resultDiv.innerHTML = '';
-            actionsContainer.style.display = 'none';
-
-            if (!signups || signups.length === 0) {
-                Swal.fire({ icon: 'info', title: '查無資料', text: '在您指定的條件下，找不到相關的報名紀錄。' });
-                lastQuery.data = []; // 清空上次查詢結果
-                return;
-            }
-            
-            lastQuery.data = signups; // 保存當前查詢結果
-            
-            let tableHtml = `<table class="all-signups-table">
-                                <thead><tr><th>活動日期</th><th>星期</th><th>活動名稱</th><th>崗位</th><th class="col-user">姓名</th><th class="col-timestamp">報名時間</th><th class="col-action">操作</th></tr></thead>
-                                <tbody>`;
-            signups.forEach(s => {
-                tableHtml += `<tr>
-                                <td>${s.eventDate || ''}</td>
-                                <td>${s.eventDayOfWeek || ''}</td>
-                                <td>${s.eventTitle || ''}</td>
-                                <td>${s.position || ''}</td>
-                                <td class="col-user">${s.user || ''}</td>
-                                <td class="col-timestamp">${s.timestamp || ''}</td>
-                                <td class="col-action"><button class="btn btn-danger btn-sm" onclick='promptToDeleteSignup(${JSON.stringify(s).replace(/'/g, "\\'")})'>刪除</button></td>
-                              </tr>`;
-            });
-            resultDiv.innerHTML = tableHtml + '</tbody></table>';
-
-            actionsContainer.style.display = 'flex';
+        function renderMySignupsTable(signups) {
+            const resultDiv = document.getElementById('my-signups-result'); const actionsContainer = document.getElementById('query-actions-container');
+            resultDiv.innerHTML = ''; actionsContainer.style.display = 'none';
+            if (!signups || signups.length === 0) { Swal.fire({ icon: 'info', title: '查無資料', text: '在您指定的條件下，找不到相關的報名紀錄。' }); lastQuery.data = []; return; }
+            lastQuery.data = signups;
+            let tableHtml = `<table class="all-signups-table"><thead><tr><th>活動日期</th><th>星期</th><th>活動名稱</th><th>崗位</th><th class="col-user">姓名</th><th class="col-timestamp">報名時間</th><th class="col-action">操作</th></tr></thead><tbody>`;
+            signups.forEach(s => { tableHtml += `<tr><td>${s.eventDate || ''}</td><td>${s.eventDayOfWeek || ''}</td><td>${s.eventTitle || ''}</td><td>${s.position || ''}</td><td class="col-user">${s.user || ''}</td><td class="col-timestamp">${s.timestamp || ''}</td><td class="col-action"><button class="btn btn-danger btn-sm" onclick='promptToDeleteSignup(${JSON.stringify(s).replace(/'/g, "\\'")})'>刪除</button></td></tr>`; });
+            resultDiv.innerHTML = tableHtml + '</tbody></table>'; actionsContainer.style.display = 'flex';
         }
 
         async function executeUnifiedSignupQuery(searchText, startDateStr, endDateStr) {
             showLoading();
             try {
-                const data = await callAppsScript('getUnifiedSignups', {
-                    searchText: searchText,
-                    startDateStr: startDateStr,
-                    endDateStr: endDateStr
-                });
-                renderMySignupsTable(data, 'unified');
-            } catch(e) {
-                Swal.fire('查詢失敗', e.message, 'error');
-            } finally { hideLoading(); }
+                const data = await callAppsScript('getUnifiedSignups', { searchText, startDateStr, endDateStr });
+                renderMySignupsTable(data);
+            } catch(e) { Swal.fire('查詢失敗', e.message, 'error'); } 
+            finally { hideLoading(); }
         }
         
         async function promptToDeleteSignup(signup) {
             const { value: password } = await Swal.fire({
                 title: '確定要刪除此筆報名嗎？',
-                html: `
-                    <div style="text-align: left; margin: 1em auto; background: #f8f9fa; border-left: 4px solid #e74c3c; padding: 1em; border-radius: 4px; width: 90%;">
-                        <p><strong>活動日期:</strong> ${signup.eventDate || 'N/A'}</p>
-                        <p><strong>活動名稱:</strong> ${signup.eventTitle || 'N/A'}</p>
-                        <p><strong>報名人員:</strong> ${signup.user || 'N/A'}</p>
-                        <p><strong>報名崗位:</strong> ${signup.position || 'N/A'}</p>
-                        <p><strong>報名時間:</strong> ${signup.timestamp || 'N/A'}</p>
-                    </div>
-                    <div style="text-align: center; margin-top: 1.5em;">
-                        <p style="margin-bottom: 0.5em;">請輸入密碼以確認刪除：</p>
-                        <input type="password" id="password-input" class="swal2-input" placeholder="請輸入密碼" style="width: 90%; margin: 0 auto;">
-                    </div>
-                `,
+                html: `<div style="text-align: left; margin: 1em auto; background: #f8f9fa; border-left: 4px solid #e74c3c; padding: 1em; border-radius: 4px; width: 90%;"><p><strong>活動日期:</strong> ${signup.eventDate || 'N/A'}</p><p><strong>活動名稱:</strong> ${signup.eventTitle || 'N/A'}</p><p><strong>報名人員:</strong> ${signup.user || 'N/A'}</p><p><strong>報名崗位:</strong> ${signup.position || 'N/A'}</p><p><strong>報名時間:</strong> ${signup.timestamp || 'N/A'}</p></div><div style="text-align: center; margin-top: 1.5em;"><p style="margin-bottom: 0.5em;">請輸入密碼以確認刪除：</p><input type="password" id="password-input" class="swal2-input" placeholder="請輸入密碼" style="width: 90%; margin: 0 auto;"></div>`,
                 icon: 'warning', showCancelButton: true, confirmButtonText: '確認刪除', cancelButtonText: '取消',
-                preConfirm: () => {
-                    const pw = document.getElementById('password-input').value;
-                    if (pw !== '0425') { Swal.showValidationMessage('密碼錯誤！'); return false; }
-                    return pw;
-                }
+                preConfirm: () => { const pw = document.getElementById('password-input').value; if (pw !== '0425') { Swal.showValidationMessage('密碼錯誤！'); return false; } return pw; }
             });
             if (password) {
                 showLoading();
                 try {
                     const result = await callAppsScript('removeSignup', { eventId: signup.eventId, userName: signup.user });
                     await Swal.fire('刪除成功', result.message, 'success');
-                    if (lastQuery.type === 'unified') {
-                        await executeUnifiedSignupQuery(lastQuery.params.searchText, lastQuery.params.startDateStr, lastQuery.params.endDateStr);
-                    } else {
-                        const defaultStartDate = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toLocaleDateString('en-CA');
-                        const defaultEndDate = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toLocaleDateString('en-CA');
-                        await executeUnifiedSignupQuery('', defaultStartDate, defaultEndDate);
-                    }
+                    if (lastQuery.type === 'unified') { await executeUnifiedSignupQuery(lastQuery.params.searchText, lastQuery.params.startDateStr, lastQuery.params.endDateStr); }
                     setupCalendarTab(true); 
-                } catch(e) {
-                    Swal.fire('刪除失敗', e.message, 'error');
-                } finally { hideLoading(); }
+                } catch(e) { Swal.fire('刪除失敗', e.message, 'error'); } 
+                finally { hideLoading(); }
             }
         }
         
         async function generateStatsReport() {
-            showLoading();
-            const detailsContainer = document.getElementById('stats-details-container');
-            detailsContainer.innerHTML = '';
-            
+            showLoading(); const detailsContainer = document.getElementById('stats-details-container'); detailsContainer.innerHTML = '';
             try {
-                const data = await callAppsScript('getStatsData', { 
-                    startDateStr: document.getElementById('stats-start-date').value, 
-                    endDateStr: document.getElementById('stats-end-date').value 
-                });
-                lastStatsData = data; 
-
-                const ctx = document.getElementById('stats-chart').getContext('2d');
-                if (statsChart) statsChart.destroy();
-
-                if (!data || data.labels.length === 0) {
-                    document.getElementById('stats-chart').style.display = 'none';
-                    detailsContainer.innerHTML = '<p style="text-align:center; padding: 20px;">在選定的日期範圍內沒有任何報名記錄可供統計。</p>';
-                    Swal.fire('提示', '在選定的日期範圍內沒有任何報名記錄可供統計。', 'info');
-                    return;
-                }
+                const data = await callAppsScript('getStatsData', { startDateStr: document.getElementById('stats-start-date').value, endDateStr: document.getElementById('stats-end-date').value });
+                lastStatsData = data; const ctx = document.getElementById('stats-chart').getContext('2d'); if (statsChart) statsChart.destroy();
+                if (!data || data.labels.length === 0) { document.getElementById('stats-chart').style.display = 'none'; detailsContainer.innerHTML = '<p style="text-align:center; padding: 20px;">在選定的日期範圍内沒有任何報名記錄可供統計。</p>'; Swal.fire('提示', '在選定的日期範圍内沒有任何報名記錄可供統計。', 'info'); return; }
                 document.getElementById('stats-chart').style.display = 'block';
-
-                const dynamicColors = () => `rgba(${Math.floor(Math.random()*200)+50},${Math.floor(Math.random()*200)+50},${Math.floor(Math.random()*200)+50},0.8)`;
-                const backgroundColors = data.labels.map(() => dynamicColors());
-                
-                const chartLabels = data.labels.map(label => {
-                    const parts = label.match(/(.*?)\s*\((.*?)\)/);
-                    if (parts && parts.length === 3) {
-                        return isMobile ? parts[1].trim() : [parts[1].trim(), `(${parts[2]})`];
-                    }
-                    return label;
-                });
-                
-                const chartOptions = { 
-                    responsive: true, maintainAspectRatio: false, backgroundColor: 'white',
-                    plugins: {
-                        datalabels: {
-                            anchor: 'end', align: 'top', offset: 4, color: '#444',
-                            font: { weight: 'bold', size: 14 }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                title: (items) => data.fullDetails[items[0].dataIndex].eventInfo.title,
-                                label: (item) => {
-                                    const detail = data.fullDetails[item.dataIndex];
-                                    let label = [
-                                        `日期: ${detail.eventInfo.date}`,
-                                        `時間: ${detail.eventInfo.startTime}${detail.eventInfo.endTime ? ' - ' + detail.eventInfo.endTime : ''}`,
-                                        `已報名: ${item.raw} / ${detail.eventInfo.maxAttendees} 人`,
-                                        '--- 崗位人員 ---'
-                                    ];
-                                    detail.signups.forEach(s => label.push(`${s.position}: ${s.user}`));
-                                    return label;
-                                }
-                            }
-                        }
-                    },
-                    scales: { 
-                        x: { ticks: { autoSkip: false } },
-                        y: { grace: '10%' }
-                    },
-                    layout: { padding: { top: 30, bottom: isMobile ? 80 : 40 } }
-                };
-
-                if (isMobile) {
-                    chartOptions.scales.x.ticks.maxRotation = 45;
-                    chartOptions.scales.x.ticks.minRotation = 45;
-                }
-
-                statsChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: { 
-                        labels: chartLabels, 
-                        datasets: [{ 
-                            label: '報名人數', 
-                            data: data.data, 
-                            backgroundColor: backgroundColors,
-                            borderColor: backgroundColors.map(c => c.replace('0.8', '1')),
-                            borderWidth: 1
-                        }] 
-                    },
-                    options: chartOptions
-                });
-                
-                let detailsHtml = '<h2>詳細活動報名資訊</h2>';
-                data.fullDetails.forEach((eventData, index) => {
-                    const dayOfWeekText = eventData.eventInfo.dayOfWeek ? `(${eventData.eventInfo.dayOfWeek})` : '';
-                    detailsHtml += `
-                        <div class="stats-event-block">
-                            <h3>${index + 1}. ${eventData.eventInfo.title}</h3>
-                            <p><strong>日期:</strong> ${eventData.eventInfo.date} ${dayOfWeekText}</p>
-                            <p><strong>時間:</strong> ${eventData.eventInfo.startTime}${eventData.eventInfo.endTime ? ' - ' + eventData.eventInfo.endTime : ''}</p>
-                            <p><strong>報名狀況:</strong> ${eventData.signups.length} / ${eventData.eventInfo.maxAttendees}</p>`;
-                    if (eventData.signups && eventData.signups.length > 0) {
-                        detailsHtml += '<ul>';
-                        eventData.signups.forEach(signup => {
-                            detailsHtml += `<li><strong>${signup.position}:</strong> ${signup.user}</li>`;
-                        });
-                        detailsHtml += '</ul>';
-                    } else {
-                        detailsHtml += '<p>無人報名</p>';
-                    }
-                    detailsHtml += '</div>';
-                });
-                detailsContainer.innerHTML = detailsHtml;
-                
-                setTimeout(() => {
-                    const canvas = document.getElementById('stats-chart');
-                    if (canvas) canvas.style.backgroundColor = 'white';
-                }, 100);
-
-            } catch(e) {
-                Swal.fire('產生失敗', e.message, 'error');
-            } finally {
-                hideLoading();
-            }
+                const backgroundColors = data.labels.map(() => `rgba(${Math.floor(Math.random()*200)+50},${Math.floor(Math.random()*200)+50},${Math.floor(Math.random()*200)+50},0.8)`);
+                const chartLabels = data.labels.map(label => { const parts = label.match(/(.*?)\s*\((.*?)\)/); return (parts && parts.length === 3) ? (isMobile ? parts[1].trim() : [parts[1].trim(), `(${parts[2]})`]) : label; });
+                const chartOptions = { responsive: true, maintainAspectRatio: false, backgroundColor: 'white', plugins: { datalabels: { anchor: 'end', align: 'top', offset: 4, color: '#444', font: { weight: 'bold', size: 14 } }, tooltip: { callbacks: { title: (items) => data.fullDetails[items[0].dataIndex].eventInfo.title, label: (item) => { const d = data.fullDetails[item.dataIndex]; let l = [`日期: ${d.eventInfo.date}`, `時間: ${d.eventInfo.startTime}${d.eventInfo.endTime ? ' - ' + d.eventInfo.endTime : ''}`, `已報名: ${item.raw} / ${d.eventInfo.maxAttendees} 人`, '--- 崗位人員 ---']; d.signups.forEach(s => l.push(`${s.position}: ${s.user}`)); return l; } } } }, scales: { x: { ticks: { autoSkip: false } }, y: { grace: '10%' } }, layout: { padding: { top: 30, bottom: isMobile ? 80 : 40 } } };
+                if (isMobile) { chartOptions.scales.x.ticks.maxRotation = 45; chartOptions.scales.x.ticks.minRotation = 45; }
+                statsChart = new Chart(ctx, { type: 'bar', data: { labels: chartLabels, datasets: [{ label: '報名人數', data: data.data, backgroundColor: backgroundColors, borderColor: backgroundColors.map(c => c.replace('0.8', '1')), borderWidth: 1 }] }, options: chartOptions });
+                let detailsHtml = '<h2>詳細活動報名資訊</h2>'; data.fullDetails.forEach((eventData, index) => { const dayOfWeekText = eventData.eventInfo.dayOfWeek ? `(${eventData.eventInfo.dayOfWeek})` : ''; detailsHtml += `<div class="stats-event-block"><h3>${index + 1}. ${eventData.eventInfo.title}</h3><p><strong>日期:</strong> ${eventData.eventInfo.date} ${dayOfWeekText}</p><p><strong>時間:</strong> ${eventData.eventInfo.startTime}${eventData.eventInfo.endTime ? ' - ' + eventData.eventInfo.endTime : ''}</p><p><strong>報名狀況:</strong> ${eventData.signups.length} / ${eventData.eventInfo.maxAttendees}</p>`; if (eventData.signups && eventData.signups.length > 0) { detailsHtml += '<ul>'; eventData.signups.forEach(signup => { detailsHtml += `<li><strong>${signup.position}:</strong> ${signup.user}</li>`; }); detailsHtml += '</ul>'; } else { detailsHtml += '<p>無人報名</p>'; } detailsHtml += '</div>'; });
+                detailsContainer.innerHTML = detailsHtml; setTimeout(() => { const canvas = document.getElementById('stats-chart'); if (canvas) canvas.style.backgroundColor = 'white'; }, 100);
+            } catch(e) { Swal.fire('產生失敗', e.message, 'error'); } 
+            finally { hideLoading(); }
         }
 
         async function exportCurrentQueryResultToExcel() {
-            if (!lastQuery.type || !lastQuery.params) {
-                return Swal.fire('錯誤', '沒有可匯出的查詢條件。', 'error');
-            }
-
+            if (!lastQuery.type || !lastQuery.params) { return Swal.fire('錯誤', '沒有可匯出的查詢條件。', 'error'); }
             showLoading();
             try {
                 const { searchText, startDateStr, endDateStr } = lastQuery.params;
-                const dataToExport = await callAppsScript('getUnifiedSignups', {
-                    searchText: searchText,
-                    startDateStr: startDateStr,
-                    endDateStr: endDateStr
-                });
-
-                if (!dataToExport || dataToExport.length === 0) {
-                    hideLoading();
-                    return Swal.fire('無資料', '在選定的條件下沒有任何報名記錄可供匯出。', 'info');
-                }
-
-                const dateRangeText = (startDateStr && endDateStr) ? `${startDateStr} - ${endDateStr}` : '所有日期';
-                const titleSuffix = searchText ? ` (關鍵字: "${searchText}")` : '';
-                const title = `AV放送立願報名記錄 (${dateRangeText})${titleSuffix}`;
-                const generateTime = new Date().toLocaleString('zh-TW');
-                
+                const dataToExport = await callAppsScript('getUnifiedSignups', { searchText, startDateStr, endDateStr });
+                if (!dataToExport || dataToExport.length === 0) { hideLoading(); return Swal.fire('無資料', '在選定的條件下沒有任何報名記錄可供匯出。', 'info'); }
+                const dateRangeText = (startDateStr && endDateStr) ? `${startDateStr} - ${endDateStr}` : '所有日期'; const titleSuffix = searchText ? ` (關鍵字: "${searchText}")` : ''; const title = `AV放送立願報名記錄 (${dateRangeText})${titleSuffix}`; const generateTime = new Date().toLocaleString('zh-TW');
                 let htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>table{border-collapse:collapse;width:100%;font-family:'Microsoft JhengHei',sans-serif}td,th{border:1px solid #ddd;text-align:left;padding:8px}th{background-color:#f2f2f2}.title-row{background-color:#FF8C42;color:white;font-weight:bold;font-size:16px;text-align:center}</style></head><body><table><tr><td colspan="5" class="title-row">${title}</td></tr><tr><td colspan="5">報表生成時間：${generateTime}</td></tr><tr><th>活動日期</th><th>活動名稱</th><th>崗位</th><th>報名者</th><th>報名時間</th></tr>`;
-                dataToExport.forEach(row => {
-                    htmlContent += `<tr><td>${row.eventDate||''}</td><td>${row.eventTitle||''}</td><td>${row.position||''}</td><td>${row.user||''}</td><td>'${row.timestamp||''}'</td></tr>`;
-                });
+                dataToExport.forEach(row => { htmlContent += `<tr><td>${row.eventDate||''}</td><td>${row.eventTitle||''}</td><td>${row.position||''}</td><td>${row.user||''}</td><td>'${row.timestamp||''}'</td></tr>`; });
                 htmlContent += '</table></body></html>';
-
-                const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-                const fileName = `AV立願報名記錄_${new Date().toISOString().slice(0,10)}.xls`;
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = fileName;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(link.href);
-            } catch (e) {
-                Swal.fire('匯出失敗', e.message, 'error');
-            } finally {
-                hideLoading();
-            }
+                const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' }); const fileName = `AV立願報名記錄_${new Date().toISOString().slice(0,10)}.xls`;
+                const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = fileName; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(link.href);
+            } catch (e) { Swal.fire('匯出失敗', e.message, 'error'); } 
+            finally { hideLoading(); }
         }
         
         document.addEventListener('DOMContentLoaded', function() {
-            window.scrollTo(0, 0);
-            Chart.register(ChartDataLabels);
-
+            window.scrollTo(0, 0); Chart.register(ChartDataLabels);
             const marqueeUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTRBfLLti6pcfbynd6kjfZT6Gp5trB8PdXvikHoTNMgLsDzDYsGYmexOqEw6ZkrIedyeAd6DE0bHpso/pub?gid=0&single=true&output=csv'; 
-            let marqueeMessages = [];
-            let marqueeIndex = 0;
-            const marqueeTextEl = document.getElementById('marquee-text');
-            
-            function parseCsvToRows(csvString) {
-                const lines = csvString.split(/\r?\n/);
-                return lines.map(line => {
-                    const values = [];
-                    let inQuote = false;
-                    let currentField = '';
-                    for (let i = 0; i < line.length; i++) {
-                        const char = line[i];
-                        if (char === '"' && (i + 1 < line.length && line[i+1] === '"')) { 
-                            currentField += '"';
-                            i++;
-                        } else if (char === '"') {
-                            inQuote = !inQuote;
-                        } else if (char === ',' && !inQuote) {
-                            values.push(currentField.trim());
-                            currentField = '';
-                        } else {
-                            currentField += char;
-                        }
-                    }
-                    values.push(currentField.trim()); 
-                    return values;
-                });
-            }
-
-            async function setupMarquee() {
-                if (!marqueeTextEl) return;
-                try {
-                    const response = await fetch(marqueeUrl);
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                    
-                    const csvText = await response.text();
-                    const parsedData = parseCsvToRows(csvText);
-                    parsedData.shift(); 
-
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0); 
-
-                    marqueeMessages = parsedData.map(row => {
-                        const dateStr = row[0];
-                        const messageTitle = row[1]; 
-                        const messageContent = row[2];
-
-                        if (dateStr && messageTitle && messageContent) {
-                            const messageDate = new Date(dateStr.replace(/-/g, '/'));
-                            messageDate.setHours(0, 0, 0, 0);
-
-                            if (!isNaN(messageDate.getTime()) && messageDate >= today) {
-                                return `${dateStr}：${messageTitle} - ${messageContent}`;
-                            }
-                        }
-                        return null;
-                    }).filter(Boolean);
-
-                    if (marqueeMessages.length > 0) {
-                        cycleMarquee();
-                        setInterval(cycleMarquee, 5000); 
-                    } else {
-                        marqueeTextEl.textContent = '目前沒有最新公告';
-                        marqueeTextEl.style.animation = 'none';
-                    }
-                } catch (error) {
-                    console.error('Failed to load marquee data:', error);
-                    if (marqueeTextEl) marqueeTextEl.textContent = '無法載入最新公告';
-                    marqueeTextEl.style.animation = 'none';
-                }
-            }
-
-            function cycleMarquee() {
-                if (marqueeMessages.length === 0 || !marqueeTextEl) return;
-                const nextMessage = marqueeMessages[marqueeIndex];
-                
-                if (isMobile) {
-                    marqueeTextEl.style.opacity = 0; 
-                    setTimeout(() => {
-                        marqueeTextEl.textContent = nextMessage;
-                        marqueeTextEl.style.opacity = 1;
-                    }, 400); 
-                } else {
-                    marqueeTextEl.style.animation = 'none'; 
-                    void marqueeTextEl.offsetWidth; 
-                    marqueeTextEl.textContent = nextMessage;
-                    marqueeTextEl.style.animation = 'marquee-scroll 5s ease-in-out';
-                }
-                
-                marqueeIndex = (marqueeIndex + 1) % marqueeMessages.length;
-            }
-
+            let marqueeMessages = [], marqueeIndex = 0; const marqueeTextEl = document.getElementById('marquee-text');
+            function parseCsvToRows(csvString) { const lines = csvString.split(/\r?\n/); return lines.map(line => { const values = []; let inQuote = false; let currentField = ''; for (let i = 0; i < line.length; i++) { const char = line[i]; if (char === '"' && (i + 1 < line.length && line[i+1] === '"')) { currentField += '"'; i++; } else if (char === '"') { inQuote = !inQuote; } else if (char === ',' && !inQuote) { values.push(currentField.trim()); currentField = ''; } else { currentField += char; } } values.push(currentField.trim()); return values; }); }
+            async function setupMarquee() { if (!marqueeTextEl) return; try { const response = await fetch(marqueeUrl); if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); const csvText = await response.text(); const parsedData = parseCsvToRows(csvText); parsedData.shift(); const today = new Date(); today.setHours(0, 0, 0, 0); marqueeMessages = parsedData.map(row => { const dateStr = row[0], messageTitle = row[1], messageContent = row[2]; if (dateStr && messageTitle && messageContent) { const messageDate = new Date(dateStr.replace(/-/g, '/')); messageDate.setHours(0, 0, 0, 0); if (!isNaN(messageDate.getTime()) && messageDate >= today) { return `${dateStr}：${messageTitle} - ${messageContent}`; } } return null; }).filter(Boolean); if (marqueeMessages.length > 0) { cycleMarquee(); setInterval(cycleMarquee, 5000); } else { marqueeTextEl.textContent = '目前沒有最新公告'; marqueeTextEl.style.animation = 'none'; } } catch (error) { console.error('Failed to load marquee data:', error); if (marqueeTextEl) marqueeTextEl.textContent = '無法載入最新公告'; marqueeTextEl.style.animation = 'none'; } }
+            function cycleMarquee() { if (marqueeMessages.length === 0 || !marqueeTextEl) return; const nextMessage = marqueeMessages[marqueeIndex]; if (isMobile) { marqueeTextEl.style.opacity = 0; setTimeout(() => { marqueeTextEl.textContent = nextMessage; marqueeTextEl.style.opacity = 1; }, 400); } else { marqueeTextEl.style.animation = 'none'; void marqueeTextEl.offsetWidth; marqueeTextEl.textContent = nextMessage; marqueeTextEl.style.animation = 'marquee-scroll 5s ease-in-out'; } marqueeIndex = (marqueeIndex + 1) % marqueeMessages.length; }
             setupMarquee();
-            
-            function setupMarqueeToggle() {
-                const toggleBtn = document.getElementById('toggle-marquee-btn');
-                const marqueeContainer = document.getElementById('marquee-container');
-
-                if (!toggleBtn || !marqueeContainer || !isMobile) {
-                    if (toggleBtn) toggleBtn.style.display = 'none';
-                    return; 
-                }
-                
-                let isVisible = localStorage.getItem('av_marquee_visible') !== 'false';
-
-                const applyVisibility = () => {
-                    if (isVisible) {
-                        marqueeContainer.style.display = 'flex';
-                        marqueeContainer.style.maxHeight = '200px';
-                        marqueeContainer.style.opacity = '1';
-                        marqueeContainer.style.marginBottom = '20px';
-                    } else {
-                        marqueeContainer.style.maxHeight = '0';
-                        marqueeContainer.style.opacity = '0';
-                        marqueeContainer.style.marginBottom = '0';
-                        setTimeout(() => {
-                            if (!isVisible) marqueeContainer.style.display = 'none';
-                        }, 400);
-                    }
-                };
-                
-                applyVisibility();
-
-                toggleBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    isVisible = !isVisible;
-                    localStorage.setItem('av_marquee_visible', isVisible);
-                    applyVisibility();
-                });
-            }
-            
+            function setupMarqueeToggle() { const toggleBtn = document.getElementById('toggle-marquee-btn'), marqueeContainer = document.getElementById('marquee-container'); if (!toggleBtn || !marqueeContainer || !isMobile) { if (toggleBtn) toggleBtn.style.display = 'none'; return; } let isVisible = localStorage.getItem('av_marquee_visible') !== 'false'; const applyVisibility = () => { if (isVisible) { marqueeContainer.style.display = 'flex'; marqueeContainer.style.maxHeight = '200px'; marqueeContainer.style.opacity = '1'; marqueeContainer.style.marginBottom = '20px'; } else { marqueeContainer.style.maxHeight = '0'; marqueeContainer.style.opacity = '0'; marqueeContainer.style.marginBottom = '0'; setTimeout(() => { if (!isVisible) marqueeContainer.style.display = 'none'; }, 400); } }; applyVisibility(); toggleBtn.addEventListener('click', (e) => { e.stopPropagation(); isVisible = !isVisible; localStorage.setItem('av_marquee_visible', isVisible); applyVisibility(); }); }
             setupMarqueeToggle();
-
-            const getMonthDateRange = () => {
-                const today = new Date();
-                const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-                const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-                return {
-                    firstDayStr: firstDayOfMonth.toLocaleDateString('en-CA'),
-                    lastDayStr: lastDayOfMonth.toLocaleDateString('en-CA')
-                };
-            };
+            const getMonthDateRange = () => { const today = new Date(); const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1); const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0); return { firstDayStr: firstDayOfMonth.toLocaleDateString('en-CA'), lastDayStr: lastDayOfMonth.toLocaleDateString('en-CA') }; };
             const { firstDayStr, lastDayStr } = getMonthDateRange();
-            ['search-start-date', 'stats-start-date', 'export-start-date'].forEach(id => {
-                const el = document.getElementById(id); if(el) el.value = firstDayStr;
-            });
-            ['search-end-date', 'stats-end-date', 'export-end-date'].forEach(id => {
-                 const el = document.getElementById(id); if(el) el.value = lastDayStr;
-            });
-            
+            ['search-start-date', 'stats-start-date', 'export-start-date'].forEach(id => { const el = document.getElementById(id); if(el) el.value = firstDayStr; });
+            ['search-end-date', 'stats-end-date', 'export-end-date'].forEach(id => { const el = document.getElementById(id); if(el) el.value = lastDayStr; });
             document.getElementById('version-number').textContent = new Date().toLocaleDateString('en-CA');
-            document.querySelector('.tab-button').click();
+            setupCalendarTab(true);
 
             document.getElementById('unified-search-btn').addEventListener('click', () => {
-                const searchText = document.getElementById('universal-search-input').value.trim();
-                const startDateStr = document.getElementById('search-start-date').value;
-                const endDateStr = document.getElementById('search-end-date').value;
-
-                if (!startDateStr || !endDateStr) {
-                    return Swal.fire('提示', '請選擇查詢的開始及結束日期。', 'info');
-                }
-                
-                lastQuery = {
-                    type: 'unified',
-                    params: { searchText, startDateStr, endDateStr },
-                    data: [] // Reset data on new query
-                };
+                const searchText = document.getElementById('universal-search-input').value.trim(); const startDateStr = document.getElementById('search-start-date').value; const endDateStr = document.getElementById('search-end-date').value;
+                if (!startDateStr || !endDateStr) { return Swal.fire('提示', '請選擇查詢的開始及結束日期。', 'info'); }
+                lastQuery = { type: 'unified', params: { searchText, startDateStr, endDateStr }, data: [] };
                 executeUnifiedSignupQuery(searchText, startDateStr, endDateStr);
             });
-
-            document.getElementById('clear-search-btn').addEventListener('click', () => {
-                document.getElementById('universal-search-input').value = '';
-                const { firstDayStr, lastDayStr } = getMonthDateRange();
-                document.getElementById('search-start-date').value = firstDayStr;
-                document.getElementById('search-end-date').value = lastDayStr;
-                
-                document.getElementById('my-signups-result').innerHTML = '';
-                document.getElementById('query-actions-container').style.display = 'none';
-                lastQuery.data = [];
-            });
-
+            document.getElementById('clear-search-btn').addEventListener('click', () => { document.getElementById('universal-search-input').value = ''; const { firstDayStr, lastDayStr } = getMonthDateRange(); document.getElementById('search-start-date').value = firstDayStr; document.getElementById('search-end-date').value = lastDayStr; document.getElementById('my-signups-result').innerHTML = ''; document.getElementById('query-actions-container').style.display = 'none'; lastQuery.data = []; });
             document.getElementById('generate-stats').addEventListener('click', generateStatsReport);
-            
-            document.getElementById('export-excel-btn').addEventListener('click', async () => {
-                const startDateStr = document.getElementById('export-start-date').value;
-                const endDateStr = document.getElementById('export-end-date').value;
-
-                if (!startDateStr || !endDateStr) {
-                    return Swal.fire('提示', '請選擇匯出的開始及結束日期。', 'info');
-                }
-                showLoading();
-                try {
-                    const dataToExport = await callAppsScript('getUnifiedSignups', {
-                        searchText: '', startDateStr, endDateStr
-                    });
-
-                    if (!dataToExport || dataToExport.length === 0) {
-                        hideLoading();
-                        return Swal.fire('無資料', '在選定的條件下沒有任何報名記錄可供匯出。', 'info');
-                    }
-                    const dateRangeText = (startDateStr && endDateStr) ? `${startDateStr} - ${endDateStr}` : '所有日期';
-                    const title = `AV放送立願報名記錄 (${dateRangeText})`;
-                    const generateTime = new Date().toLocaleString('zh-TW');
-                    
-                    let htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>table{border-collapse:collapse;width:100%;font-family:'Microsoft JhengHei',sans-serif}td,th{border:1px solid #ddd;text-align:left;padding:8px}th{background-color:#f2f2f2}.title-row{background-color:#FF8C42;color:white;font-weight:bold;font-size:16px;text-align:center}</style></head><body><table><tr><td colspan="5" class="title-row">${title}</td></tr><tr><td colspan="5">報表生成時間：${generateTime}</td></tr><tr><th>活動日期</th><th>活動名稱</th><th>崗位</th><th>報名者</th><th>報名時間</th></tr>`;
-                    dataToExport.forEach(row => {
-                        htmlContent += `<tr><td>${row.eventDate||''}</td><td>${row.eventTitle||''}</td><td>${row.position||''}</td><td>${row.user||''}</td><td>'${row.timestamp||''}'</td></tr>`;
-                    });
-                    htmlContent += '</table></body></html>';
-
-                    const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-                    const fileName = `AV立願報名記錄_${new Date().toISOString().slice(0,10)}.xls`;
-                    const link = document.createElement('a');
-                    link.href = URL.createObjectURL(blob);
-                    link.download = fileName;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(link.href);
-                } catch (e) {
-                    Swal.fire('匯出失敗', e.message, 'error');
-                } finally {
-                    hideLoading();
-                }
-            });
-
+            document.getElementById('export-excel-btn').addEventListener('click', async () => { const startDateStr = document.getElementById('export-start-date').value, endDateStr = document.getElementById('export-end-date').value; if (!startDateStr || !endDateStr) { return Swal.fire('提示', '請選擇匯出的開始及結束日期。', 'info'); } showLoading(); try { const dataToExport = await callAppsScript('getUnifiedSignups', { searchText: '', startDateStr, endDateStr }); if (!dataToExport || dataToExport.length === 0) { hideLoading(); return Swal.fire('無資料', '在選定的條件下沒有任何報名記錄可供匯出。', 'info'); } const dateRangeText = (startDateStr && endDateStr) ? `${startDateStr} - ${endDateStr}` : '所有日期'; const title = `AV放送立願報名記錄 (${dateRangeText})`; const generateTime = new Date().toLocaleString('zh-TW'); let htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>table{border-collapse:collapse;width:100%;font-family:'Microsoft JhengHei',sans-serif}td,th{border:1px solid #ddd;text-align:left;padding:8px}th{background-color:#f2f2f2}.title-row{background-color:#FF8C42;color:white;font-weight:bold;font-size:16px;text-align:center}</style></head><body><table><tr><td colspan="5" class="title-row">${title}</td></tr><tr><td colspan="5">報表生成時間：${generateTime}</td></tr><tr><th>活動日期</th><th>活動名稱</th><th>崗位</th><th>報名者</th><th>報名時間</th></tr>`; dataToExport.forEach(row => { htmlContent += `<tr><td>${row.eventDate||''}</td><td>${row.eventTitle||''}</td><td>${row.position||''}</td><td>${row.user||''}</td><td>'${row.timestamp||''}'</td></tr>`; }); htmlContent += '</table></body></html>'; const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' }); const fileName = `AV立願報名記錄_${new Date().toISOString().slice(0,10)}.xls`; const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = fileName; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(link.href); } catch (e) { Swal.fire('匯出失敗', e.message, 'error'); } finally { hideLoading(); } });
             document.getElementById('export-from-query-btn').addEventListener('click', exportCurrentQueryResultToExcel);
-
-            document.getElementById('share-today-line-btn').addEventListener('click', async () => {
-                showLoading();
-                try {
-                    const data = await callAppsScript('getSignupsAsTextForToday');
-                    if (data.status === 'nodata') {
-                        Swal.fire('無資料', '今天沒有任何報名記錄可供分享。', 'info');
-                    } else if (data.text) {
-                        const cleanText = data.text.replace(/https?:\/\/\S+/gi, '').trim();
-                        const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(cleanText)}`;
-                        window.open(lineUrl, '_blank');
-                    } else { throw new Error("後端未回傳有效的文字資料。"); }
-                } catch (e) {
-                    Swal.fire('分享失敗', e.message, 'error');
-                } finally { hideLoading(); }
-            });
-
-            document.getElementById('share-tomorrow-line-btn').addEventListener('click', async () => {
-                showLoading();
-                try {
-                    const data = await callAppsScript('getSignupsAsTextForTomorrow');
-                    if (data.status === 'nodata') {
-                        Swal.fire('無資料', '明天沒有任何報名記錄可供分享。', 'info');
-                    } else if (data.text) {
-                        const cleanText = data.text.replace(/https?:\/\/\S+/gi, '').trim();
-                        const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(cleanText)}`;
-                        window.open(lineUrl, '_blank');
-                    } else { throw new Error("後端未回傳有效的文字資料。"); }
-                } catch (e) {
-                    Swal.fire('分享失敗', e.message, 'error');
-                } finally { hideLoading(); }
-            });
-            
-            document.getElementById('share-to-clipboard-btn').addEventListener('click', async () => {
-                const { value: dayChoice } = await Swal.fire({
-                    title: '選擇要分享的日期',
-                    text: '您要分享今天還是明天的報名資料？',
-                    showDenyButton: true,
-                    showCancelButton: true,
-                    confirmButtonText: '今天',
-                    denyButtonText: '明天',
-                    cancelButtonText: '取消',
-                    icon: 'question'
-                });
-
-                let functionToCall = null;
-                if (dayChoice) {
-                    functionToCall = 'getSignupsAsTextForToday';
-                } else if (dayChoice === false) {
-                    functionToCall = 'getSignupsAsTextForTomorrow';
-                } else { return; }
-
-                showLoading();
-                try {
-                    const data = await callAppsScript(functionToCall);
-                    hideLoading(); 
-
-                    if (data.status === 'nodata') {
-                        Swal.fire('無資料', `您選擇的日期沒有任何報名記錄可供分享。`, 'info');
-                        return;
-                    }
-
-                    if (data.text) {
-                        Swal.fire({
-                            title: '準備分享的內容',
-                            width: isMobile ? '90vw' : '600px',
-                            html: `<textarea id="clipboard-textarea" readonly>${data.text}</textarea>`,
-                            confirmButtonText: '📋 複製內容',
-                            showCancelButton: true,
-                            cancelButtonText: '關閉',
-                            didOpen: () => {
-                                const textarea = document.getElementById('clipboard-textarea');
-                                if (textarea) {
-                                    textarea.style.height = 'auto';
-                                    textarea.style.height = (textarea.scrollHeight + 5) + 'px';
-                                    textarea.select();
-                                }
-                            },
-                            preConfirm: () => {
-                                const textToCopy = document.getElementById('clipboard-textarea').value;
-                                if (navigator.clipboard) {
-                                    return navigator.clipboard.writeText(textToCopy).then(() => true)
-                                        .catch(err => {
-                                            Swal.showValidationMessage(`複製失敗: ${err.message}`);
-                                            return false;
-                                        });
-                                } else {
-                                    document.getElementById('clipboard-textarea').select();
-                                    document.execCommand('copy');
-                                    return true;
-                                }
-                            }
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: '已複製成功！',
-                                    text: '請手動切換到 LINE 或其他應用程式並貼上內容。',
-                                    timer: 2500,
-                                    showConfirmButton: false
-                                });
-                            }
-                        });
-                    } else { throw new Error("無法從後端取得分享內容。"); }
-                } catch (e) {
-                    hideLoading();
-                    Swal.fire('操作失敗', e.message, 'error');
-                }
-            });
-
-            document.getElementById('share-query-to-clipboard-btn').addEventListener('click', () => {
-                if (!lastQuery || !lastQuery.data || lastQuery.data.length === 0) {
-                    return Swal.fire('無資料', '沒有可分享的查詢結果。', 'info');
-                }
-
-                const { searchText, startDateStr, endDateStr } = lastQuery.params;
-                const titleKeyword = searchText ? `，關鍵字：「${searchText}」` : '';
-                const title = `【AV放送立願報名查詢結果】\n日期：${startDateStr} ~ ${endDateStr}${titleKeyword}\n----------\n`;
-                
-                const eventsGroup = {};
-                lastQuery.data.forEach(signup => {
-                    const key = `${signup.eventDate} ${signup.eventTitle}`;
-                    if (!eventsGroup[key]) {
-                        eventsGroup[key] = [];
-                    }
-                    eventsGroup[key].push(`- ${signup.position}: ${signup.user}`);
-                });
-
-                let shareText = title;
-                Object.keys(eventsGroup).sort().forEach(eventKey => {
-                    shareText += `\n【${eventKey}】\n`;
-                    shareText += eventsGroup[eventKey].join('\n');
-                    shareText += '\n';
-                });
-
-                Swal.fire({
-                    title: '準備分享的內容',
-                    width: isMobile ? '90vw' : '600px',
-                    html: `<textarea id="clipboard-textarea" readonly>${shareText}</textarea>`,
-                    confirmButtonText: '📋 複製內容',
-                    showCancelButton: true,
-                    cancelButtonText: '關閉',
-                    didOpen: () => {
-                        const textarea = document.getElementById('clipboard-textarea');
-                        if (textarea) {
-                            textarea.style.height = 'auto';
-                            textarea.style.height = (textarea.scrollHeight + 5) + 'px';
-                            textarea.select();
-                        }
-                    },
-                    preConfirm: () => {
-                        const textToCopy = document.getElementById('clipboard-textarea').value;
-                        if (navigator.clipboard) {
-                            return navigator.clipboard.writeText(textToCopy).then(() => true)
-                                .catch(err => {
-                                    Swal.showValidationMessage(`複製失敗: ${err.message}`);
-                                    return false;
-                                });
-                        } else {
-                            document.getElementById('clipboard-textarea').select();
-                            document.execCommand('copy');
-                            return true;
-                        }
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: '已複製成功！',
-                            text: '請手動切換到 LINE 或其他應用程式並貼上內容。',
-                            timer: 2500,
-                            showConfirmButton: false
-                        });
-                    }
-                });
-            });
-
-            document.getElementById('export-stats-pdf-btn').addEventListener('click', async () => {
-                if (!statsChart || !lastStatsData || lastStatsData.labels.length === 0) {
-                    return Swal.fire('提示', '請先點擊「產生報表」以生成統計圖表和數據。', 'info');
-                }
-                const sourceElement = document.getElementById('stats-details-container');
-                if (!sourceElement || sourceElement.children.length <= 1) { 
-                     return Swal.fire('提示', '沒有詳細資料可供匯出。', 'info');
-                }
-
-                showLoading();
-                try {
-                    const { jsPDF } = window.jspdf;
-                    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-
-                    const startDateStr = document.getElementById('stats-start-date').value;
-                    const endDateStr = document.getElementById('stats-end-date').value;
-                    const dateRangeText = `${startDateStr || '所有'} - ${endDateStr || '所有'}`;
-                    const docTitle = `AV放送立願統計報表 (${dateRangeText})`;
-                    const generateTime = new Date().toLocaleString('zh-TW');
-
-                    const pdfContentEl = document.createElement('div');
-                    pdfContentEl.style.position = 'absolute';
-                    pdfContentEl.style.left = '-9999px';
-                    pdfContentEl.style.width = '210mm'; 
-                    pdfContentEl.style.padding = '15mm'; 
-                    pdfContentEl.style.backgroundColor = 'white';
-                    pdfContentEl.style.fontFamily = `'Microsoft JhengHei', 'PingFang TC', sans-serif`;
-                    pdfContentEl.style.color = '#333';
-                    
-                    const pdfStyles = `
-                        <style>
-                            .details-grid { display: flex; flex-wrap: wrap; justify-content: space-between; }
-                            .details-grid .stats-event-block { width: 48%; border: 1px solid #ccc; padding: 8px; margin-bottom: 10px; page-break-inside: avoid; box-sizing: border-box; }
-                            .details-grid h3 { font-size: 8px; margin: 0 0 4px 0; color: #FF8C42; font-weight: bold; }
-                            .details-grid p { font-size: 6px; margin: 1px 0; line-height: 1.3; }
-                            .details-grid ul { list-style-type: none; padding-left: 0; margin: 4px 0 0 0; }
-                            .details-grid li { background: #f9f9f9; padding: 1px 3px; border-radius: 2px; margin-bottom: 1px; font-size: 6px;}
-                        </style>
-                    `;
-
-                    const titleHtml = `<div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 15px;"><h1 style="font-size: 20px; margin: 0; color: #FF8C42;">${docTitle}</h1><p style="font-size: 10px; margin: 5px 0 0 0;">報表生成時間：${generateTime}</p></div>`;
-                    const chartImageData = statsChart.canvas.toDataURL('image/png', 1.0);
-                    const chartHtml = `<div style="text-align: center; margin-bottom: 15px; page-break-inside: avoid;"><img src="${chartImageData}" style="width: 100%; max-width: 180mm;"/></div>`;
-                    const detailsTitle = sourceElement.querySelector('h2') ? sourceElement.querySelector('h2').outerHTML : '';
-                    let eventBlocksHtml = '';
-                    sourceElement.querySelectorAll('.stats-event-block').forEach(block => { eventBlocksHtml += block.outerHTML; });
-                    const detailsGridHtml = `<div class="details-grid">${eventBlocksHtml}</div>`;
-                    
-                    pdfContentEl.innerHTML = pdfStyles + titleHtml + chartHtml + detailsTitle + detailsGridHtml;
-                    document.body.appendChild(pdfContentEl);
-
-                    const canvas = await html2canvas(pdfContentEl, { scale: 2, useCORS: true });
-                    
-                    const imgData = canvas.toDataURL('image/png');
-                    const pdfWidth = pdf.internal.pageSize.getWidth();
-                    const pdfHeight = pdf.internal.pageSize.getHeight();
-                    const imgProps = pdf.getImageProperties(imgData);
-                    const imgWidth = pdfWidth;
-                    const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
-                    
-                    let heightLeft = imgHeight;
-                    let position = 0;
-                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                    heightLeft -= pdfHeight;
-
-                    while (heightLeft > 0) {
-                        position -= pdfHeight;
-                        pdf.addPage();
-                        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                        heightLeft -= pdfHeight;
-                    }
-                    
-                    pdf.save(`AV立願統計報表_${startDateStr}_${endDateStr}.pdf`);
-                    document.body.removeChild(pdfContentEl);
-
-                } catch (e) {
-                    console.error("PDF generation failed:", e);
-                    Swal.fire('PDF 匯出失敗', `前端生成PDF時發生錯誤: ${e.message}`, 'error');
-                } finally {
-                    hideLoading();
-                }
-            });
+            const shareToLine = async (type) => { showLoading(); try { const data = await callAppsScript(type); if (data.status === 'nodata') { Swal.fire('無資料', `${type === 'getSignupsAsTextForToday' ? '今天' : '明天'}沒有任何報名記錄可供分享。`, 'info'); } else if (data.text) { const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(data.text)}`; window.open(lineUrl, '_blank'); } else { throw new Error("後端未回傳有效的文字資料。"); } } catch (e) { Swal.fire('分享失敗', e.message, 'error'); } finally { hideLoading(); } };
+            document.getElementById('share-today-line-btn').addEventListener('click', () => shareToLine('getSignupsAsTextForToday'));
+            document.getElementById('share-tomorrow-line-btn').addEventListener('click', () => shareToLine('getSignupsAsTextForTomorrow'));
+            const shareToClipboard = async (functionToCall) => { showLoading(); try { const data = await callAppsScript(functionToCall); hideLoading(); if (data.status === 'nodata') { Swal.fire('無資料', `您選擇的日期沒有任何報名記錄可供分享。`, 'info'); return; } if (data.text) { Swal.fire({ title: '準備分享的內容', width: isMobile ? '90vw' : '600px', html: `<textarea id="clipboard-textarea" readonly>${data.text}</textarea>`, confirmButtonText: '📋 複製內容', showCancelButton: true, cancelButtonText: '關閉', didOpen: () => { const textarea = document.getElementById('clipboard-textarea'); if (textarea) { textarea.style.height = 'auto'; textarea.style.height = (textarea.scrollHeight + 5) + 'px'; textarea.select(); } }, preConfirm: () => { const textToCopy = document.getElementById('clipboard-textarea').value; return navigator.clipboard ? navigator.clipboard.writeText(textToCopy).then(() => true).catch(err => { Swal.showValidationMessage(`複製失敗: ${err.message}`); return false; }) : (document.execCommand('copy'), true); } }).then((result) => { if (result.isConfirmed) { Swal.fire({ icon: 'success', title: '已複製成功！', text: '請手動切換到 LINE 或其他應用程式並貼上內容。', timer: 2500, showConfirmButton: false }); } }); } else { throw new Error("無法從後端取得分享內容。"); } } catch (e) { hideLoading(); Swal.fire('操作失敗', e.message, 'error'); } };
+            document.getElementById('share-to-clipboard-btn').addEventListener('click', async () => { const { value: dayChoice } = await Swal.fire({ title: '選擇要分享的日期', text: '您要分享今天還是明天的報名資料？', showDenyButton: true, showCancelButton: true, confirmButtonText: '今天', denyButtonText: '明天', cancelButtonText: '取消', icon: 'question' }); if (dayChoice) shareToClipboard('getSignupsAsTextForToday'); else if (dayChoice === false) shareToClipboard('getSignupsAsTextForTomorrow'); });
+            document.getElementById('share-query-to-clipboard-btn').addEventListener('click', () => { if (!lastQuery || !lastQuery.data || lastQuery.data.length === 0) { return Swal.fire('無資料', '沒有可分享的查詢結果。', 'info'); } const { searchText, startDateStr, endDateStr } = lastQuery.params; const titleKeyword = searchText ? `，關鍵字：「${searchText}」` : ''; const title = `【AV放送立願報名查詢結果】\n日期：${startDateStr} ~ ${endDateStr}${titleKeyword}\n----------\n`; const eventsGroup = {}; lastQuery.data.forEach(signup => { const key = `${signup.eventDate} ${signup.eventTitle}`; if (!eventsGroup[key]) { eventsGroup[key] = []; } eventsGroup[key].push(`- ${signup.position}: ${signup.user}`); }); let shareText = title; Object.keys(eventsGroup).sort().forEach(eventKey => { shareText += `\n【${eventKey}】\n`; shareText += eventsGroup[eventKey].join('\n'); shareText += '\n'; }); Swal.fire({ title: '準備分享的內容', width: isMobile ? '90vw' : '600px', html: `<textarea id="clipboard-textarea" readonly>${shareText}</textarea>`, confirmButtonText: '📋 複製內容', showCancelButton: true, cancelButtonText: '關閉', didOpen: () => { const textarea = document.getElementById('clipboard-textarea'); if (textarea) { textarea.style.height = 'auto'; textarea.style.height = (textarea.scrollHeight + 5) + 'px'; textarea.select(); } }, preConfirm: () => { const textToCopy = document.getElementById('clipboard-textarea').value; return navigator.clipboard ? navigator.clipboard.writeText(textToCopy).then(() => true).catch(err => { Swal.showValidationMessage(`複製失敗: ${err.message}`); return false; }) : (document.execCommand('copy'), true); } }).then((result) => { if (result.isConfirmed) { Swal.fire({ icon: 'success', title: '已複製成功！', text: '請手動切換到 LINE 或其他應用程式並貼上內容。', timer: 2500, showConfirmButton: false }); } }); });
+            document.getElementById('export-stats-pdf-btn').addEventListener('click', async () => { if (!statsChart || !lastStatsData || lastStatsData.labels.length === 0) { return Swal.fire('提示', '請先點擊「產生報表」以生成統計圖表和數據。', 'info'); } const sourceElement = document.getElementById('stats-details-container'); if (!sourceElement || sourceElement.children.length <= 1) { return Swal.fire('提示', '沒有詳細資料可供匯出。', 'info'); } showLoading(); try { const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }); const startDateStr = document.getElementById('stats-start-date').value, endDateStr = document.getElementById('stats-end-date').value; const dateRangeText = `${startDateStr || '所有'} - ${endDateStr || '所有'}`; const docTitle = `AV放送立願統計報表 (${dateRangeText})`; const generateTime = new Date().toLocaleString('zh-TW'); const pdfContentEl = document.createElement('div'); pdfContentEl.style.cssText = "position:absolute;left:-9999px;width:210mm;padding:15mm;background-color:white;font-family:'Microsoft JhengHei','PingFang TC',sans-serif;color:#333;"; const pdfStyles = `<style>.details-grid{display:flex;flex-wrap:wrap;justify-content:space-between;}.details-grid .stats-event-block{width:48%;border:1px solid #ccc;padding:8px;margin-bottom:10px;page-break-inside:avoid;box-sizing:border-box;}.details-grid h3{font-size:8px;margin:0 0 4px 0;color:#FF8C42;font-weight:bold;}.details-grid p{font-size:6px;margin:1px 0;line-height:1.3;}.details-grid ul{list-style-type:none;padding-left:0;margin:4px 0 0 0;}.details-grid li{background:#f9f9f9;padding:1px 3px;border-radius:2px;margin-bottom:1px;font-size:6px;}</style>`; const titleHtml = `<div style="text-align:center;border-bottom:2px solid #333;padding-bottom:10px;margin-bottom:15px;"><h1 style="font-size:20px;margin:0;color:#FF8C42;">${docTitle}</h1><p style="font-size:10px;margin:5px 0 0 0;">報表生成時間：${generateTime}</p></div>`; const chartImageData = statsChart.canvas.toDataURL('image/png', 1.0); const chartHtml = `<div style="text-align:center;margin-bottom:15px;page-break-inside:avoid;"><img src="${chartImageData}" style="width:100%;max-width:180mm;"/></div>`; const detailsTitle = sourceElement.querySelector('h2') ? sourceElement.querySelector('h2').outerHTML : ''; let eventBlocksHtml = ''; sourceElement.querySelectorAll('.stats-event-block').forEach(block => { eventBlocksHtml += block.outerHTML; }); const detailsGridHtml = `<div class="details-grid">${eventBlocksHtml}</div>`; pdfContentEl.innerHTML = pdfStyles + titleHtml + chartHtml + detailsTitle + detailsGridHtml; document.body.appendChild(pdfContentEl); const canvas = await html2canvas(pdfContentEl, { scale: 2, useCORS: true }); const imgData = canvas.toDataURL('image/png'); const pdfWidth = pdf.internal.pageSize.getWidth(), pdfHeight = pdf.internal.pageSize.getHeight(); const imgProps = pdf.getImageProperties(imgData); const imgWidth = pdfWidth, imgHeight = (imgProps.height * imgWidth) / imgProps.width; let heightLeft = imgHeight, position = 0; pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight); heightLeft -= pdfHeight; while (heightLeft > 0) { position -= pdfHeight; pdf.addPage(); pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight); heightLeft -= pdfHeight; } pdf.save(`AV立願統計報表_${startDateStr}_${endDateStr}.pdf`); document.body.removeChild(pdfContentEl); } catch (e) { console.error("PDF generation failed:", e); Swal.fire('PDF 匯出失敗', `前端生成PDF時發生錯誤: ${e.message}`, 'error'); } finally { hideLoading(); } });
         });
     </script>
 </body>

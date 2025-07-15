@@ -1,6 +1,6 @@
 // ====================================================================
 //  檔案：code.gs (AV放送立願報名行事曆 - 後端 API)
-//  版本：6.23-debug (包含強制日誌記錄以進行最終偵錯)
+//  版本：6.24-debug (包含新增與刪除的強制日誌記錄)
 // ====================================================================
 
 // --- 已填入您提供的 CSV 網址 ---
@@ -189,6 +189,49 @@ function addBackupSignup(eventId, userName, position) {
   }
 }
 
+function removeSignup(eventId, userName) {
+  writeLog('removeSignup', eventId, userName, '', '啟動', '開始處理刪除請求');
+  if (!eventId || !userName) {
+    writeLog('removeSignup', eventId, userName, '', '失敗', '缺少事件ID或姓名');
+    return { status: 'error', message: '缺少事件ID或姓名。' };
+  }
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(15000)) {
+    writeLog('removeSignup', eventId, userName, '', '失敗', '系統忙碌，無法取得鎖');
+    return { status: 'error', message: '系統忙碌中，無法取消報名，請稍後再試。' };
+  }
+  try {
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    const signupsSheet = ss.getSheetByName(SIGNUPS_SHEET_NAME);
+    if (!signupsSheet) { throw new Error(`工作表不存在! Signups: ${!!signupsSheet}`); }
+    const signupsData = signupsSheet.getDataRange().getValues();
+    let rowIndexToDelete = -1;
+    let originalData = '';
+    for (let i = signupsData.length - 1; i >= 1; i--) { 
+      if (signupsData[i][1] === eventId && signupsData[i][2] === userName) { 
+        rowIndexToDelete = i + 1;
+        originalData = signupsData[i].join(', ');
+        break; 
+      } 
+    }
+    if (rowIndexToDelete > -1) {
+      writeLog('removeSignup', eventId, userName, '', '準備刪除', `找到匹配紀錄於行 ${rowIndexToDelete}。資料: ${originalData}`);
+      signupsSheet.deleteRow(rowIndexToDelete);
+      SpreadsheetApp.flush();
+      writeLog('removeSignup', eventId, userName, '', '成功', `已刪除行 ${rowIndexToDelete}`);
+      return { status: 'success', message: '已為您取消報名。' };
+    } else {
+      writeLog('removeSignup', eventId, userName, '', '失敗', '在工作表中找不到匹配的報名紀錄');
+      return { status: 'error', message: '找不到您的報名紀錄。' };
+    }
+  } catch(err) {
+    writeLog('removeSignup', eventId, userName, '', '程式碼錯誤', err.message);
+    throw new Error('取消報名時發生錯誤。');
+  } finally {
+    lock.releaseLock();
+  }
+}
+
 // ====================================================================
 //  其他函式 (保持不變)
 // ====================================================================
@@ -200,7 +243,6 @@ function getStatsData(startDateStr, endDateStr) { try { const allSignups = getUn
 function getSignupsAsTextForToday() { const scriptTimeZone = Session.getScriptTimeZone(); const today = new Date(); const todayStr = Utilities.formatDate(today, scriptTimeZone, 'yyyy-MM-dd'); const result = getSignupsAsText(todayStr, todayStr); if (result && result.status === 'success' && result.text) { const dateDisplay = Utilities.formatDate(today, scriptTimeZone, 'MM/dd'); result.text = result.text.replace(`日期：${todayStr} ~ ${todayStr}`, `日期：今天 (${dateDisplay})`); } return result; }
 function getSignupsAsTextForTomorrow() { const scriptTimeZone = Session.getScriptTimeZone(); const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate() + 1); const tomorrowStr = Utilities.formatDate(tomorrow, scriptTimeZone, 'yyyy-MM-dd'); const result = getSignupsAsText(tomorrowStr, tomorrowStr); if (result && result.status === 'success' && result.text) { const dateDisplay = Utilities.formatDate(tomorrow, scriptTimeZone, 'MM/dd'); result.text = result.text.replace(`日期：${tomorrowStr} ~ ${tomorrowStr}`, `日期：明天 (${dateDisplay})`); } return result; }
 function getSignupsAsText(startDateStr, endDateStr) { const allSignups = getUnifiedSignups('', startDateStr, endDateStr); if (!allSignups || allSignups.length === 0) { return { status: 'nodata' }; } const eventsGroup = {}; allSignups.forEach(signup => { const key = `${signup.eventDate} ${signup.eventTitle}`; if (!eventsGroup[key]) { eventsGroup[key] = []; } eventsGroup[key].push(`- ${signup.position}: ${signup.user}`); }); let formattedText = `【AV放送立願報名記錄】\n日期：${startDateStr} ~ ${endDateStr}\n----------\n\n`; Object.keys(eventsGroup).sort().forEach(eventKey => { formattedText += `【${eventKey}】\n`; formattedText += eventsGroup[eventKey].join('\n'); formattedText += '\n\n'; }); return { status: 'success', text: formattedText }; }
-function removeSignup(eventId, userName) { if (!eventId || !userName) return { status: 'error', message: '缺少事件ID或姓名。' }; const lock = LockService.getScriptLock(); if (!lock.tryLock(15000)) { return { status: 'error', message: '系統忙碌中，無法取消報名，請稍後再試。' }; } try { const ss = SpreadsheetApp.openById(SHEET_ID); const signupsSheet = ss.getSheetByName(SIGNUPS_SHEET_NAME); const signupsData = signupsSheet.getDataRange().getValues(); let found = false; for (let i = signupsData.length - 1; i >= 1; i--) { if (signupsData[i][1] === eventId && signupsData[i][2] === userName) { signupsSheet.deleteRow(i + 1); found = true; break; } } if (found) { return { status: 'success', message: '已為您取消報名。' }; } return { status: 'error', message: '找不到您的報名紀錄。' }; } catch(err) { console.error("removeSignup 失敗:", err.message, err.stack); throw new Error('取消報名時發生錯誤。'); } finally { lock.releaseLock(); } }
 function createTempSheetAndExport(startDateStr, endDateStr) { const ss = SpreadsheetApp.openById(SHEET_ID); const spreadsheetId = ss.getId(); let tempSheet = null; let tempFile = null; try { const tempSheetName = "匯出報表_" + new Date().getTime(); tempSheet = ss.insertSheet(tempSheetName); const data = getUnifiedSignups('', startDateStr, endDateStr); if (!data || data.length === 0) { ss.deleteSheet(tempSheet); return { status: 'nodata', message: '在選定的日期範圍內沒有任何報名記錄。' }; } const title = `AV放送立願報名記錄 (${startDateStr || '所有'} - ${endDateStr || '所有'})`; tempSheet.getRange("A1:E1").merge().setValue(title).setFontWeight("bold").setFontSize(15).setHorizontalAlignment('center'); const headers = ["活動日期", "活動", "崗位", "報名者", "報名時間"]; const fields = ["eventDate", "eventTitle", "position", "user", "timestamp"]; tempSheet.getRange(2, 1, 1, headers.length).setValues([headers]).setFontWeight("bold").setBackground("#d9ead3").setFontSize(15).setHorizontalAlignment('center'); const outputData = data.map(row => fields.map(field => row[field] || "")); if (outputData.length > 0) { tempSheet.getRange(3, 1, outputData.length, headers.length).setValues(outputData).setFontSize(15).setHorizontalAlignment('left'); } tempSheet.autoResizeColumns(1, 5); SpreadsheetApp.flush(); const blob = Drive.Files.export(spreadsheetId, MimeType.MICROSOFT_EXCEL, { gid: tempSheet.getSheetId(), alt: 'media' }); blob.setName(`AV立願報名記錄_${new Date().toISOString().slice(0,10)}.xlsx`); tempFile = DriveApp.createFile(blob); tempFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); const downloadUrl = tempFile.getWebContentLink(); scheduleDeletion(tempFile.getId()); ss.deleteSheet(tempSheet); return { status: 'success', url: downloadUrl, fileId: tempFile.getId() }; } catch (e) { console.error("createTempSheetAndExport 失敗: " + e.toString()); if (tempFile) { try { DriveApp.getFileById(tempFile.getId()).setTrashed(true); } catch (f) { console.error("無法刪除臨時檔案: " + f.toString()); } } if (tempSheet && ss.getSheetByName(tempSheet.getName())) { ss.deleteSheet(tempSheet); } throw new Error('匯出時發生錯誤: ' + e.toString()); } }
 function scheduleDeletion(fileId) { if (!fileId) return; try { const trigger = ScriptApp.newTrigger('triggeredDeleteHandler').timeBased().after(24 * 60 * 60 * 1000).create(); PropertiesService.getScriptProperties().setProperty(trigger.getUniqueId(), fileId); } catch (e) { console.error(`排程刪除檔案 '${fileId}' 時失敗: ${e.toString()}`); } }
 function triggeredDeleteHandler(e) { const triggerId = e.triggerUid; const scriptProperties = PropertiesService.getScriptProperties(); const fileId = scriptProperties.getProperty(triggerId); if (fileId) { try { DriveApp.getFileById(fileId).setTrashed(true); } catch (err) { console.error(`刪除檔案 ${fileId} 失敗: ${err.toString()}`); } scriptProperties.deleteProperty(triggerId); } const allTriggers = ScriptApp.getProjectTriggers(); for (let i = 0; i < allTriggers.length; i++) { if (allTriggers[i].getUniqueId() === triggerId) { ScriptApp.deleteTrigger(allTriggers[i]); break; } } }

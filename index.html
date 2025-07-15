@@ -243,7 +243,7 @@
     <div id="loading" class="loading-overlay" style="display: none;"></div>
 
     <script>
-        const FRONTEND_VERSION = "1.7";
+        const FRONTEND_VERSION = "1.70715-1";
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1dCHAzjMNklN96jXKpWYcTv-NvzKoB8J6CcY30L55dAtaAf0bTRWTJTc20Fk2MZbgeQ/exec"; 
         
         function reloadSystem() { showLoading(); setTimeout(() => { location.reload(); }, 200); }
@@ -378,7 +378,102 @@
             document.getElementById('export-excel-btn').addEventListener('click', async () => { const startDateStr = document.getElementById('export-start-date').value, endDateStr = document.getElementById('export-end-date').value; if (!startDateStr || !endDateStr) { return Swal.fire('提示', '請選擇匯出的開始及結束日期。', 'info'); } showLoading(); try { const response = await callAppsScript('getUnifiedSignups', { searchText: '', startDateStr, endDateStr }); const dataToExport = response.data; if (!dataToExport || dataToExport.length === 0) { hideLoading(); return Swal.fire('無資料', '在選定的條件下沒有任何報名記錄可供匯出。', 'info'); } const dateRangeText = (startDateStr && endDateStr) ? `${startDateStr} - ${endDateStr}` : '所有日期'; const title = `AV放送立願報名記錄 (${dateRangeText})`; const generateTime = new Date().toLocaleString('zh-TW'); let htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>table{border-collapse:collapse;width:100%;font-family:'Microsoft JhengHei',sans-serif}td,th{border:1px solid #ddd;text-align:left;padding:8px}th{background-color:#f2f2f2}.title-row{background-color:#FF8C42;color:white;font-weight:bold;font-size:16px;text-align:center}</style></head><body><table><tr><td colspan="5" class="title-row">${title}</td></tr><tr><td colspan="5">報表生成時間：${generateTime}</td></tr><tr><th>活動日期</th><th>活動名稱</th><th>崗位</th><th>報名者</th><th>報名時間</th></tr>`; dataToExport.forEach(row => { htmlContent += `<tr><td>${row.eventDate||''}</td><td>${row.eventTitle||''}</td><td>${row.position||''}</td><td>${row.user||''}</td><td>'${row.timestamp||''}'</td></tr>`; }); htmlContent += '</table></body></html>'; const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' }); const fileName = `AV立願報名記錄_${new Date().toISOString().slice(0,10)}.xls`; const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = fileName; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(link.href); } catch (e) { Swal.fire('匯出失敗', e.message, 'error'); } finally { hideLoading(); } }); 
             document.getElementById('export-from-query-btn').addEventListener('click', exportCurrentQueryResultToExcel); 
             const shareToLine = async (type) => { showLoading(); try { const response = await callAppsScript(type); const data = response.data; if (data.status === 'nodata') { Swal.fire('無資料', `${type === 'getSignupsAsTextForToday' ? '今天' : '明天'}沒有任何報名記錄可供分享。`, 'info'); } else if (data.text) { const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(data.text)}`; window.open(lineUrl, '_blank'); } else { throw new Error("後端未回傳有效的文字資料。"); } } catch (e) { Swal.fire('分享失敗', e.message, 'error'); } finally { hideLoading(); } }; document.getElementById('share-today-line-btn').addEventListener('click', () => shareToLine('getSignupsAsTextForToday')); document.getElementById('share-tomorrow-line-btn').addEventListener('click', () => shareToLine('getSignupsAsTextForTomorrow')); 
-            const shareToClipboard = async (functionToCall) => { showLoading(); try { const response = await callAppsScript(functionToCall); const data = response.data; hideLoading(); if (data.status === 'nodata') { Swal.fire('無資料', `您選擇的日期沒有任何報名記錄可供分享。`, 'info'); return; } if (data.text) { Swal.fire({ title: '準備分享的內容', width: isMobile ? '90vw' : '600px', html: `<textarea id="clipboard-textarea" readonly>${data.text}</textarea>`, confirmButtonText: '📋 複製內容', showCancelButton: true, cancelButtonText: '關閉', didOpen: () => { const textarea = document.getElementById('clipboard-textarea'); if (textarea) { textarea.style.height = 'auto'; textarea.style.height = (textarea.scrollHeight + 5) + 'px'; textarea.select(); } }, preConfirm: () => { const textToCopy = document.getElementById('clipboard-textarea').value; return navigator.clipboard ? navigator.clipboard.writeText(textToCopy).then(() => true).catch(err => { Swal.showValidationMessage(`複製失敗: ${err.message}`); return false; }) : (document.execCommand('copy'), true); } }).then((result) => { if (result.isConfirmed) { Swal.fire({ icon: 'success', title: '已複製成功！', text: '請手動切換到 LINE 或其他應用程式並貼上內容。', timer: 2500, showConfirmButton: false }); } }); } else { throw new Error("無法從後端取得分享內容。"); } } catch (e) { hideLoading(); Swal.fire('操作失敗', e.message, 'error'); } }; document.getElementById('share-to-clipboard-btn').addEventListener('click', async () => { const { value: dayChoice } = await Swal.fire({ title: '選擇要分享的日期', text: '您要分享今天還是明天的報名資料？', showDenyButton: true, showCancelButton: true, confirmButtonText: '今天', denyButtonText: '明天', cancelButtonText: '取消', icon: 'question' }); if (dayChoice) shareToClipboard('getSignupsAsTextForToday'); else if (dayChoice === false) shareToClipboard('getSignupsAsTextForTomorrow'); }); 
+            
+            // Refactored shareToClipboard function to be more generic
+            const shareToClipboardContent = async (functionToCall, params = {}) => {
+                showLoading();
+                try {
+                    const response = await callAppsScript(functionToCall, params);
+                    const data = response.data;
+                    hideLoading();
+                    if (data.status === 'nodata') {
+                        Swal.fire('無資料', `您選擇的日期沒有任何報名記錄可供分享。`, 'info');
+                        return;
+                    }
+                    if (data.text) {
+                        Swal.fire({
+                            title: '準備分享的內容',
+                            width: isMobile ? '90vw' : '600px',
+                            html: `<textarea id="clipboard-textarea" readonly>${data.text}</textarea>`,
+                            confirmButtonText: '📋 複製內容',
+                            showCancelButton: true,
+                            cancelButtonText: '關閉',
+                            didOpen: () => {
+                                const textarea = document.getElementById('clipboard-textarea');
+                                if (textarea) {
+                                    textarea.style.height = 'auto';
+                                    textarea.style.height = (textarea.scrollHeight + 5) + 'px';
+                                    textarea.select();
+                                }
+                            },
+                            preConfirm: () => {
+                                const textToCopy = document.getElementById('clipboard-textarea').value;
+                                return navigator.clipboard ? navigator.clipboard.writeText(textToCopy).then(() => true).catch(err => {
+                                    Swal.showValidationMessage(`複製失敗: ${err.message}`);
+                                    return false;
+                                }) : (document.execCommand('copy'), true);
+                            }
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                Swal.fire({ icon: 'success', title: '已複製成功！', text: '請手動切換到 LINE 或其他應用程式並貼上內容。', timer: 2500, showConfirmButton: false });
+                            }
+                        });
+                    } else {
+                        throw new Error("無法從後端取得分享內容。");
+                    }
+                } catch (e) {
+                    hideLoading();
+                    Swal.fire('操作失敗', e.message, 'error');
+                }
+            };
+
+            // MODIFIED: Click listener for '分享至剪貼簿' button
+            document.getElementById('share-to-clipboard-btn').addEventListener('click', async () => {
+                const today = new Date();
+                const todayStr = today.toLocaleDateString('en-CA'); // YYYY-MM-DD
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tomorrowStr = tomorrow.toLocaleDateString('en-CA'); // YYYY-MM-DD
+
+                const { isConfirmed, isDenied, dismiss } = await Swal.fire({
+                    title: '選擇要分享的日期',
+                    text: '您要分享今天、明天還是指定日期區間的報名資料？',
+                    showDenyButton: true, // Used for "明天"
+                    showCancelButton: true, // Used for "按日期"
+                    showCloseButton: true, // Added: Displays an 'X' button in the top right corner
+                    confirmButtonText: '今天',
+                    denyButtonText: '明天',
+                    cancelButtonText: '按日期', // This will be the "按日期" button
+                    icon: 'question',
+                    // Added custom button styling for "按日期" to make it look like an action button
+                    customClass: {
+                        cancelButton: 'swal2-styled swal2-default-outline' // Mimic default Swal styling but can be customized further
+                    },
+                    buttonsStyling: true // Ensure default styling is applied
+                });
+
+                if (isConfirmed) { // "今天" button clicked
+                    shareToClipboardContent('getSignupsAsTextForToday'); // No params needed for today/tomorrow as backend calculates them
+                } else if (isDenied) { // "明天" button clicked
+                    shareToClipboardContent('getSignupsAsTextForTomorrow'); // No params needed
+                } else if (dismiss === Swal.DismissReason.cancel) { // "按日期" button clicked
+                    const startDateAdmin = document.getElementById('export-start-date').value;
+                    const endDateAdmin = document.getElementById('export-end-date').value;
+
+                    if (!startDateAdmin || !endDateAdmin) {
+                        Swal.fire('提示', '請在上方「開始日期」和「結束日期」輸入框中選擇日期區間。', 'info');
+                        return;
+                    }
+                    if (new Date(startDateAdmin) > new Date(endDateAdmin)) {
+                        Swal.fire('提示', '開始日期不能晚於結束日期。', 'info');
+                        return;
+                    }
+
+                    shareToClipboardContent('getSignupsAsTextForDateRange', { startDateStr: startDateAdmin, endDateStr: endDateAdmin });
+                }
+                // If user dismisses the dialog by clicking outside or pressing Esc, no action is taken.
+            });
+            // Original share-query-to-clipboard-btn remains unchanged for query results.
             document.getElementById('share-query-to-clipboard-btn').addEventListener('click', () => { if (!lastQuery || !lastQuery.data || lastQuery.data.length === 0) { return Swal.fire('無資料', '沒有可分享的查詢結果。', 'info'); } const { searchText, startDateStr, endDateStr } = lastQuery.params; const titleKeyword = searchText ? `，關鍵字：「${searchText}」` : ''; const title = `【AV放送立願報名查詢結果】\n日期：${startDateStr} ~ ${endDateStr}${titleKeyword}\n----------\n`; const eventsGroup = {}; lastQuery.data.forEach(signup => { const key = `${signup.eventDate} ${signup.eventTitle}`; if (!eventsGroup[key]) { eventsGroup[key] = []; } eventsGroup[key].push(`- ${signup.position}: ${signup.user}`); }); let shareText = title; Object.keys(eventsGroup).sort().forEach(eventKey => { shareText += `\n【${eventKey}】\n`; shareText += eventsGroup[eventKey].join('\n'); shareText += '\n'; }); Swal.fire({ title: '準備分享的內容', width: isMobile ? '90vw' : '600px', html: `<textarea id="clipboard-textarea" readonly>${shareText}</textarea>`, confirmButtonText: '📋 複製內容', showCancelButton: true, cancelButtonText: '關閉', didOpen: () => { const textarea = document.getElementById('clipboard-textarea'); if (textarea) { textarea.style.height = 'auto'; textarea.style.height = (textarea.scrollHeight + 5) + 'px'; textarea.select(); } }, preConfirm: () => { const textToCopy = document.getElementById('clipboard-textarea').value; return navigator.clipboard ? navigator.clipboard.writeText(textToCopy).then(() => true).catch(err => { Swal.showValidationMessage(`複製失敗: ${err.message}`); return false; }) : (document.execCommand('copy'), true); } }).then((result) => { if (result.isConfirmed) { Swal.fire({ icon: 'success', title: '已複製成功！', text: '請手動切換到 LINE 或其他應用程式並貼上內容。', timer: 2500, showConfirmButton: false }); } }); }); 
             document.getElementById('export-stats-pdf-btn').addEventListener('click', async () => { if (!statsChart || !lastStatsData || lastStatsData.labels.length === 0) { return Swal.fire('提示', '請先點擊「產生報表」以生成統計圖表和數據。', 'info'); } const sourceElement = document.getElementById('stats-details-container'); if (!sourceElement || sourceElement.children.length <= 1) { return Swal.fire('提示', '沒有詳細資料可供匯出。', 'info'); } showLoading(); try { const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }); const startDateStr = document.getElementById('stats-start-date').value, endDateStr = document.getElementById('stats-end-date').value; const dateRangeText = `${startDateStr || '所有'} - ${endDateStr || '所有'}`; const docTitle = `AV放送立願統計報表 (${dateRangeText})`; const generateTime = new Date().toLocaleString('zh-TW'); const pdfContentEl = document.createElement('div'); pdfContentEl.style.cssText = "position:absolute;left:-9999px;width:210mm;padding:15mm;background-color:white;font-family:'Microsoft JhengHei','PingFang TC',sans-serif;color:#333;"; const pdfStyles = `<style>.details-grid{display:flex;flex-wrap:wrap;justify-content:space-between;}.details-grid .stats-event-block{width:48%;border:1px solid #ccc;padding:8px;margin-bottom:10px;page-break-inside:avoid;box-sizing:border-box;}.details-grid h3{font-size:8px;margin:0 0 4px 0;color:#FF8C42;font-weight:bold;}.details-grid p{font-size:6px;margin:1px 0;line-height:1.3;}.details-grid ul{list-style-type:none;padding-left:0;margin:4px 0 0 0;}.details-grid li{background:#f9f9f9;padding:1px 3px;border-radius:2px;margin-bottom:1px;font-size:6px;}</style>`; const titleHtml = `<div style="text-align:center;border-bottom:2px solid #333;padding-bottom:10px;margin-bottom:15px;"><h1 style="font-size:20px;margin:0;color:#FF8C42;">${docTitle}</h1><p style="font-size:10px;margin:5px 0 0 0;">報表生成時間：${generateTime}</p></div>`; const chartImageData = statsChart.canvas.toDataURL('image/png', 1.0); const chartHtml = `<div style="text-align:center;margin-bottom:15px;page-break-inside:avoid;"><img src="${chartImageData}" style="width:100%;max-width:180mm;"/></div>`; const detailsTitle = sourceElement.querySelector('h2') ? sourceElement.querySelector('h2').outerHTML : ''; let eventBlocksHtml = ''; sourceElement.querySelectorAll('.stats-event-block').forEach(block => { eventBlocksHtml += block.outerHTML; }); const detailsGridHtml = `<div class="details-grid">${eventBlocksHtml}</div>`; pdfContentEl.innerHTML = pdfStyles + titleHtml + chartHtml + detailsTitle + detailsGridHtml; document.body.appendChild(pdfContentEl); const canvas = await html2canvas(pdfContentEl, { scale: 2, useCORS: true }); const imgData = canvas.toDataURL('image/png'); const pdfWidth = pdf.internal.pageSize.getWidth(), pdfHeight = pdf.internal.pageSize.getHeight(); const imgProps = pdf.getImageProperties(imgData); const imgWidth = pdfWidth, imgHeight = (imgProps.height * imgWidth) / imgProps.width; let heightLeft = imgHeight, position = 0; pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight); heightLeft -= pdfHeight; while (heightLeft > 0) { position -= pdfHeight; pdf.addPage(); pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight); heightLeft -= pdfHeight; } pdf.save(`AV立願統計報表_${startDateStr}_${endDateStr}.pdf`); document.body.removeChild(pdfContentEl); } catch (e) { console.error("PDF generation failed:", e); Swal.fire('PDF 匯出失敗', `前端生成PDF時發生錯誤: ${e.message}`, 'error'); } finally { hideLoading(); } });
         });

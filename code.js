@@ -1,6 +1,6 @@
 // ====================================================================
 //  檔案：code.gs (AV放送立願報名行事曆 - 後端 API)
-//  版本：6.15 (修正報名時間顯示，直接讀取文字)
+//  版本：6.17 (移除剪貼簿分享的文字長度限制)
 // ====================================================================
 
 // --- 已填入您提供的 CSV 網址 ---
@@ -29,7 +29,7 @@ function doGet(e) {
 
     switch (functionName) {
       case 'getEventsAndSignups': result = getEventsAndSignups(); break;
-      case 'getUnifiedSignups': result = getUnifiedSignups(params.searchText, params.startDateStr, params.endDateStr); break; // 新增統一查詢函式
+      case 'getUnifiedSignups': result = getUnifiedSignups(params.searchText, params.startDateStr, params.endDateStr); break;
       case 'getStatsData': result = getStatsData(params.startDateStr, params.endDateStr); break;
       case 'addSignup': result = addSignup(params.eventId, params.userName, params.position); break;
       case 'addBackupSignup': result = addBackupSignup(params.eventId, params.userName, params.position); break;
@@ -37,6 +37,7 @@ function doGet(e) {
       case 'createTempSheetAndExport': result = createTempSheetAndExport(params.startDateStr, params.endDateStr); break;
       case 'getSignupsAsTextForToday': result = getSignupsAsTextForToday(); break;
       case 'getSignupsAsTextForTomorrow': result = getSignupsAsTextForTomorrow(); break;
+      case 'getSignupsAsTextForDateRange': result = getSignupsAsText(params.startDateStr, params.endDateStr); break;
       default: throw new Error(`未知的函式名稱: ${functionName}`);
     }
 
@@ -61,7 +62,7 @@ function getSignupsAsTextForToday() {
     const today = new Date();
     const todayStr = Utilities.formatDate(today, scriptTimeZone, 'yyyy-MM-dd');
     const result = getSignupsAsText(todayStr, todayStr);
-    if (result && result.status === 'success' && result.text && !result.text.includes("報名資料過於龐大")) {
+    if (result && result.status === 'success' && result.text) {
         const dateDisplay = Utilities.formatDate(today, scriptTimeZone, 'MM/dd');
         result.text = result.text.replace(`日期：${todayStr} ~ ${todayStr}`, `日期：今天 (${dateDisplay})`);
     }
@@ -74,7 +75,7 @@ function getSignupsAsTextForTomorrow() {
     tomorrow.setDate(tomorrow.getDate() + 1);
     const tomorrowStr = Utilities.formatDate(tomorrow, scriptTimeZone, 'yyyy-MM-dd');
     const result = getSignupsAsText(tomorrowStr, tomorrowStr);
-    if (result && result.status === 'success' && result.text && !result.text.includes("報名資料過於龐大")) {
+    if (result && result.status === 'success' && result.text) {
         const dateDisplay = Utilities.formatDate(tomorrow, scriptTimeZone, 'MM/dd');
         result.text = result.text.replace(`日期：${tomorrowStr} ~ ${tomorrowStr}`, `日期：明天 (${dateDisplay})`);
     }
@@ -82,8 +83,7 @@ function getSignupsAsTextForTomorrow() {
 }
 
 function getSignupsAsText(startDateStr, endDateStr) {
-  // 修改為使用 getUnifiedSignups
-  const allSignups = getUnifiedSignups('', startDateStr, endDateStr); // 空關鍵字，獲取指定日期範圍內的所有報名
+  const allSignups = getUnifiedSignups('', startDateStr, endDateStr);
   if (!allSignups || allSignups.length === 0) {
     return { status: 'nodata' };
   }
@@ -101,9 +101,14 @@ function getSignupsAsText(startDateStr, endDateStr) {
     formattedText += eventsGroup[eventKey].join('\n');
     formattedText += '\n\n';
   });
-  if (encodeURIComponent(formattedText).length > 1800) {
-      formattedText = "報名資料過於龐大，無法透過文字分享，請改用「產生並下載Excel」功能。";
-  }
+
+  // 【***** START: MODIFICATION *****】
+  // Removed the length check. Now it will always return the full text.
+  // if (encodeURIComponent(formattedText).length > 1800) {
+  //     return { status: 'too_large', message: "報名資料過於龐大，無法透過文字分享，請改用「產生並下載Excel」功能。" };
+  // }
+  // 【***** END: MODIFICATION *****】
+
   return { status: 'success', text: formattedText };
 }
 
@@ -126,13 +131,12 @@ function getMasterData() {
     const eventsMap = new Map();
     eventsData.forEach(row => {
       const eventId = row[0];
-      // 確保 row[2] (日期) 存在且有效，避免 new Date(undefined) 或無效日期字串
       if (eventId && row[2]) {
         try {
             const dateObj = new Date(row[2]);
             if (isNaN(dateObj.getTime())) {
                 console.warn(`Invalid date found for event ID ${eventId}: ${row[2]}`);
-                return; // 跳過無效日期行
+                return;
             }
             eventsMap.set(eventId, {
               title: row[1] || '未知事件',
@@ -140,7 +144,7 @@ function getMasterData() {
               dateObj: dateObj,
               startTime: row[3] || '', endTime: row[4] || '',
               maxAttendees: parseInt(row[5], 10) || 999,
-              description: row[7] || '' // 新增描述欄位
+              description: row[7] || ''
             });
         } catch(e) {
             console.error(`Error processing date for event ID ${eventId}: ${row[2]}. Error: ${e.message}`);
@@ -220,13 +224,6 @@ function getEventsAndSignups() {
   } catch(err) { console.error("getEventsAndSignups 失敗:", err.message, err.stack); throw err; }
 }
 
-/**
- * 統一查詢報名紀錄的函式。
- * @param {string} searchText - 查詢關鍵字，可搜尋姓名、活動標題、崗位、活動描述。
- * @param {string} startDateStr - 開始日期字串 (yyyy-MM-dd)。
- * @param {string} endDateStr - 結束日期字串 (yyyy-MM-dd)。
- * @returns {Array<Object>} 符合條件的報名紀錄列表。
- */
 function getUnifiedSignups(searchText, startDateStr, endDateStr) {
   try {
     const { signupsData, eventsMap } = getMasterData();
@@ -238,41 +235,36 @@ function getUnifiedSignups(searchText, startDateStr, endDateStr) {
       const eventId = row[1];
       const eventDetail = eventsMap.get(eventId);
       
-      // 檢查事件詳情是否存在，且日期有效
       if (!eventDetail || !eventDetail.dateObj || isNaN(eventDetail.dateObj.getTime())) {
-        return false; // 跳過無效事件
+        return false;
       }
 
-      // 1. 日期範圍過濾
       const eventDate = eventDetail.dateObj;
       const start = startDateStr ? new Date(startDateStr) : null;
       const end = endDateStr ? new Date(endDateStr) : null;
-      if (end) end.setHours(23, 59, 59, 999); // 結束日期包含當天所有時間
+      if (end) end.setHours(23, 59, 59, 999);
 
       if (start && eventDate < start) return false;
       if (end && eventDate > end) return false;
 
-      // 2. 關鍵字過濾 (如果提供了關鍵字)
       if (searchLower) {
-        const user = String(row[2] || '').toLowerCase(); // 報名者姓名
-        const position = String(row[4] || '').toLowerCase(); // 報名崗位
-        const eventTitle = String(eventDetail.title || '').toLowerCase(); // 活動標題
-        const eventDescription = String(eventDetail.description || '').toLowerCase(); // 活動描述
+        const user = String(row[2] || '').toLowerCase();
+        const position = String(row[4] || '').toLowerCase();
+        const eventTitle = String(eventDetail.title || '').toLowerCase();
+        const eventDescription = String(eventDetail.description || '').toLowerCase();
 
-        // 檢查關鍵字是否匹配任一欄位
         if (
           !user.includes(searchLower) &&
           !position.includes(searchLower) &&
           !eventTitle.includes(searchLower) &&
           !eventDescription.includes(searchLower)
         ) {
-          return false; // 不符合關鍵字條件
+          return false;
         }
       }
-      return true; // 通過所有過濾條件
+      return true;
     });
 
-    // 將過濾後的報名資料映射為前端所需的格式
     const mappedSignups = filteredSignups.map(row => {
       const eventId = row[1];
       const eventDetail = eventsMap.get(eventId) || { title: '未知事件', dateString: '日期無效'};
@@ -283,7 +275,6 @@ function getUnifiedSignups(searchText, startDateStr, endDateStr) {
         eventDayOfWeek = dayMap[dayIndex];
       }
 
-      // 直接將 row[3] (報名時間) 視為文字，不做任何轉換
       const rawTimestamp = row[3] || '';
 
       return {
@@ -293,11 +284,10 @@ function getUnifiedSignups(searchText, startDateStr, endDateStr) {
         eventDate: eventDetail.dateString,
         eventDayOfWeek: eventDayOfWeek,
         user: row[2], 
-        timestamp: rawTimestamp, // 直接使用原始文字
+        timestamp: rawTimestamp,
         position: row[4]
       };
     });
-    // 依活動日期排序
     mappedSignups.sort((a, b) => {
         const dateA = new Date(a.eventDate); 
         const dateB = new Date(b.eventDate);
@@ -312,11 +302,10 @@ function getUnifiedSignups(searchText, startDateStr, endDateStr) {
 
 function getStatsData(startDateStr, endDateStr) {
   try {
-    // 修改為使用 getUnifiedSignups，空關鍵字表示不過濾文字
     const allSignups = getUnifiedSignups('', startDateStr, endDateStr);
     if (!allSignups || allSignups.length === 0) { return { labels: [], data: [], fullDetails: [] }; }
 
-    const { eventsMap } = getMasterData(); // 仍然需要 eventsMap 來獲取完整的活動資訊
+    const { eventsMap } = getMasterData();
 
     const statsByEventId = {};
     allSignups.forEach(signup => {
@@ -359,12 +348,10 @@ function addSignup(eventId, userName, position) {
     const eventData = eventsSheet.getDataRange().getValues().find(row => row[0] === eventId);
     if (!eventData) return { status: 'error', message: '找不到此活動。' };
     
-    // 創建正確的日期物件以進行時間比較
-    const eventDatePart = new Date(eventData[2]); // 從 CSV 讀取的日期字串
-    const eventTimeStr = eventData[4] || '23:59'; // 結束時間字串，若無則預設為當天結束
+    const eventDatePart = new Date(eventData[2]);
+    const eventTimeStr = eventData[4] || '23:59';
     const [hours, minutes] = eventTimeStr.split(':').map(Number);
     
-    // 將日期和時間合併為一個完整的日期時間物件
     const eventEndDateTime = new Date(eventDatePart.getFullYear(), eventDatePart.getMonth(), eventDatePart.getDate(), hours, minutes, 0);
 
     if (new Date() > eventEndDateTime) { return { status: 'error', message: '此活動已結束，無法報名。' }; }
@@ -403,10 +390,7 @@ function removeSignup(eventId, userName) {
   } finally { lock.releaseLock(); }
 }
 
-// 其他輔助函式
 function addBackupSignup(eventId, userName, position) { if (!eventId || !userName || !position) return { status: 'error', message: '缺少必要資訊。' }; const lock = LockService.getScriptLock(); lock.waitLock(15000); try { SpreadsheetApp.openById(SHEET_ID).getSheetByName(SIGNUPS_SHEET_NAME).appendRow(['su' + new Date().getTime(), eventId, userName, new Date(), `${position} (備援)`]); return { status: 'success' }; } catch (err) { console.error("addBackupSignup 失敗:", err.message, err.stack); throw new Error('備援報名時發生錯誤。'); } finally { lock.releaseLock(); } }
-
-// `getAllSignups` 和 `getMySignups` 已不再被使用，可以安全移除。
 
 function createTempSheetAndExport(startDateStr, endDateStr) { 
   const ss = SpreadsheetApp.openById(SHEET_ID); 
@@ -416,7 +400,6 @@ function createTempSheetAndExport(startDateStr, endDateStr) {
   try { 
     const tempSheetName = "匯出報表_" + new Date().getTime(); 
     tempSheet = ss.insertSheet(tempSheetName); 
-    // 修改為使用 getUnifiedSignups，空關鍵字表示不過濾文字
     const data = getUnifiedSignups('', startDateStr, endDateStr); 
     if (!data || data.length === 0) { 
       ss.deleteSheet(tempSheet); 

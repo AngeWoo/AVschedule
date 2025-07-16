@@ -243,7 +243,7 @@
     <div id="loading" class="loading-overlay" style="display: none;"></div>
 
     <script>
-        const FRONTEND_VERSION = "1.70715-1";
+        const FRONTEND_VERSION = "0716";
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1dCHAzjMNklN96jXKpWYcTv-NvzKoB8J6CcY30L55dAtaAf0bTRWTJTc20Fk2MZbgeQ/exec"; 
         
         function reloadSystem() { showLoading(); setTimeout(() => { location.reload(); }, 200); }
@@ -309,9 +309,9 @@
             resultDiv.innerHTML = ''; actionsContainer.style.display = 'none';
             if (!signups || signups.length === 0) { Swal.fire({ icon: 'info', title: '查無資料', text: '在您指定的條件下，找不到相關的報名紀錄。' }); lastQuery.data = []; return; }
             lastQuery.data = signups;
-            let tableHtml = `<table class="all-signups-table"><thead><tr><th>活動日期</th><th>星期</th><th>活動名稱</th><th>崗位</th><th>姓名</th><th>報名時間</th><th>操作</th></tr></thead><tbody>`;
+            let tableHtml = `<table class="all-signups-table"><thead><tr><th>活動日期</th><th>星期</th><th>活動名稱</th><th>開始時間</th><th>結束時間</th><th>崗位</th><th>姓名</th><th>報名時間</th><th>操作</th></tr></thead><tbody>`;
             signups.forEach(s => {
-                tableHtml += `<tr><td>${s.eventDate || ''}</td><td>${s.eventDayOfWeek || ''}</td><td>${s.eventTitle || ''}</td><td>${s.position || ''}</td><td>${s.user || ''}</td><td>${s.timestamp || ''}</td>
+                tableHtml += `<tr><td>${s.eventDate || ''}</td><td>${s.eventDayOfWeek || ''}</td><td>${s.eventTitle || ''}</td><td>${s.startTime || ''}</td><td>${s.endTime || ''}</td><td>${s.position || ''}</td><td>${s.user || ''}</td><td>${s.timestamp || ''}</td>
                               <td style="display: flex; gap: 8px; white-space: nowrap;">
                                 <button class="btn btn-sm" style="background-color: #ffc107; color: #212529;" onclick='promptToModifySignup(${JSON.stringify(s).replace(/'/g, "\\'")})'>修改</button>
                                 <button class="btn btn-danger btn-sm" onclick='promptToDeleteSignup(${JSON.stringify(s).replace(/'/g, "\\'")})'>刪除</button>

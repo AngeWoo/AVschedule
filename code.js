@@ -3,7 +3,7 @@
 //  版本：6.27 (新增操作日誌寫入 Logs 分頁)
 // ====================================================================
 
-const BACKEND_VERSION = "0715-2"; // *** 後端版本號 ***
+const BACKEND_VERSION = "0716"; // *** 後端版本號 ***
 
 // --- 已填入您提供的 CSV 網址 ---
 const EVENTS_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRT5YNZcSXbE6ULGft15cba4Mx8kK1Eb7bLftucmkmUGmTxkrA8vw5uerAP2dYqptBHnbmq_3QNOOJx/pub?gid=795926947&single=true&output=csv";
@@ -325,6 +325,8 @@ function getUnifiedSignups(searchText, startDateStr, endDateStr) {
       return {
         signupId: row[0], eventId: eventId, eventTitle: eventDetail.title, 
         eventDate: eventDetail.dateString, eventDayOfWeek: eventDayOfWeek,
+        startTime: eventDetail.startTime || '',
+        endTime: eventDetail.endTime || '',
         user: row[2], timestamp: rawTimestamp, position: row[4]
       };
     });

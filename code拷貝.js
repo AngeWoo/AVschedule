@@ -427,7 +427,6 @@ function getSignupsAsText(startDateStr, endDateStr) {
     formattedText += eventsGroup[eventKey].join('\n');
     formattedText += '\n\n';
   });
-  formattedText += '查看最新報名資訊：\nhttps://angewoo.github.io/AVschedule/';
   return { status: 'success', text: formattedText };
 }
 

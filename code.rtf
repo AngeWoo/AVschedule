@@ -1,0 +1,756 @@
+{\rtf1\ansi\ansicpg950\cocoartf2822
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;\red77\green80\blue85;\red246\green247\blue249;\red46\green49\blue51;
+\red20\green67\blue174;\red186\green6\blue115;\red162\green0\blue16;\red24\green25\blue27;\red97\green3\blue173;
+\red21\green98\blue39;\red18\green115\blue126;}
+{\*\expandedcolortbl;;\cssrgb\c37255\c38824\c40784;\cssrgb\c97255\c97647\c98039;\cssrgb\c23529\c25098\c26275;
+\cssrgb\c9412\c35294\c73725;\cssrgb\c78824\c15294\c52549;\cssrgb\c70196\c7843\c7059;\cssrgb\c12549\c12941\c14118;\cssrgb\c46275\c15294\c73333;
+\cssrgb\c7451\c45098\c20000;\cssrgb\c3529\c52157\c56863;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww20640\viewh12760\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs26 \cf2 \cb3 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 // ====================================================================\cf4 \cb1 \strokec4 \
+\cf2 \cb3 \strokec2 //  \uc0\u27284 \u26696 \u65306 code.gs (AV\u25918 \u36865 \u31435 \u39000 \u22577 \u21517 \u34892 \u20107 \u26310  - \u24460 \u31471  API)\cf4 \cb1 \strokec4 \
+\cf2 \cb3 \strokec2 //  \uc0\u29256 \u26412 \u65306 6.27 (\u26032 \u22686 \u25805 \u20316 \u26085 \u35468 \u23531 \u20837  Logs \u20998 \u38913 )\cf4 \cb1 \strokec4 \
+\cf2 \cb3 \strokec2 // ====================================================================\cf4 \cb1 \strokec4 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5 const\cf4 \strokec4  \cf6 \strokec6 BACKEND_VERSION\cf4 \strokec4  = \cf7 \strokec7 "0716"\cf4 \strokec4 ; \cf2 \strokec2 // *** \uc0\u24460 \u31471 \u29256 \u26412 \u34399  ***\cf4 \cb1 \strokec4 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb3 \strokec2 // --- \uc0\u24050 \u22635 \u20837 \u24744 \u25552 \u20379 \u30340  CSV \u32178 \u22336  ---\cf4 \cb1 \strokec4 \
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5 const\cf4 \strokec4  \cf6 \strokec6 EVENTS_CSV_URL\cf4 \strokec4  = \cf7 \strokec7 "https://docs.google.com/spreadsheets/d/e/2PACX-1vRT5YNZcSXbE6ULGft15cba4Mx8kK1Eb7bLftucmkmUGmTxkrA8vw5uerAP2dYqptBHnbmq_3QNOOJx/pub?gid=795926947&single=true&output=csv"\cf4 \strokec4 ;\cb1 \
+\cf5 \cb3 \strokec5 const\cf4 \strokec4  \cf6 \strokec6 SIGNUPS_CSV_URL\cf4 \strokec4  = \cf7 \strokec7 "https://docs.google.com/spreadsheets/d/e/2PACX-1vRT5YNZcSXbE6ULGft15cba4Mx8kK1Eb7bLftucmkmUGmTxkrA8vw5uerAP2dYqptBHnbmq_3QNOOJx/pub?gid=767193030&single=true&output=csv"\cf4 \strokec4 ;\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb3 \strokec2 // ---------------------------------------------------\cf4 \cb1 \strokec4 \
+\
+\cf2 \cb3 \strokec2 // --- \uc0\u20840 \u22495 \u35373 \u23450  ---\cf4 \cb1 \strokec4 \
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5 const\cf4 \strokec4  \cf6 \strokec6 SHEET_ID\cf4 \strokec4  = \cf7 \strokec7 '1gBIlhEKPQHBvslY29veTdMEJeg2eVcaJx_7A-8cTWIM'\cf4 \strokec4 ;\cb1 \
+\cf5 \cb3 \strokec5 const\cf4 \strokec4  \cf6 \strokec6 EVENTS_SHEET_NAME\cf4 \strokec4  = \cf7 \strokec7 'Events'\cf4 \strokec4 ;\cb1 \
+\cf5 \cb3 \strokec5 const\cf4 \strokec4  \cf6 \strokec6 SIGNUPS_SHEET_NAME\cf4 \strokec4  = \cf7 \strokec7 'Signups'\cf4 \strokec4 ;\cb1 \
+\cf5 \cb3 \strokec5 const\cf4 \strokec4  \cf6 \strokec6 LOGS_SHEET_NAME\cf4 \strokec4  = \cf7 \strokec7 'Logs'\cf4 \strokec4 ; \cf2 \strokec2 // \uc0\u26032 \u22686  Logs \u20998 \u38913 \u21517 \u31281 \cf4 \cb1 \strokec4 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb3 \strokec2 // -------------------- API \uc0\u26680 \u24515 \u36335 \u30001 \u20989 \u24335  --------------------\cf4 \cb1 \strokec4 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5 function\cf4 \strokec4  \cf8 \strokec8 doGet\cf4 \strokec4 (\cf8 \strokec8 e\cf4 \strokec4 ) \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb3   \cf5 \strokec5 let\cf4 \strokec4  \cf8 \strokec8 responsePayload\cf4 \strokec4 ;\cb1 \
+\cb3   \cf5 \strokec5 try\cf4 \strokec4  \{\cb1 \
+\cb3     \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 e\cf4 \strokec4  || !\cf8 \strokec8 e\cf4 \strokec4 .\cf8 \strokec8 parameter\cf4 \strokec4  || !\cf8 \strokec8 e\cf4 \strokec4 .\cf8 \strokec8 parameter\cf4 \strokec4 .\cf8 \strokec8 payload\cf4 \strokec4  || !\cf8 \strokec8 e\cf4 \strokec4 .\cf8 \strokec8 parameter\cf4 \strokec4 .\cf8 \strokec8 callback\cf4 \strokec4 ) \{\cb1 \
+\cb3       \cf5 \strokec5 return\cf4 \strokec4  \cf6 \strokec6 HtmlService\cf4 \strokec4 .\cf8 \strokec8 createHtmlOutput\cf4 \strokec4 (\cf7 \strokec7 "API \uc0\u24460 \u31471 \u24050 \u37096 \u32626 \u12290 "\cf4 \strokec4 );\cb1 \
+\cb3     \}\cb1 \
+\cb3     \cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 request\cf4 \strokec4  = \cf6 \strokec6 JSON\cf4 \strokec4 .\cf8 \strokec8 parse\cf4 \strokec4 (\cf8 \strokec8 e\cf4 \strokec4 .\cf8 \strokec8 parameter\cf4 \strokec4 .\cf8 \strokec8 payload\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 functionName\cf4 \strokec4  = \cf8 \strokec8 request\cf4 \strokec4 .\cf8 \strokec8 functionName\cf4 \strokec4 ;\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 params\cf4 \strokec4  = \cf8 \strokec8 request\cf4 \strokec4 .\cf8 \strokec8 params\cf4 \strokec4  || \{\};\cb1 \
+\cb3     \cf5 \strokec5 let\cf4 \strokec4  \cf8 \strokec8 result\cf4 \strokec4 ;\cb1 \
+\
+\cb3     \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 log\cf4 \strokec4 (\cf7 \strokec7 `doGet: \uc0\u25509 \u25910 \u21040 \u20989 \u24335 \u21628 \u21483  - \cf4 \strokec4 $\{\cf8 \strokec8 functionName\cf4 \strokec4 \}\cf7 \strokec7 \uc0\u65292 \u21443 \u25976 : \cf4 \strokec4 $\{\cf6 \strokec6 JSON\cf4 \strokec4 .\cf8 \strokec8 stringify\cf4 \strokec4 (\cf8 \strokec8 params\cf4 \strokec4 )\}\cf7 \strokec7 `\cf4 \strokec4 ); \cf2 \strokec2 // Debug: Log incoming call\cf4 \cb1 \strokec4 \
+\
+\cb3     \cf5 \strokec5 switch\cf4 \strokec4  (\cf8 \strokec8 functionName\cf4 \strokec4 ) \{\cb1 \
+\cb3       \cf5 \strokec5 case\cf4 \strokec4  \cf7 \strokec7 'getEventsAndSignups'\cf4 \strokec4 : \cf8 \strokec8 result\cf4 \strokec4  = \cf8 \strokec8 getEventsAndSignups\cf4 \strokec4 (); \cf5 \strokec5 break\cf4 \strokec4 ;\cb1 \
+\cb3       \cf5 \strokec5 case\cf4 \strokec4  \cf7 \strokec7 'getUnifiedSignups'\cf4 \strokec4 : \cf8 \strokec8 result\cf4 \strokec4  = \cf8 \strokec8 getUnifiedSignups\cf4 \strokec4 (\cf8 \strokec8 params\cf4 \strokec4 .\cf8 \strokec8 searchText\cf4 \strokec4 , \cf8 \strokec8 params\cf4 \strokec4 .\cf8 \strokec8 startDateStr\cf4 \strokec4 , \cf8 \strokec8 params\cf4 \strokec4 .\cf8 \strokec8 endDateStr\cf4 \strokec4 ); \cf5 \strokec5 break\cf4 \strokec4 ;\cb1 \
+\cb3       \cf5 \strokec5 case\cf4 \strokec4  \cf7 \strokec7 'getStatsData'\cf4 \strokec4 : \cf8 \strokec8 result\cf4 \strokec4  = \cf8 \strokec8 getStatsData\cf4 \strokec4 (\cf8 \strokec8 params\cf4 \strokec4 .\cf8 \strokec8 startDateStr\cf4 \strokec4 , \cf8 \strokec8 params\cf4 \strokec4 .\cf8 \strokec8 endDateStr\cf4 \strokec4 ); \cf5 \strokec5 break\cf4 \strokec4 ;\cb1 \
+\cb3       \cf5 \strokec5 case\cf4 \strokec4  \cf7 \strokec7 'addSignup'\cf4 \strokec4 : \cf8 \strokec8 result\cf4 \strokec4  = \cf8 \strokec8 addSignup\cf4 \strokec4 (\cf8 \strokec8 params\cf4 \strokec4 .\cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 params\cf4 \strokec4 .\cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 params\cf4 \strokec4 .\cf8 \strokec8 position\cf4 \strokec4 ); \cf5 \strokec5 break\cf4 \strokec4 ;\cb1 \
+\cb3       \cf5 \strokec5 case\cf4 \strokec4  \cf7 \strokec7 'addBackupSignup'\cf4 \strokec4 : \cf8 \strokec8 result\cf4 \strokec4  = \cf8 \strokec8 addBackupSignup\cf4 \strokec4 (\cf8 \strokec8 params\cf4 \strokec4 .\cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 params\cf4 \strokec4 .\cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 params\cf4 \strokec4 .\cf8 \strokec8 position\cf4 \strokec4 ); \cf5 \strokec5 break\cf4 \strokec4 ;\cb1 \
+\cb3       \cf5 \strokec5 case\cf4 \strokec4  \cf7 \strokec7 'removeSignup'\cf4 \strokec4 : \cf8 \strokec8 result\cf4 \strokec4  = \cf8 \strokec8 removeSignup\cf4 \strokec4 (\cf8 \strokec8 params\cf4 \strokec4 .\cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 params\cf4 \strokec4 .\cf8 \strokec8 userName\cf4 \strokec4 ); \cf5 \strokec5 break\cf4 \strokec4 ;\cb1 \
+\cb3       \cf5 \strokec5 case\cf4 \strokec4  \cf7 \strokec7 'modifySignup'\cf4 \strokec4 : \cf8 \strokec8 result\cf4 \strokec4  = \cf8 \strokec8 modifySignup\cf4 \strokec4 (\cf8 \strokec8 params\cf4 \strokec4 .\cf8 \strokec8 signupId\cf4 \strokec4 , \cf8 \strokec8 params\cf4 \strokec4 .\cf8 \strokec8 newPosition\cf4 \strokec4 ); \cf5 \strokec5 break\cf4 \strokec4 ;\cb1 \
+\cb3       \cf5 \strokec5 case\cf4 \strokec4  \cf7 \strokec7 'createTempSheetAndExport'\cf4 \strokec4 : \cf8 \strokec8 result\cf4 \strokec4  = \cf8 \strokec8 createTempSheetAndExport\cf4 \strokec4 (\cf8 \strokec8 params\cf4 \strokec4 .\cf8 \strokec8 startDateStr\cf4 \strokec4 , \cf8 \strokec8 params\cf4 \strokec4 .\cf8 \strokec8 endDateStr\cf4 \strokec4 ); \cf5 \strokec5 break\cf4 \strokec4 ;\cb1 \
+\cb3       \cf5 \strokec5 case\cf4 \strokec4  \cf7 \strokec7 'getSignupsAsTextForToday'\cf4 \strokec4 : \cf8 \strokec8 result\cf4 \strokec4  = \cf8 \strokec8 getSignupsAsTextForToday\cf4 \strokec4 (); \cf5 \strokec5 break\cf4 \strokec4 ;\cb1 \
+\cb3       \cf5 \strokec5 case\cf4 \strokec4  \cf7 \strokec7 'getSignupsAsTextForTomorrow'\cf4 \strokec4 : \cf8 \strokec8 result\cf4 \strokec4  = \cf8 \strokec8 getSignupsAsTextForTomorrow\cf4 \strokec4 (); \cf5 \strokec5 break\cf4 \strokec4 ;\cb1 \
+\cb3       \cf5 \strokec5 case\cf4 \strokec4  \cf7 \strokec7 'getSignupsAsTextForDateRange'\cf4 \strokec4 : \cf8 \strokec8 result\cf4 \strokec4  = \cf8 \strokec8 getSignupsAsText\cf4 \strokec4 (\cf8 \strokec8 params\cf4 \strokec4 .\cf8 \strokec8 startDateStr\cf4 \strokec4 , \cf8 \strokec8 params\cf4 \strokec4 .\cf8 \strokec8 endDateStr\cf4 \strokec4 ); \cf5 \strokec5 break\cf4 \strokec4 ;\cb1 \
+\cb3       \cf5 \strokec5 default\cf4 \strokec4 : \cf5 \strokec5 throw\cf4 \strokec4  \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Error\cf4 \strokec4 (\cf7 \strokec7 `\uc0\u26410 \u30693 \u30340 \u20989 \u24335 \u21517 \u31281 : \cf4 \strokec4 $\{\cf8 \strokec8 functionName\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 );\cb1 \
+\cb3     \}\cb1 \
+\
+\cb3     \cf8 \strokec8 responsePayload\cf4 \strokec4  = \{ \cb1 \
+\cb3       \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'success'\cf4 \strokec4 , \cb1 \
+\cb3       \cf8 \strokec8 data\cf4 \strokec4 : \cf8 \strokec8 result\cf4 \strokec4 ,\cb1 \
+\cb3       \cf8 \strokec8 version\cf4 \strokec4 : \cf6 \strokec6 BACKEND_VERSION\cf4 \strokec4  \cb1 \
+\cb3     \};\cb1 \
+\cb3   \} \cf5 \strokec5 catch\cf4 \strokec4  (\cf8 \strokec8 err\cf4 \strokec4 ) \{\cb1 \
+\cb3     \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 error\cf4 \strokec4 (\cf7 \strokec7 `doGet \uc0\u22519 \u34892 \u22833 \u25943 : \cf4 \strokec4 $\{\cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 message\cf4 \strokec4 \}\cf7 \strokec7 \\n\cf4 \strokec4 $\{\cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 stack\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 );\cb1 \
+\cb3     \cf8 \strokec8 responsePayload\cf4 \strokec4  = \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'error'\cf4 \strokec4 , \cf8 \strokec8 message\cf4 \strokec4 : \cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 message\cf4 \strokec4 , \cf8 \strokec8 version\cf4 \strokec4 : \cf6 \strokec6 BACKEND_VERSION\cf4 \strokec4  \};\cb1 \
+\cb3   \}\cb1 \
+\
+\cb3   \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 callbackFunctionName\cf4 \strokec4  = \cf8 \strokec8 e\cf4 \strokec4 .\cf8 \strokec8 parameter\cf4 \strokec4 .\cf8 \strokec8 callback\cf4 \strokec4 ;\cb1 \
+\cb3   \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 jsonpResponse\cf4 \strokec4  = \cf7 \strokec7 `\cf4 \strokec4 $\{\cf8 \strokec8 callbackFunctionName\cf4 \strokec4 \}\cf7 \strokec7 (\cf4 \strokec4 $\{\cf6 \strokec6 JSON\cf4 \strokec4 .\cf8 \strokec8 stringify\cf4 \strokec4 (\cf8 \strokec8 responsePayload\cf4 \strokec4 )\}\cf7 \strokec7 )`\cf4 \strokec4 ;\cb1 \
+\cb3   \cb1 \
+\cb3   \cf5 \strokec5 return\cf4 \strokec4  \cf6 \strokec6 ContentService\cf4 \strokec4 .\cf8 \strokec8 createTextOutput\cf4 \strokec4 (\cf8 \strokec8 jsonpResponse\cf4 \strokec4 ).\cf8 \strokec8 setMimeType\cf4 \strokec4 (\cf6 \strokec6 ContentService\cf4 \strokec4 .\cf6 \strokec6 MimeType\cf4 \strokec4 .\cf6 \strokec6 JAVASCRIPT\cf4 \strokec4 );\cb1 \
+\cb3 \}\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5 function\cf4 \strokec4  \cf8 \strokec8 doPost\cf4 \strokec4 (\cf8 \strokec8 e\cf4 \strokec4 ) \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb3   \cf5 \strokec5 return\cf4 \strokec4  \cf8 \strokec8 doGet\cf4 \strokec4 (\cf8 \strokec8 e\cf4 \strokec4 );\cb1 \
+\cb3 \}\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb3 \strokec2 // -------------------- \uc0\u36628 \u21161 \u20989 \u24335  --------------------\cf4 \cb1 \strokec4 \
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5 function\cf4 \strokec4  \cf8 \strokec8 padTime\cf4 \strokec4 (\cf8 \strokec8 timeStr\cf4 \strokec4 ) \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb3   \cf5 \strokec5 let\cf4 \strokec4  \cf8 \strokec8 trimmedTime\cf4 \strokec4  = \cf6 \strokec6 String\cf4 \strokec4 (\cf8 \strokec8 timeStr\cf4 \strokec4  || \cf7 \strokec7 ''\cf4 \strokec4 ).\cf8 \strokec8 trim\cf4 \strokec4 ();\cb1 \
+\cb3   \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 trimmedTime\cf4 \strokec4 .\cf8 \strokec8 includes\cf4 \strokec4 (\cf7 \strokec7 'GMT'\cf4 \strokec4 ) && \cf8 \strokec8 trimmedTime\cf4 \strokec4 .\cf8 \strokec8 includes\cf4 \strokec4 (\cf7 \strokec7 ':'\cf4 \strokec4 )) \{\cb1 \
+\cb3     \cf5 \strokec5 try\cf4 \strokec4  \{\cb1 \
+\cb3       \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 dateObj\cf4 \strokec4  = \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Date\cf4 \strokec4 (\cf8 \strokec8 trimmedTime\cf4 \strokec4 );\cb1 \
+\cb3       \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 isNaN\cf4 \strokec4 (\cf8 \strokec8 dateObj\cf4 \strokec4 .\cf8 \strokec8 getTime\cf4 \strokec4 ())) \{\cb1 \
+\cb3         \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 scriptTimeZone\cf4 \strokec4  = \cf6 \strokec6 Session\cf4 \strokec4 .\cf8 \strokec8 getScriptTimeZone\cf4 \strokec4 ();\cb1 \
+\cb3         \cf5 \strokec5 return\cf4 \strokec4  \cf6 \strokec6 Utilities\cf4 \strokec4 .\cf8 \strokec8 formatDate\cf4 \strokec4 (\cf8 \strokec8 dateObj\cf4 \strokec4 , \cf8 \strokec8 scriptTimeZone\cf4 \strokec4 , \cf7 \strokec7 'HH:mm'\cf4 \strokec4 );\cb1 \
+\cb3       \}\cb1 \
+\cb3     \} \cf5 \strokec5 catch\cf4 \strokec4 (\cf8 \strokec8 e\cf4 \strokec4 ) \{\}\cb1 \
+\cb3   \}\cb1 \
+\cb3   \cf5 \strokec5 if\cf4 \strokec4  (\cf9 \strokec9 /^\\d:\\d\\d$/\cf4 \strokec4 .\cf8 \strokec8 test\cf4 \strokec4 (\cf8 \strokec8 trimmedTime\cf4 \strokec4 )) \{ \cf5 \strokec5 return\cf4 \strokec4  \cf7 \strokec7 '0'\cf4 \strokec4  + \cf8 \strokec8 trimmedTime\cf4 \strokec4 ; \}\cb1 \
+\cb3   \cf5 \strokec5 return\cf4 \strokec4  \cf8 \strokec8 trimmedTime\cf4 \strokec4 ;\cb1 \
+\cb3 \}\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf10 \cb3 \strokec10 /**\cf4 \cb1 \strokec4 \
+\cf10 \cb3 \strokec10  * \uc0\u23559 \u25805 \u20316 \u26085 \u35468 \u35352 \u37636 \u21040  Google Sheet \u30340  Logs \u20998 \u38913 \u12290 \cf4 \cb1 \strokec4 \
+\cf10 \cb3 \strokec10  * @param \{string\} action \uc0\u25805 \u20316 \u39006 \u22411  (\u20363 \u22914 : 'addSignup', 'removeSignup', 'modifySignup')\cf4 \cb1 \strokec4 \
+\cf10 \cb3 \strokec10  * @param \{string\} eventId \uc0\u30456 \u38364 \u27963 \u21205 \u30340  ID\cf4 \cb1 \strokec4 \
+\cf10 \cb3 \strokec10  * @param \{string\} userName \uc0\u22519 \u34892 \u25805 \u20316 \u30340 \u20351 \u29992 \u32773 \u21517 \u31281 \cf4 \cb1 \strokec4 \
+\cf10 \cb3 \strokec10  * @param \{string\} position \uc0\u30456 \u38364 \u30340 \u23831 \u20301  (\u20363 \u22914 : \u26032 \u23831 \u20301 , \u33290 \u23831 \u20301  -> \u26032 \u23831 \u20301 )\cf4 \cb1 \strokec4 \
+\cf10 \cb3 \strokec10  * @param \{string\} result \uc0\u25805 \u20316 \u32080 \u26524  (\u20363 \u22914 : '\u25104 \u21151 ', '\u22833 \u25943 ', '\u37325 \u35079 \u22577 \u21517 ', '\u38989 \u28415 ', '\u25214 \u19981 \u21040 ')\cf4 \cb1 \strokec4 \
+\cf10 \cb3 \strokec10  * @param \{string\} details \uc0\u25805 \u20316 \u30340 \u35443 \u32048 \u25551 \u36848 \cf4 \cb1 \strokec4 \
+\cf10 \cb3 \strokec10  */\cf4 \cb1 \strokec4 \
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5 function\cf4 \strokec4  \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf8 \strokec8 action\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 position\cf4 \strokec4 , \cf8 \strokec8 result\cf4 \strokec4 , \cf8 \strokec8 details\cf4 \strokec4 ) \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb3   \cf5 \strokec5 try\cf4 \strokec4  \{\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 ss\cf4 \strokec4  = \cf6 \strokec6 SpreadsheetApp\cf4 \strokec4 .\cf8 \strokec8 openById\cf4 \strokec4 (\cf6 \strokec6 SHEET_ID\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 logSheet\cf4 \strokec4  = \cf8 \strokec8 ss\cf4 \strokec4 .\cf8 \strokec8 getSheetByName\cf4 \strokec4 (\cf6 \strokec6 LOGS_SHEET_NAME\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 logSheet\cf4 \strokec4 ) \{\cb1 \
+\cb3       \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 error\cf4 \strokec4 (\cf7 \strokec7 `Log sheet '\cf4 \strokec4 $\{\cf6 \strokec6 LOGS_SHEET_NAME\cf4 \strokec4 \}\cf7 \strokec7 ' not found. Cannot log operation.`\cf4 \strokec4 );\cb1 \
+\cb3       \cf5 \strokec5 return\cf4 \strokec4 ;\cb1 \
+\cb3     \}\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 timestamp\cf4 \strokec4  = \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Date\cf4 \strokec4 ();\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 scriptTimeZone\cf4 \strokec4  = \cf6 \strokec6 Session\cf4 \strokec4 .\cf8 \strokec8 getScriptTimeZone\cf4 \strokec4 ();\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 formattedTimestamp\cf4 \strokec4  = \cf6 \strokec6 Utilities\cf4 \strokec4 .\cf8 \strokec8 formatDate\cf4 \strokec4 (\cf8 \strokec8 timestamp\cf4 \strokec4 , \cf8 \strokec8 scriptTimeZone\cf4 \strokec4 , \cf7 \strokec7 'yyyy/MM/dd HH:mm:ss'\cf4 \strokec4 );\cb1 \
+\cb3     \cb1 \
+\cb3     \cf8 \strokec8 logSheet\cf4 \strokec4 .\cf8 \strokec8 appendRow\cf4 \strokec4 ([\cf8 \strokec8 formattedTimestamp\cf4 \strokec4 , \cf8 \strokec8 action\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 position\cf4 \strokec4 , \cf8 \strokec8 result\cf4 \strokec4 , \cf8 \strokec8 details\cf4 \strokec4 ]);\cb1 \
+\cb3     \cf2 \strokec2 // \uc0\u31435 \u21363 \u21047 \u26032 \u65292 \u30906 \u20445 \u26085 \u35468 \u34987 \u23531 \u20837 \cf4 \cb1 \strokec4 \
+\cb3     \cf6 \strokec6 SpreadsheetApp\cf4 \strokec4 .\cf8 \strokec8 flush\cf4 \strokec4 (); \cb1 \
+\cb3     \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 log\cf4 \strokec4 (\cf7 \strokec7 `Logged: \cf4 \strokec4 $\{\cf8 \strokec8 action\cf4 \strokec4 \}\cf7 \strokec7  for Event \cf4 \strokec4 $\{\cf8 \strokec8 eventId\cf4 \strokec4 \}\cf7 \strokec7 , User \cf4 \strokec4 $\{\cf8 \strokec8 userName\cf4 \strokec4 \}\cf7 \strokec7 , Position \cf4 \strokec4 $\{\cf8 \strokec8 position\cf4 \strokec4 \}\cf7 \strokec7 , Result: \cf4 \strokec4 $\{\cf8 \strokec8 result\cf4 \strokec4 \}\cf7 \strokec7 , Details: \cf4 \strokec4 $\{\cf8 \strokec8 details\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 );\cb1 \
+\cb3   \} \cf5 \strokec5 catch\cf4 \strokec4  (\cf8 \strokec8 logError\cf4 \strokec4 ) \{\cb1 \
+\cb3     \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 error\cf4 \strokec4 (\cf7 \strokec7 `Failed to log operation to sheet: \cf4 \strokec4 $\{\cf8 \strokec8 logError\cf4 \strokec4 .\cf8 \strokec8 message\cf4 \strokec4 \}\cf7 \strokec7 \\n\cf4 \strokec4 $\{\cf8 \strokec8 logError\cf4 \strokec4 .\cf8 \strokec8 stack\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 );\cb1 \
+\cb3   \}\cb1 \
+\cb3 \}\cb1 \
+\
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb3 \strokec2 // -------------------- \uc0\u36039 \u26009 \u29554 \u21462 \u33287 \u34389 \u29702 \u20989 \u24335  --------------------\cf4 \cb1 \strokec4 \
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5 function\cf4 \strokec4  \cf8 \strokec8 getMasterData\cf4 \strokec4 () \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb3   \cf5 \strokec5 if\cf4 \strokec4  (\cf6 \strokec6 EVENTS_CSV_URL\cf4 \strokec4 .\cf8 \strokec8 includes\cf4 \strokec4 (\cf7 \strokec7 "\uc0\u22312 \u27492 \u36028 \u19978 "\cf4 \strokec4 ) || \cf6 \strokec6 SIGNUPS_CSV_URL\cf4 \strokec4 .\cf8 \strokec8 includes\cf4 \strokec4 (\cf7 \strokec7 "\uc0\u22312 \u27492 \u36028 \u19978 "\cf4 \strokec4 )) \{\cb1 \
+\cb3     \cf5 \strokec5 throw\cf4 \strokec4  \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Error\cf4 \strokec4 (\cf7 \strokec7 "\uc0\u24460 \u31471 \u31243 \u24335 \u30908 \u23578 \u26410 \u35373 \u23450  Events \u21644  Signups \u30340  CSV \u32178 \u22336 \u12290 "\cf4 \strokec4 );\cb1 \
+\cb3   \}\cb1 \
+\cb3   \cf5 \strokec5 try\cf4 \strokec4  \{\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 cacheBuster\cf4 \strokec4  = \cf7 \strokec7 '&_t='\cf4 \strokec4  + \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Date\cf4 \strokec4 ().\cf8 \strokec8 getTime\cf4 \strokec4 ();\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 requests\cf4 \strokec4  = [ \cb1 \
+\cb3       \{ \cf8 \strokec8 url\cf4 \strokec4 : \cf6 \strokec6 EVENTS_CSV_URL\cf4 \strokec4  + \cf8 \strokec8 cacheBuster\cf4 \strokec4 , \cf8 \strokec8 muteHttpExceptions\cf4 \strokec4 : \cf5 \strokec5 true\cf4 \strokec4  \}, \cb1 \
+\cb3       \{ \cf8 \strokec8 url\cf4 \strokec4 : \cf6 \strokec6 SIGNUPS_CSV_URL\cf4 \strokec4  + \cf8 \strokec8 cacheBuster\cf4 \strokec4 , \cf8 \strokec8 muteHttpExceptions\cf4 \strokec4 : \cf5 \strokec5 true\cf4 \strokec4  \} \cb1 \
+\cb3     ];\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 responses\cf4 \strokec4  = \cf6 \strokec6 UrlFetchApp\cf4 \strokec4 .\cf8 \strokec8 fetchAll\cf4 \strokec4 (\cf8 \strokec8 requests\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 eventsResponse\cf4 \strokec4  = \cf8 \strokec8 responses\cf4 \strokec4 [\cf11 \strokec11 0\cf4 \strokec4 ];\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 signupsResponse\cf4 \strokec4  = \cf8 \strokec8 responses\cf4 \strokec4 [\cf11 \strokec11 1\cf4 \strokec4 ];\cb1 \
+\cb3     \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 eventsResponse\cf4 \strokec4 .\cf8 \strokec8 getResponseCode\cf4 \strokec4 () !== \cf11 \strokec11 200\cf4 \strokec4 ) \cf5 \strokec5 throw\cf4 \strokec4  \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Error\cf4 \strokec4 (\cf7 \strokec7 `\uc0\u28961 \u27861 \u29554 \u21462  Events CSV \u36039 \u26009 \u12290 \u37679 \u35492 \u30908 : \cf4 \strokec4 $\{\cf8 \strokec8 eventsResponse\cf4 \strokec4 .\cf8 \strokec8 getResponseCode\cf4 \strokec4 ()\}\cf7 \strokec7 `\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 signupsResponse\cf4 \strokec4 .\cf8 \strokec8 getResponseCode\cf4 \strokec4 () !== \cf11 \strokec11 200\cf4 \strokec4 ) \cf5 \strokec5 throw\cf4 \strokec4  \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Error\cf4 \strokec4 (\cf7 \strokec7 `\uc0\u28961 \u27861 \u29554 \u21462  Signups CSV \u36039 \u26009 \u12290 \u37679 \u35492 \u30908 : \cf4 \strokec4 $\{\cf8 \strokec8 signupsResponse\cf4 \strokec4 .\cf8 \strokec8 getResponseCode\cf4 \strokec4 ()\}\cf7 \strokec7 `\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 eventsData\cf4 \strokec4  = \cf6 \strokec6 Utilities\cf4 \strokec4 .\cf8 \strokec8 parseCsv\cf4 \strokec4 (\cf8 \strokec8 eventsResponse\cf4 \strokec4 .\cf8 \strokec8 getContentText\cf4 \strokec4 ());\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 signupsData\cf4 \strokec4  = \cf6 \strokec6 Utilities\cf4 \strokec4 .\cf8 \strokec8 parseCsv\cf4 \strokec4 (\cf8 \strokec8 signupsResponse\cf4 \strokec4 .\cf8 \strokec8 getContentText\cf4 \strokec4 ());\cb1 \
+\cb3     \cb1 \
+\cb3     \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 log\cf4 \strokec4 (\cf7 \strokec7 `getMasterData: \uc0\u25104 \u21151 \u24478  CSV \u29554 \u21462 \u36039 \u26009 \u12290 `\cf4 \strokec4 ); \cf2 \strokec2 // Debug\cf4 \cb1 \strokec4 \
+\cb3     \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 log\cf4 \strokec4 (\cf7 \strokec7 `getMasterData: Events CSV \uc0\u35712 \u21462 \u21040  \cf4 \strokec4 $\{\cf8 \strokec8 eventsData\cf4 \strokec4 .\cf8 \strokec8 length\cf4 \strokec4 \}\cf7 \strokec7  \uc0\u34892  (\u21547 \u27161 \u38957 )\u12290 `\cf4 \strokec4 ); \cf2 \strokec2 // Debug\cf4 \cb1 \strokec4 \
+\cb3     \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 log\cf4 \strokec4 (\cf7 \strokec7 `getMasterData: Signups CSV \uc0\u35712 \u21462 \u21040  \cf4 \strokec4 $\{\cf8 \strokec8 signupsData\cf4 \strokec4 .\cf8 \strokec8 length\cf4 \strokec4 \}\cf7 \strokec7  \uc0\u34892  (\u21547 \u27161 \u38957 )\u12290 `\cf4 \strokec4 ); \cf2 \strokec2 // Debug\cf4 \cb1 \strokec4 \
+\
+\cb3     \cf8 \strokec8 eventsData\cf4 \strokec4 .\cf8 \strokec8 shift\cf4 \strokec4 (); \cf2 \strokec2 // \uc0\u31227 \u38500 \u27161 \u38957 \cf4 \cb1 \strokec4 \
+\cb3     \cf8 \strokec8 signupsData\cf4 \strokec4 .\cf8 \strokec8 shift\cf4 \strokec4 (); \cf2 \strokec2 // \uc0\u31227 \u38500 \u27161 \u38957 \cf4 \cb1 \strokec4 \
+\
+\cb3     \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 log\cf4 \strokec4 (\cf7 \strokec7 `getMasterData: Events Data (\uc0\u31227 \u38500 \u27161 \u38957 \u24460 ): \cf4 \strokec4 $\{\cf8 \strokec8 eventsData\cf4 \strokec4 .\cf8 \strokec8 length\cf4 \strokec4 \}\cf7 \strokec7  \uc0\u31558 `\cf4 \strokec4 ); \cf2 \strokec2 // Debug\cf4 \cb1 \strokec4 \
+\cb3     \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 log\cf4 \strokec4 (\cf7 \strokec7 `getMasterData: Signups Data (\uc0\u31227 \u38500 \u27161 \u38957 \u24460 ): \cf4 \strokec4 $\{\cf8 \strokec8 signupsData\cf4 \strokec4 .\cf8 \strokec8 length\cf4 \strokec4 \}\cf7 \strokec7  \uc0\u31558 `\cf4 \strokec4 ); \cf2 \strokec2 // Debug\cf4 \cb1 \strokec4 \
+\cb3     \cf2 \strokec2 // console.log('getMasterData: Sample Events Data (first 2 rows):', eventsData.slice(0, 2)); // Debug: Sample data\cf4 \cb1 \strokec4 \
+\cb3     \cf2 \strokec2 // console.log('getMasterData: Sample Signups Data (first 2 rows):', signupsData.slice(0, 2)); // Debug: Sample data\cf4 \cb1 \strokec4 \
+\
+\
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 scriptTimeZone\cf4 \strokec4  = \cf6 \strokec6 Session\cf4 \strokec4 .\cf8 \strokec8 getScriptTimeZone\cf4 \strokec4 ();\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 eventsMap\cf4 \strokec4  = \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Map\cf4 \strokec4 ();\cb1 \
+\cb3     \cf8 \strokec8 eventsData\cf4 \strokec4 .\cf8 \strokec8 forEach\cf4 \strokec4 (\cf8 \strokec8 row\cf4 \strokec4  => \{\cb1 \
+\cb3       \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 eventId\cf4 \strokec4  = \cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 0\cf4 \strokec4 ];\cb1 \
+\cb3       \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 eventId\cf4 \strokec4  && \cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 2\cf4 \strokec4 ]) \{\cb1 \
+\cb3         \cf5 \strokec5 try\cf4 \strokec4  \{\cb1 \
+\cb3             \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 dateObj\cf4 \strokec4  = \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Date\cf4 \strokec4 (\cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 2\cf4 \strokec4 ]);\cb1 \
+\cb3             \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 isNaN\cf4 \strokec4 (\cf8 \strokec8 dateObj\cf4 \strokec4 .\cf8 \strokec8 getTime\cf4 \strokec4 ())) \{\cb1 \
+\cb3                 \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 warn\cf4 \strokec4 (\cf7 \strokec7 `getMasterData: \uc0\u28961 \u25928 \u26085 \u26399 \u26684 \u24335 \u65292 \u36339 \u36942 \u27963 \u21205  ID \cf4 \strokec4 $\{\cf8 \strokec8 eventId\cf4 \strokec4 \}\cf7 \strokec7 : \cf4 \strokec4 $\{\cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 2\cf4 \strokec4 ]\}\cf7 \strokec7 `\cf4 \strokec4 );\cb1 \
+\cb3                 \cf5 \strokec5 return\cf4 \strokec4 ;\cb1 \
+\cb3             \}\cb1 \
+\cb3             \cf8 \strokec8 eventsMap\cf4 \strokec4 .\cf5 \strokec5 set\cf4 \strokec4 (\cf8 \strokec8 eventId\cf4 \strokec4 , \{\cb1 \
+\cb3               \cf8 \strokec8 title\cf4 \strokec4 : \cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 1\cf4 \strokec4 ] || \cf7 \strokec7 '\uc0\u26410 \u30693 \u20107 \u20214 '\cf4 \strokec4 ,\cb1 \
+\cb3               \cf8 \strokec8 dateString\cf4 \strokec4 : \cf6 \strokec6 Utilities\cf4 \strokec4 .\cf8 \strokec8 formatDate\cf4 \strokec4 (\cf8 \strokec8 dateObj\cf4 \strokec4 , \cf8 \strokec8 scriptTimeZone\cf4 \strokec4 , \cf7 \strokec7 'yyyy/MM/dd'\cf4 \strokec4 ),\cb1 \
+\cb3               \cf8 \strokec8 dateObj\cf4 \strokec4 : \cf8 \strokec8 dateObj\cf4 \strokec4 ,\cb1 \
+\cb3               \cf8 \strokec8 startTime\cf4 \strokec4 : \cf8 \strokec8 padTime\cf4 \strokec4 (\cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 3\cf4 \strokec4 ]),\cb1 \
+\cb3               \cf8 \strokec8 endTime\cf4 \strokec4 : \cf8 \strokec8 padTime\cf4 \strokec4 (\cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 4\cf4 \strokec4 ]),\cb1 \
+\cb3               \cf8 \strokec8 maxAttendees\cf4 \strokec4 : \cf8 \strokec8 parseInt\cf4 \strokec4 (\cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 5\cf4 \strokec4 ], \cf11 \strokec11 10\cf4 \strokec4 ) || \cf11 \strokec11 999\cf4 \strokec4 ,\cb1 \
+\cb3               \cf8 \strokec8 description\cf4 \strokec4 : \cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 7\cf4 \strokec4 ] || \cf7 \strokec7 ''\cf4 \cb1 \strokec4 \
+\cb3             \});\cb1 \
+\cb3         \} \cf5 \strokec5 catch\cf4 \strokec4 (\cf8 \strokec8 e\cf4 \strokec4 ) \{\cb1 \
+\cb3             \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 error\cf4 \strokec4 (\cf7 \strokec7 `getMasterData: \uc0\u34389 \u29702 \u27963 \u21205  ID \cf4 \strokec4 $\{\cf8 \strokec8 eventId\cf4 \strokec4 \}\cf7 \strokec7  \uc0\u30340 \u26085 \u26399 \u26178 \u30332 \u29983 \u37679 \u35492 : \cf4 \strokec4 $\{\cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 2\cf4 \strokec4 ]\}\cf7 \strokec7 . \uc0\u37679 \u35492 : \cf4 \strokec4 $\{\cf8 \strokec8 e\cf4 \strokec4 .\cf8 \strokec8 message\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 );\cb1 \
+\cb3         \}\cb1 \
+\cb3       \}\cb1 \
+\cb3     \});\cb1 \
+\cb3     \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 log\cf4 \strokec4 (\cf7 \strokec7 `getMasterData: \uc0\u24314 \u31435  eventsMap \u23436 \u25104 \u12290 \u20849  \cf4 \strokec4 $\{\cf8 \strokec8 eventsMap\cf4 \strokec4 .\cf8 \strokec8 size\cf4 \strokec4 \}\cf7 \strokec7  \uc0\u20491 \u26377 \u25928 \u27963 \u21205 \u12290 `\cf4 \strokec4 ); \cf2 \strokec2 // Debug\cf4 \cb1 \strokec4 \
+\cb3     \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 eventsData\cf4 \strokec4 , \cf8 \strokec8 signupsData\cf4 \strokec4 , \cf8 \strokec8 eventsMap\cf4 \strokec4  \};\cb1 \
+\cb3   \} \cf5 \strokec5 catch\cf4 \strokec4  (\cf8 \strokec8 err\cf4 \strokec4 ) \{\cb1 \
+\cb3     \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 error\cf4 \strokec4 (\cf7 \strokec7 `getMasterData (CSV) \uc0\u22833 \u25943 : \cf4 \strokec4 $\{\cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 message\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 , \cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 stack\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 throw\cf4 \strokec4  \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Error\cf4 \strokec4 (\cf7 \strokec7 `\uc0\u24478  CSV \u32178 \u22336 \u35712 \u21462 \u36039 \u26009 \u26178 \u30332 \u29983 \u37679 \u35492 : \cf4 \strokec4 $\{\cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 message\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 );\cb1 \
+\cb3   \}\cb1 \
+\cb3 \}\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5 function\cf4 \strokec4  \cf8 \strokec8 getEventsAndSignups\cf4 \strokec4 () \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb3   \cf5 \strokec5 try\cf4 \strokec4  \{\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \{ \cf8 \strokec8 eventsData\cf4 \strokec4 , \cf8 \strokec8 signupsData\cf4 \strokec4  \} = \cf8 \strokec8 getMasterData\cf4 \strokec4 (); \cf2 \strokec2 // \uc0\u36889 \u26371 \u21628 \u21483 \u19968 \u27425  getMasterData\cf4 \cb1 \strokec4 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 scriptTimeZone\cf4 \strokec4  = \cf6 \strokec6 Session\cf4 \strokec4 .\cf8 \strokec8 getScriptTimeZone\cf4 \strokec4 ();\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 signupsByEventId\cf4 \strokec4  = \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Map\cf4 \strokec4 ();\cb1 \
+\cb3     \cf8 \strokec8 signupsData\cf4 \strokec4 .\cf8 \strokec8 forEach\cf4 \strokec4 (\cf8 \strokec8 row\cf4 \strokec4  => \{\cb1 \
+\cb3       \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 eventId\cf4 \strokec4  = \cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 1\cf4 \strokec4 ];\cb1 \
+\cb3       \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 eventId\cf4 \strokec4 ) \cf5 \strokec5 return\cf4 \strokec4 ;\cb1 \
+\cb3       \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 signupsByEventId\cf4 \strokec4 .\cf8 \strokec8 has\cf4 \strokec4 (\cf8 \strokec8 eventId\cf4 \strokec4 )) \{ \cf8 \strokec8 signupsByEventId\cf4 \strokec4 .\cf5 \strokec5 set\cf4 \strokec4 (\cf8 \strokec8 eventId\cf4 \strokec4 , []); \}\cb1 \
+\cb3       \cf8 \strokec8 signupsByEventId\cf4 \strokec4 .\cf5 \strokec5 get\cf4 \strokec4 (\cf8 \strokec8 eventId\cf4 \strokec4 ).\cf8 \strokec8 push\cf4 \strokec4 (\{ \cf8 \strokec8 user\cf4 \strokec4 : \cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 2\cf4 \strokec4 ], \cf8 \strokec8 position\cf4 \strokec4 : \cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 4\cf4 \strokec4 ] \});\cb1 \
+\cb3     \});\cb1 \
+\cb3     \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 log\cf4 \strokec4 (\cf7 \strokec7 `getEventsAndSignups: signupsByEventId \uc0\u24314 \u31435 \u23436 \u25104 \u12290 \u20849  \cf4 \strokec4 $\{\cf8 \strokec8 signupsByEventId\cf4 \strokec4 .\cf8 \strokec8 size\cf4 \strokec4 \}\cf7 \strokec7  \uc0\u20491 \u27963 \u21205 \u26377 \u22577 \u21517 \u36039 \u26009 \u12290 `\cf4 \strokec4 ); \cf2 \strokec2 // Debug\cf4 \cb1 \strokec4 \
+\
+\cb3     \cf5 \strokec5 return\cf4 \strokec4  \cf8 \strokec8 eventsData\cf4 \strokec4 .\cf8 \strokec8 map\cf4 \strokec4 (\cf8 \strokec8 row\cf4 \strokec4  => \{\cb1 \
+\cb3       \cf5 \strokec5 const\cf4 \strokec4  [\cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 title\cf4 \strokec4 , \cf8 \strokec8 rawDateString\cf4 \strokec4 , \cf8 \strokec8 rawStartTime\cf4 \strokec4 , \cf8 \strokec8 rawEndTime\cf4 \strokec4 , \cf8 \strokec8 maxAttendees\cf4 \strokec4 , \cf8 \strokec8 positions\cf4 \strokec4 , \cf8 \strokec8 description\cf4 \strokec4 ] = \cf8 \strokec8 row\cf4 \strokec4 ;\cb1 \
+\cb3       \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 eventId\cf4 \strokec4  || !\cf8 \strokec8 title\cf4 \strokec4  || !\cf8 \strokec8 rawDateString\cf4 \strokec4  || !\cf8 \strokec8 rawStartTime\cf4 \strokec4 ) \{\cb1 \
+\cb3           \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 warn\cf4 \strokec4 (\cf7 \strokec7 `getEventsAndSignups: \uc0\u36339 \u36942 \u28961 \u25928 \u27963 \u21205 \u36039 \u26009 : \cf4 \strokec4 $\{\cf6 \strokec6 JSON\cf4 \strokec4 .\cf8 \strokec8 stringify\cf4 \strokec4 (\cf8 \strokec8 row\cf4 \strokec4 )\}\cf7 \strokec7 `\cf4 \strokec4 );\cb1 \
+\cb3           \cf5 \strokec5 return\cf4 \strokec4  \cf5 \strokec5 null\cf4 \strokec4 ;\cb1 \
+\cb3       \}\cb1 \
+\cb3       \cb1 \
+\cb3       \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 paddedStartTime\cf4 \strokec4  = \cf8 \strokec8 padTime\cf4 \strokec4 (\cf8 \strokec8 rawStartTime\cf4 \strokec4 );\cb1 \
+\cb3       \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 paddedEndTime\cf4 \strokec4  = \cf8 \strokec8 padTime\cf4 \strokec4 (\cf8 \strokec8 rawEndTime\cf4 \strokec4 );\cb1 \
+\cb3       \cb1 \
+\cb3       \cf5 \strokec5 let\cf4 \strokec4  \cf8 \strokec8 datePart\cf4 \strokec4 ;\cb1 \
+\cb3       \cf5 \strokec5 try\cf4 \strokec4  \{\cb1 \
+\cb3           \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 dateObj\cf4 \strokec4  = \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Date\cf4 \strokec4 (\cf8 \strokec8 rawDateString\cf4 \strokec4 );\cb1 \
+\cb3           \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 isNaN\cf4 \strokec4 (\cf8 \strokec8 dateObj\cf4 \strokec4 .\cf8 \strokec8 getTime\cf4 \strokec4 ())) \{\cb1 \
+\cb3               \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 warn\cf4 \strokec4 (\cf7 \strokec7 `getEventsAndSignups: \uc0\u28961 \u25928 \u26085 \u26399 \u23383 \u20018 \u65292 \u36339 \u36942 \u27963 \u21205  ID \cf4 \strokec4 $\{\cf8 \strokec8 eventId\cf4 \strokec4 \}\cf7 \strokec7 : \cf4 \strokec4 $\{\cf8 \strokec8 rawDateString\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 );\cb1 \
+\cb3               \cf5 \strokec5 return\cf4 \strokec4  \cf5 \strokec5 null\cf4 \strokec4 ;\cb1 \
+\cb3           \}\cb1 \
+\cb3           \cf8 \strokec8 datePart\cf4 \strokec4  = \cf6 \strokec6 Utilities\cf4 \strokec4 .\cf8 \strokec8 formatDate\cf4 \strokec4 (\cf8 \strokec8 dateObj\cf4 \strokec4 , \cf8 \strokec8 scriptTimeZone\cf4 \strokec4 , \cf7 \strokec7 "yyyy-MM-dd"\cf4 \strokec4 );\cb1 \
+\cb3       \} \cf5 \strokec5 catch\cf4 \strokec4  (\cf8 \strokec8 e\cf4 \strokec4 ) \{\cb1 \
+\cb3           \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 error\cf4 \strokec4 (\cf7 \strokec7 `getEventsAndSignups: \uc0\u34389 \u29702 \u26085 \u26399 \u26178 \u30332 \u29983 \u37679 \u35492  \cf4 \strokec4 $\{\cf8 \strokec8 rawDateString\cf4 \strokec4 \}\cf7 \strokec7  for event \cf4 \strokec4 $\{\cf8 \strokec8 eventId\cf4 \strokec4 \}\cf7 \strokec7 : \cf4 \strokec4 $\{\cf8 \strokec8 e\cf4 \strokec4 .\cf8 \strokec8 message\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 );\cb1 \
+\cb3           \cf5 \strokec5 return\cf4 \strokec4  \cf5 \strokec5 null\cf4 \strokec4 ;\cb1 \
+\cb3       \}\cb1 \
+\
+\cb3       \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 signups\cf4 \strokec4  = \cf8 \strokec8 signupsByEventId\cf4 \strokec4 .\cf5 \strokec5 get\cf4 \strokec4 (\cf8 \strokec8 eventId\cf4 \strokec4 ) || [];\cb1 \
+\cb3       \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 signupCount\cf4 \strokec4  = \cf8 \strokec8 signups\cf4 \strokec4 .\cf8 \strokec8 length\cf4 \strokec4 ;\cb1 \
+\cb3       \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 parsedMaxAttendees\cf4 \strokec4  = \cf8 \strokec8 parseInt\cf4 \strokec4 (\cf8 \strokec8 maxAttendees\cf4 \strokec4 , \cf11 \strokec11 10\cf4 \strokec4 ) || \cf11 \strokec11 999\cf4 \strokec4 ;\cb1 \
+\cb3       \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 isFull\cf4 \strokec4  = \cf8 \strokec8 signupCount\cf4 \strokec4  >= \cf8 \strokec8 parsedMaxAttendees\cf4 \strokec4 ;\cb1 \
+\cb3       \cb1 \
+\cb3       \cf5 \strokec5 let\cf4 \strokec4  \cf8 \strokec8 eventColor\cf4 \strokec4 , \cf8 \strokec8 textColor\cf4 \strokec4 ;\cb1 \
+\cb3       \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 isFull\cf4 \strokec4 ) \{ \cf8 \strokec8 eventColor\cf4 \strokec4  = \cf7 \strokec7 '#e74c3c'\cf4 \strokec4 ; \cf8 \strokec8 textColor\cf4 \strokec4  = \cf7 \strokec7 'white'\cf4 \strokec4 ; \} \cb1 \
+\cb3       \cf5 \strokec5 else\cf4 \strokec4  \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 signupCount\cf4 \strokec4  > \cf11 \strokec11 0\cf4 \strokec4 ) \{ \cf8 \strokec8 eventColor\cf4 \strokec4  = \cf7 \strokec7 '#0d6efd'\cf4 \strokec4 ; \cf8 \strokec8 textColor\cf4 \strokec4  = \cf7 \strokec7 'white'\cf4 \strokec4 ; \} \cb1 \
+\cb3       \cf5 \strokec5 else\cf4 \strokec4  \{ \cf8 \strokec8 eventColor\cf4 \strokec4  = \cf7 \strokec7 '#adb5bd'\cf4 \strokec4 ; \cf8 \strokec8 textColor\cf4 \strokec4  = \cf7 \strokec7 '#212529'\cf4 \strokec4 ; \}\cb1 \
+\cb3       \cb1 \
+\cb3       \cf5 \strokec5 return\cf4 \strokec4  \{\cb1 \
+\cb3         \cf8 \strokec8 id\cf4 \strokec4 : \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 title\cf4 \strokec4 : \cf8 \strokec8 title\cf4 \strokec4 , \cf8 \strokec8 start\cf4 \strokec4 : \cf7 \strokec7 `\cf4 \strokec4 $\{\cf8 \strokec8 datePart\cf4 \strokec4 \}\cf7 \strokec7 T\cf4 \strokec4 $\{\cf8 \strokec8 paddedStartTime\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 , \cb1 \
+\cb3         \cf8 \strokec8 end\cf4 \strokec4 : \cf8 \strokec8 paddedEndTime\cf4 \strokec4  ? \cf7 \strokec7 `\cf4 \strokec4 $\{\cf8 \strokec8 datePart\cf4 \strokec4 \}\cf7 \strokec7 T\cf4 \strokec4 $\{\cf8 \strokec8 paddedEndTime\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4  : \cf5 \strokec5 null\cf4 \strokec4 ,\cb1 \
+\cb3         \cf8 \strokec8 backgroundColor\cf4 \strokec4 : \cf8 \strokec8 eventColor\cf4 \strokec4 , \cf8 \strokec8 borderColor\cf4 \strokec4 : \cf8 \strokec8 eventColor\cf4 \strokec4 , \cf8 \strokec8 textColor\cf4 \strokec4 : \cf8 \strokec8 textColor\cf4 \strokec4 ,\cb1 \
+\cb3         \cf8 \strokec8 extendedProps\cf4 \strokec4 : \{ \cb1 \
+\cb3             \cf8 \strokec8 full_title\cf4 \strokec4 : \cf8 \strokec8 title\cf4 \strokec4 , \cf8 \strokec8 description\cf4 \strokec4 : \cf8 \strokec8 description\cf4 \strokec4 , \cf8 \strokec8 maxAttendees\cf4 \strokec4 : \cf8 \strokec8 parsedMaxAttendees\cf4 \strokec4 , \cb1 \
+\cb3             \cf8 \strokec8 signups\cf4 \strokec4 , \cf8 \strokec8 positions\cf4 \strokec4 : (\cf8 \strokec8 positions\cf4 \strokec4  || \cf7 \strokec7 ''\cf4 \strokec4 ).\cf8 \strokec8 split\cf4 \strokec4 (\cf7 \strokec7 ','\cf4 \strokec4 ).\cf8 \strokec8 map\cf4 \strokec4 (\cf8 \strokec8 p\cf4 \strokec4  => \cf8 \strokec8 p\cf4 \strokec4 .\cf8 \strokec8 trim\cf4 \strokec4 ()).\cf8 \strokec8 filter\cf4 \strokec4 (\cf8 \strokec8 p\cf4 \strokec4  => \cf8 \strokec8 p\cf4 \strokec4 ), \cb1 \
+\cb3             \cf8 \strokec8 startTime\cf4 \strokec4 : \cf8 \strokec8 paddedStartTime\cf4 \strokec4 , \cf8 \strokec8 endTime\cf4 \strokec4 : \cf8 \strokec8 paddedEndTime\cf4 \cb1 \strokec4 \
+\cb3         \}\cb1 \
+\cb3       \};\cb1 \
+\cb3     \}).\cf8 \strokec8 filter\cf4 \strokec4 (\cf8 \strokec8 e\cf4 \strokec4  => \cf8 \strokec8 e\cf4 \strokec4  !== \cf5 \strokec5 null\cf4 \strokec4 );\cb1 \
+\cb3   \} \cf5 \strokec5 catch\cf4 \strokec4 (\cf8 \strokec8 err\cf4 \strokec4 ) \{ \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 error\cf4 \strokec4 (\cf7 \strokec7 "getEventsAndSignups \uc0\u22833 \u25943 :"\cf4 \strokec4 , \cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 message\cf4 \strokec4 , \cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 stack\cf4 \strokec4 ); \cf5 \strokec5 throw\cf4 \strokec4  \cf8 \strokec8 err\cf4 \strokec4 ; \}\cb1 \
+\cb3 \}\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5 function\cf4 \strokec4  \cf8 \strokec8 getUnifiedSignups\cf4 \strokec4 (\cf8 \strokec8 searchText\cf4 \strokec4 , \cf8 \strokec8 startDateStr\cf4 \strokec4 , \cf8 \strokec8 endDateStr\cf4 \strokec4 ) \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb3   \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 log\cf4 \strokec4 (\cf7 \strokec7 `getUnifiedSignups: \uc0\u25509 \u25910 \u21443 \u25976  - searchText: "\cf4 \strokec4 $\{\cf8 \strokec8 searchText\cf4 \strokec4 \}\cf7 \strokec7 ", startDateStr: "\cf4 \strokec4 $\{\cf8 \strokec8 startDateStr\cf4 \strokec4 \}\cf7 \strokec7 ", endDateStr: "\cf4 \strokec4 $\{\cf8 \strokec8 endDateStr\cf4 \strokec4 \}\cf7 \strokec7 "`\cf4 \strokec4 ); \cf2 \strokec2 // Debug\cf4 \cb1 \strokec4 \
+\cb3   \cf5 \strokec5 try\cf4 \strokec4  \{\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \{ \cf8 \strokec8 signupsData\cf4 \strokec4 , \cf8 \strokec8 eventsMap\cf4 \strokec4  \} = \cf8 \strokec8 getMasterData\cf4 \strokec4 (); \cf2 \strokec2 // \uc0\u20877 \u27425 \u21628 \u21483  getMasterData \u30906 \u20445 \u36039 \u26009 \u26159 \u26368 \u26032 \u30340 \cf4 \cb1 \strokec4 \
+\cb3     \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 log\cf4 \strokec4 (\cf7 \strokec7 `getUnifiedSignups: \uc0\u24478  getMasterData \u21462 \u24471  \cf4 \strokec4 $\{\cf8 \strokec8 signupsData\cf4 \strokec4 .\cf8 \strokec8 length\cf4 \strokec4 \}\cf7 \strokec7  \uc0\u31558 \u22577 \u21517 \u36039 \u26009 \u65292 \cf4 \strokec4 $\{\cf8 \strokec8 eventsMap\cf4 \strokec4 .\cf8 \strokec8 size\cf4 \strokec4 \}\cf7 \strokec7  \uc0\u31558 \u27963 \u21205 \u36039 \u26009 \u12290 `\cf4 \strokec4 ); \cf2 \strokec2 // Debug\cf4 \cb1 \strokec4 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 searchLower\cf4 \strokec4  = \cf8 \strokec8 searchText\cf4 \strokec4  ? \cf8 \strokec8 searchText\cf4 \strokec4 .\cf8 \strokec8 toLowerCase\cf4 \strokec4 () : \cf7 \strokec7 ''\cf4 \strokec4 ;\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 dayMap\cf4 \strokec4  = [\cf7 \strokec7 '\uc0\u26085 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u19968 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u20108 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u19977 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22235 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u20116 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u20845 '\cf4 \strokec4 ];\cb1 \
+\
+\cb3     \cf5 \strokec5 let\cf4 \strokec4  \cf8 \strokec8 start\cf4 \strokec4  = \cf5 \strokec5 null\cf4 \strokec4 ;\cb1 \
+\cb3     \cf5 \strokec5 let\cf4 \strokec4  \cf8 \strokec8 end\cf4 \strokec4  = \cf5 \strokec5 null\cf4 \strokec4 ;\cb1 \
+\cb3     \cf5 \strokec5 try\cf4 \strokec4  \{\cb1 \
+\cb3         \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 startDateStr\cf4 \strokec4 ) \{\cb1 \
+\cb3             \cf8 \strokec8 start\cf4 \strokec4  = \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Date\cf4 \strokec4 (\cf8 \strokec8 startDateStr\cf4 \strokec4 );\cb1 \
+\cb3             \cf8 \strokec8 start\cf4 \strokec4 .\cf8 \strokec8 setHours\cf4 \strokec4 (\cf11 \strokec11 0\cf4 \strokec4 , \cf11 \strokec11 0\cf4 \strokec4 , \cf11 \strokec11 0\cf4 \strokec4 , \cf11 \strokec11 0\cf4 \strokec4 ); \cf2 \strokec2 // \uc0\u30906 \u20445 \u24478 \u30070 \u22825 0\u40670 \u38283 \u22987 \cf4 \cb1 \strokec4 \
+\cb3             \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 log\cf4 \strokec4 (\cf7 \strokec7 `getUnifiedSignups: \uc0\u35299 \u26512 \u38283 \u22987 \u26085 \u26399 \u28858  \cf4 \strokec4 $\{\cf8 \strokec8 start\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 ); \cf2 \strokec2 // Debug\cf4 \cb1 \strokec4 \
+\cb3         \}\cb1 \
+\cb3         \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 endDateStr\cf4 \strokec4 ) \{\cb1 \
+\cb3             \cf8 \strokec8 end\cf4 \strokec4  = \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Date\cf4 \strokec4 (\cf8 \strokec8 endDateStr\cf4 \strokec4 );\cb1 \
+\cb3             \cf8 \strokec8 end\cf4 \strokec4 .\cf8 \strokec8 setHours\cf4 \strokec4 (\cf11 \strokec11 23\cf4 \strokec4 , \cf11 \strokec11 59\cf4 \strokec4 , \cf11 \strokec11 59\cf4 \strokec4 , \cf11 \strokec11 999\cf4 \strokec4 ); \cf2 \strokec2 // \uc0\u30906 \u20445 \u21040 \u30070 \u22825 23:59:59.999\u32080 \u26463 \cf4 \cb1 \strokec4 \
+\cb3             \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 log\cf4 \strokec4 (\cf7 \strokec7 `getUnifiedSignups: \uc0\u35299 \u26512 \u32080 \u26463 \u26085 \u26399 \u28858  \cf4 \strokec4 $\{\cf8 \strokec8 end\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 ); \cf2 \strokec2 // Debug\cf4 \cb1 \strokec4 \
+\cb3         \}\cb1 \
+\cb3     \} \cf5 \strokec5 catch\cf4 \strokec4 (\cf8 \strokec8 e\cf4 \strokec4 ) \{\cb1 \
+\cb3         \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 error\cf4 \strokec4 (\cf7 \strokec7 `getUnifiedSignups: \uc0\u26085 \u26399 \u35299 \u26512 \u37679 \u35492  - startDateStr: \cf4 \strokec4 $\{\cf8 \strokec8 startDateStr\cf4 \strokec4 \}\cf7 \strokec7 , endDateStr: \cf4 \strokec4 $\{\cf8 \strokec8 endDateStr\cf4 \strokec4 \}\cf7 \strokec7 . \uc0\u37679 \u35492 : \cf4 \strokec4 $\{\cf8 \strokec8 e\cf4 \strokec4 .\cf8 \strokec8 message\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 );\cb1 \
+\cb3         \cf5 \strokec5 throw\cf4 \strokec4  \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Error\cf4 \strokec4 (\cf7 \strokec7 '\uc0\u26085 \u26399 \u26684 \u24335 \u19981 \u27491 \u30906 \u12290 '\cf4 \strokec4 );\cb1 \
+\cb3     \}\cb1 \
+\
+\cb3     \cf5 \strokec5 let\cf4 \strokec4  \cf8 \strokec8 filteredSignups\cf4 \strokec4  = \cf8 \strokec8 signupsData\cf4 \strokec4 .\cf8 \strokec8 filter\cf4 \strokec4 ((\cf8 \strokec8 row\cf4 \strokec4 , \cf8 \strokec8 index\cf4 \strokec4 ) => \{\cb1 \
+\cb3       \cf2 \strokec2 // \uc0\u30906 \u20445 row\u26377 \u36275 \u22816 \u30340 \u20803 \u32032 \u65292 \u36991 \u20813  undefined \u37679 \u35492 \cf4 \cb1 \strokec4 \
+\cb3       \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 row\cf4 \strokec4 .\cf8 \strokec8 length\cf4 \strokec4  < \cf11 \strokec11 5\cf4 \strokec4 ) \{\cb1 \
+\cb3           \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 warn\cf4 \strokec4 (\cf7 \strokec7 `getUnifiedSignups: \uc0\u36339 \u36942 \u26684 \u24335 \u19981 \u27491 \u30906 \u30340 \u22577 \u21517 \u36039 \u26009 \u21015  (\u32034 \u24341  \cf4 \strokec4 $\{\cf8 \strokec8 index\cf4 \strokec4 \}\cf7 \strokec7 ): \cf4 \strokec4 $\{\cf6 \strokec6 JSON\cf4 \strokec4 .\cf8 \strokec8 stringify\cf4 \strokec4 (\cf8 \strokec8 row\cf4 \strokec4 )\}\cf7 \strokec7 `\cf4 \strokec4 );\cb1 \
+\cb3           \cf5 \strokec5 return\cf4 \strokec4  \cf5 \strokec5 false\cf4 \strokec4 ;\cb1 \
+\cb3       \}\cb1 \
+\
+\cb3       \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 eventId\cf4 \strokec4  = \cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 1\cf4 \strokec4 ];\cb1 \
+\cb3       \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 eventDetail\cf4 \strokec4  = \cf8 \strokec8 eventsMap\cf4 \strokec4 .\cf5 \strokec5 get\cf4 \strokec4 (\cf8 \strokec8 eventId\cf4 \strokec4 );\cb1 \
+\
+\cb3       \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 eventDetail\cf4 \strokec4 ) \{\cb1 \
+\cb3           \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 warn\cf4 \strokec4 (\cf7 \strokec7 `getUnifiedSignups: \uc0\u22577 \u21517 \u36039 \u26009 \u21015  (\u32034 \u24341  \cf4 \strokec4 $\{\cf8 \strokec8 index\cf4 \strokec4 \}\cf7 \strokec7 ) \uc0\u30340  Event ID: "\cf4 \strokec4 $\{\cf8 \strokec8 eventId\cf4 \strokec4 \}\cf7 \strokec7 " \uc0\u22312  eventsMap \u20013 \u25214 \u19981 \u21040 \u65292 \u36339 \u36942 \u12290 `\cf4 \strokec4 ); \cf2 \strokec2 // Debug\cf4 \cb1 \strokec4 \
+\cb3           \cf5 \strokec5 return\cf4 \strokec4  \cf5 \strokec5 false\cf4 \strokec4 ; \cb1 \
+\cb3       \}\cb1 \
+\cb3       \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 eventDetail\cf4 \strokec4 .\cf8 \strokec8 dateObj\cf4 \strokec4  || \cf8 \strokec8 isNaN\cf4 \strokec4 (\cf8 \strokec8 eventDetail\cf4 \strokec4 .\cf8 \strokec8 dateObj\cf4 \strokec4 .\cf8 \strokec8 getTime\cf4 \strokec4 ())) \{ \cb1 \
+\cb3           \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 warn\cf4 \strokec4 (\cf7 \strokec7 `getUnifiedSignups: \uc0\u27963 \u21205  ID: "\cf4 \strokec4 $\{\cf8 \strokec8 eventId\cf4 \strokec4 \}\cf7 \strokec7 " \uc0\u30340 \u26085 \u26399 \u29289 \u20214 \u28961 \u25928 \u65292 \u36339 \u36942 \u12290 `\cf4 \strokec4 ); \cf2 \strokec2 // Debug\cf4 \cb1 \strokec4 \
+\cb3           \cf5 \strokec5 return\cf4 \strokec4  \cf5 \strokec5 false\cf4 \strokec4 ; \cb1 \
+\cb3       \}\cb1 \
+\
+\cb3       \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 eventDate\cf4 \strokec4  = \cf8 \strokec8 eventDetail\cf4 \strokec4 .\cf8 \strokec8 dateObj\cf4 \strokec4 ;\cb1 \
+\cb3       \cb1 \
+\cb3       \cf2 \strokec2 // \uc0\u26085 \u26399 \u36942 \u28670 \cf4 \cb1 \strokec4 \
+\cb3       \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 start\cf4 \strokec4  && \cf8 \strokec8 eventDate\cf4 \strokec4  < \cf8 \strokec8 start\cf4 \strokec4 ) \{\cb1 \
+\cb3           \cf2 \strokec2 // console.log(`getUnifiedSignups: \uc0\u36339 \u36942 \u22577 \u21517  - \u26085 \u26399 \u26089 \u26044 \u38283 \u22987 \u26085 \u26399 \u12290 \u20107 \u20214 \u26085 \u26399 : $\{eventDate.toISOString().slice(0, 10)\}, \u38283 \u22987 \u26085 \u26399 : $\{start.toISOString().slice(0, 10)\}`); // Debug\cf4 \cb1 \strokec4 \
+\cb3           \cf5 \strokec5 return\cf4 \strokec4  \cf5 \strokec5 false\cf4 \strokec4 ;\cb1 \
+\cb3       \}\cb1 \
+\cb3       \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 end\cf4 \strokec4  && \cf8 \strokec8 eventDate\cf4 \strokec4  > \cf8 \strokec8 end\cf4 \strokec4 ) \{\cb1 \
+\cb3           \cf2 \strokec2 // console.log(`getUnifiedSignups: \uc0\u36339 \u36942 \u22577 \u21517  - \u26085 \u26399 \u26202 \u26044 \u32080 \u26463 \u26085 \u26399 \u12290 \u20107 \u20214 \u26085 \u26399 : $\{eventDate.toISOString().slice(0, 10)\}, \u32080 \u26463 \u26085 \u26399 : $\{end.toISOString().slice(0, 10)\}`); // Debug\cf4 \cb1 \strokec4 \
+\cb3           \cf5 \strokec5 return\cf4 \strokec4  \cf5 \strokec5 false\cf4 \strokec4 ;\cb1 \
+\cb3       \}\cb1 \
+\
+\cb3       \cf2 \strokec2 // \uc0\u38364 \u37749 \u23383 \u36942 \u28670 \cf4 \cb1 \strokec4 \
+\cb3       \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 searchLower\cf4 \strokec4 ) \{\cb1 \
+\cb3         \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 user\cf4 \strokec4  = \cf6 \strokec6 String\cf4 \strokec4 (\cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 2\cf4 \strokec4 ] || \cf7 \strokec7 ''\cf4 \strokec4 ).\cf8 \strokec8 toLowerCase\cf4 \strokec4 ();\cb1 \
+\cb3         \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 position\cf4 \strokec4  = \cf6 \strokec6 String\cf4 \strokec4 (\cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 4\cf4 \strokec4 ] || \cf7 \strokec7 ''\cf4 \strokec4 ).\cf8 \strokec8 toLowerCase\cf4 \strokec4 ();\cb1 \
+\cb3         \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 eventTitle\cf4 \strokec4  = \cf6 \strokec6 String\cf4 \strokec4 (\cf8 \strokec8 eventDetail\cf4 \strokec4 .\cf8 \strokec8 title\cf4 \strokec4  || \cf7 \strokec7 ''\cf4 \strokec4 ).\cf8 \strokec8 toLowerCase\cf4 \strokec4 ();\cb1 \
+\cb3         \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 eventDescription\cf4 \strokec4  = \cf6 \strokec6 String\cf4 \strokec4 (\cf8 \strokec8 eventDetail\cf4 \strokec4 .\cf8 \strokec8 description\cf4 \strokec4  || \cf7 \strokec7 ''\cf4 \strokec4 ).\cf8 \strokec8 toLowerCase\cf4 \strokec4 ();\cb1 \
+\cb3         \cb1 \
+\cb3         \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 user\cf4 \strokec4 .\cf8 \strokec8 includes\cf4 \strokec4 (\cf8 \strokec8 searchLower\cf4 \strokec4 ) && \cb1 \
+\cb3             !\cf8 \strokec8 position\cf4 \strokec4 .\cf8 \strokec8 includes\cf4 \strokec4 (\cf8 \strokec8 searchLower\cf4 \strokec4 ) && \cb1 \
+\cb3             !\cf8 \strokec8 eventTitle\cf4 \strokec4 .\cf8 \strokec8 includes\cf4 \strokec4 (\cf8 \strokec8 searchLower\cf4 \strokec4 ) && \cb1 \
+\cb3             !\cf8 \strokec8 eventDescription\cf4 \strokec4 .\cf8 \strokec8 includes\cf4 \strokec4 (\cf8 \strokec8 searchLower\cf4 \strokec4 )) \{\cb1 \
+\cb3           \cf2 \strokec2 // console.log(`getUnifiedSignups: \uc0\u36339 \u36942 \u22577 \u21517  - \u19981 \u31526 \u21512 \u38364 \u37749 \u23383  "$\{searchLower\}"\u12290 \u22995 \u21517 : $\{user\}, \u23831 \u20301 : $\{position\}, \u27963 \u21205 : $\{eventTitle\}`); // Debug\cf4 \cb1 \strokec4 \
+\cb3           \cf5 \strokec5 return\cf4 \strokec4  \cf5 \strokec5 false\cf4 \strokec4 ;\cb1 \
+\cb3         \}\cb1 \
+\cb3       \}\cb1 \
+\cb3       \cf2 \strokec2 // console.log(`getUnifiedSignups: \uc0\u22577 \u21517 \u36039 \u26009 \u21015  (\u32034 \u24341  $\{index\}) \u36890 \u36942 \u25152 \u26377 \u36942 \u28670 \u26781 \u20214 \u12290 `); // Debug\cf4 \cb1 \strokec4 \
+\cb3       \cf5 \strokec5 return\cf4 \strokec4  \cf5 \strokec5 true\cf4 \strokec4 ;\cb1 \
+\cb3     \});\cb1 \
+\
+\cb3     \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 log\cf4 \strokec4 (\cf7 \strokec7 `getUnifiedSignups: \uc0\u32147 \u36942 \u36942 \u28670 \u24460 \u65292 \u21097 \u39192  \cf4 \strokec4 $\{\cf8 \strokec8 filteredSignups\cf4 \strokec4 .\cf8 \strokec8 length\cf4 \strokec4 \}\cf7 \strokec7  \uc0\u31558 \u22577 \u21517 \u36039 \u26009 \u12290 `\cf4 \strokec4 ); \cf2 \strokec2 // Debug\cf4 \cb1 \strokec4 \
+\
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 mappedSignups\cf4 \strokec4  = \cf8 \strokec8 filteredSignups\cf4 \strokec4 .\cf8 \strokec8 map\cf4 \strokec4 (\cf8 \strokec8 row\cf4 \strokec4  => \{\cb1 \
+\cb3       \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 eventId\cf4 \strokec4  = \cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 1\cf4 \strokec4 ];\cb1 \
+\cb3       \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 eventDetail\cf4 \strokec4  = \cf8 \strokec8 eventsMap\cf4 \strokec4 .\cf5 \strokec5 get\cf4 \strokec4 (\cf8 \strokec8 eventId\cf4 \strokec4 ) || \{ \cf8 \strokec8 title\cf4 \strokec4 : \cf7 \strokec7 '\uc0\u26410 \u30693 \u20107 \u20214 '\cf4 \strokec4 , \cf8 \strokec8 dateString\cf4 \strokec4 : \cf7 \strokec7 '\uc0\u26085 \u26399 \u28961 \u25928 '\cf4 \strokec4 \};\cb1 \
+\cb3       \cf5 \strokec5 let\cf4 \strokec4  \cf8 \strokec8 eventDayOfWeek\cf4 \strokec4  = \cf8 \strokec8 eventDetail\cf4 \strokec4 .\cf8 \strokec8 dateObj\cf4 \strokec4  ? \cf8 \strokec8 dayMap\cf4 \strokec4 [\cf8 \strokec8 eventDetail\cf4 \strokec4 .\cf8 \strokec8 dateObj\cf4 \strokec4 .\cf8 \strokec8 getDay\cf4 \strokec4 ()] : \cf7 \strokec7 ''\cf4 \strokec4 ;\cb1 \
+\cb3       \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 rawTimestamp\cf4 \strokec4  = \cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 3\cf4 \strokec4 ] || \cf7 \strokec7 ''\cf4 \strokec4 ;\cb1 \
+\cb3       \cf5 \strokec5 return\cf4 \strokec4  \{\cb1 \
+\cb3         \cf8 \strokec8 signupId\cf4 \strokec4 : \cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 0\cf4 \strokec4 ], \cf8 \strokec8 eventId\cf4 \strokec4 : \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 eventTitle\cf4 \strokec4 : \cf8 \strokec8 eventDetail\cf4 \strokec4 .\cf8 \strokec8 title\cf4 \strokec4 , \cb1 \
+\cb3         \cf8 \strokec8 eventDate\cf4 \strokec4 : \cf8 \strokec8 eventDetail\cf4 \strokec4 .\cf8 \strokec8 dateString\cf4 \strokec4 , \cf8 \strokec8 eventDayOfWeek\cf4 \strokec4 : \cf8 \strokec8 eventDayOfWeek\cf4 \strokec4 ,\cb1 \
+\cb3         \cf8 \strokec8 startTime\cf4 \strokec4 : \cf8 \strokec8 eventDetail\cf4 \strokec4 .\cf8 \strokec8 startTime\cf4 \strokec4  || \cf7 \strokec7 ''\cf4 \strokec4 ,\cb1 \
+\cb3         \cf8 \strokec8 endTime\cf4 \strokec4 : \cf8 \strokec8 eventDetail\cf4 \strokec4 .\cf8 \strokec8 endTime\cf4 \strokec4  || \cf7 \strokec7 ''\cf4 \strokec4 ,\cb1 \
+\cb3         \cf8 \strokec8 user\cf4 \strokec4 : \cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 2\cf4 \strokec4 ], \cf8 \strokec8 timestamp\cf4 \strokec4 : \cf8 \strokec8 rawTimestamp\cf4 \strokec4 , \cf8 \strokec8 position\cf4 \strokec4 : \cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 4\cf4 \strokec4 ]\cb1 \
+\cb3       \};\cb1 \
+\cb3     \});\cb1 \
+\cb3     \cb1 \
+\cb3     \cf8 \strokec8 mappedSignups\cf4 \strokec4 .\cf8 \strokec8 sort\cf4 \strokec4 ((\cf8 \strokec8 a\cf4 \strokec4 , \cf8 \strokec8 b\cf4 \strokec4 ) => \{\cb1 \
+\cb3         \cf2 \strokec2 // \uc0\u30906 \u20445 \u26085 \u26399 \u26377 \u25928 \u24615 \u20877 \u36914 \u34892 \u27604 \u36611 \cf4 \cb1 \strokec4 \
+\cb3         \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 dateA\cf4 \strokec4  = \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Date\cf4 \strokec4 (\cf8 \strokec8 a\cf4 \strokec4 .\cf8 \strokec8 eventDate\cf4 \strokec4 );\cb1 \
+\cb3         \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 dateB\cf4 \strokec4  = \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Date\cf4 \strokec4 (\cf8 \strokec8 b\cf4 \strokec4 .\cf8 \strokec8 eventDate\cf4 \strokec4 );\cb1 \
+\cb3         \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 isNaN\cf4 \strokec4 (\cf8 \strokec8 dateA\cf4 \strokec4 .\cf8 \strokec8 getTime\cf4 \strokec4 ()) || \cf8 \strokec8 isNaN\cf4 \strokec4 (\cf8 \strokec8 dateB\cf4 \strokec4 .\cf8 \strokec8 getTime\cf4 \strokec4 ())) \{\cb1 \
+\cb3             \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 warn\cf4 \strokec4 (\cf7 \strokec7 `getUnifiedSignups: \uc0\u25490 \u24207 \u26178 \u30332 \u29694 \u28961 \u25928 \u26085 \u26399 : A: \cf4 \strokec4 $\{\cf8 \strokec8 a\cf4 \strokec4 .\cf8 \strokec8 eventDate\cf4 \strokec4 \}\cf7 \strokec7 , B: \cf4 \strokec4 $\{\cf8 \strokec8 b\cf4 \strokec4 .\cf8 \strokec8 eventDate\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 ); \cf2 \strokec2 // Debug\cf4 \cb1 \strokec4 \
+\cb3             \cf5 \strokec5 return\cf4 \strokec4  \cf11 \strokec11 0\cf4 \strokec4 ; \cf2 \strokec2 // \uc0\u22914 \u26524 \u26085 \u26399 \u28961 \u25928 \u65292 \u21063 \u19981 \u25913 \u35722 \u38918 \u24207 \cf4 \cb1 \strokec4 \
+\cb3         \}\cb1 \
+\cb3         \cf5 \strokec5 return\cf4 \strokec4  \cf8 \strokec8 dateA\cf4 \strokec4 .\cf8 \strokec8 getTime\cf4 \strokec4 () - \cf8 \strokec8 dateB\cf4 \strokec4 .\cf8 \strokec8 getTime\cf4 \strokec4 ();\cb1 \
+\cb3     \});\cb1 \
+\
+\cb3     \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 log\cf4 \strokec4 (\cf7 \strokec7 `getUnifiedSignups: \uc0\u26368 \u32066 \u22238 \u20659  \cf4 \strokec4 $\{\cf8 \strokec8 mappedSignups\cf4 \strokec4 .\cf8 \strokec8 length\cf4 \strokec4 \}\cf7 \strokec7  \uc0\u31558 \u22577 \u21517 \u36039 \u26009 \u12290 `\cf4 \strokec4 ); \cf2 \strokec2 // Debug\cf4 \cb1 \strokec4 \
+\cb3     \cf2 \strokec2 // console.log('getUnifiedSignups: Final mappedSignups (first 5):', mappedSignups.slice(0, 5)); // Debug: Sample final data\cf4 \cb1 \strokec4 \
+\cb3     \cf5 \strokec5 return\cf4 \strokec4  \cf8 \strokec8 mappedSignups\cf4 \strokec4 ;\cb1 \
+\cb3   \} \cf5 \strokec5 catch\cf4 \strokec4 (\cf8 \strokec8 err\cf4 \strokec4 ) \{ \cb1 \
+\cb3       \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 error\cf4 \strokec4 (\cf7 \strokec7 "getUnifiedSignups \uc0\u22833 \u25943 :"\cf4 \strokec4 , \cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 message\cf4 \strokec4 , \cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 stack\cf4 \strokec4 ); \cb1 \
+\cb3       \cf5 \strokec5 throw\cf4 \strokec4  \cf8 \strokec8 err\cf4 \strokec4 ; \cb1 \
+\cb3   \}\cb1 \
+\cb3 \}\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5 function\cf4 \strokec4  \cf8 \strokec8 getStatsData\cf4 \strokec4 (\cf8 \strokec8 startDateStr\cf4 \strokec4 , \cf8 \strokec8 endDateStr\cf4 \strokec4 ) \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb3   \cf5 \strokec5 try\cf4 \strokec4  \{\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 allSignups\cf4 \strokec4  = \cf8 \strokec8 getUnifiedSignups\cf4 \strokec4 (\cf7 \strokec7 ''\cf4 \strokec4 , \cf8 \strokec8 startDateStr\cf4 \strokec4 , \cf8 \strokec8 endDateStr\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 allSignups\cf4 \strokec4  || \cf8 \strokec8 allSignups\cf4 \strokec4 .\cf8 \strokec8 length\cf4 \strokec4  === \cf11 \strokec11 0\cf4 \strokec4 ) \{ \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 labels\cf4 \strokec4 : [], \cf8 \strokec8 data\cf4 \strokec4 : [], \cf8 \strokec8 fullDetails\cf4 \strokec4 : [] \}; \}\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \{ \cf8 \strokec8 eventsMap\cf4 \strokec4  \} = \cf8 \strokec8 getMasterData\cf4 \strokec4 ();\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 statsByEventId\cf4 \strokec4  = \{\};\cb1 \
+\cb3     \cf8 \strokec8 allSignups\cf4 \strokec4 .\cf8 \strokec8 forEach\cf4 \strokec4 (\cf8 \strokec8 signup\cf4 \strokec4  => \{\cb1 \
+\cb3       \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 eventId\cf4 \strokec4  = \cf8 \strokec8 signup\cf4 \strokec4 .\cf8 \strokec8 eventId\cf4 \strokec4 ;\cb1 \
+\cb3       \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 statsByEventId\cf4 \strokec4 [\cf8 \strokec8 eventId\cf4 \strokec4 ]) \{\cb1 \
+\cb3         \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 eventInfoFromMap\cf4 \strokec4  = \cf8 \strokec8 eventsMap\cf4 \strokec4 .\cf5 \strokec5 get\cf4 \strokec4 (\cf8 \strokec8 eventId\cf4 \strokec4 ) || \{\}; \cb1 \
+\cb3         \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 eventInfo\cf4 \strokec4  = \{\cb1 \
+\cb3           \cf8 \strokec8 title\cf4 \strokec4 : \cf8 \strokec8 eventInfoFromMap\cf4 \strokec4 .\cf8 \strokec8 title\cf4 \strokec4  || \cf8 \strokec8 signup\cf4 \strokec4 .\cf8 \strokec8 eventTitle\cf4 \strokec4 , \cf8 \strokec8 date\cf4 \strokec4 : \cf8 \strokec8 eventInfoFromMap\cf4 \strokec4 .\cf8 \strokec8 dateString\cf4 \strokec4  || \cf8 \strokec8 signup\cf4 \strokec4 .\cf8 \strokec8 eventDate\cf4 \strokec4 ,\cb1 \
+\cb3           \cf8 \strokec8 dayOfWeek\cf4 \strokec4 : \cf8 \strokec8 signup\cf4 \strokec4 .\cf8 \strokec8 eventDayOfWeek\cf4 \strokec4 , \cf8 \strokec8 startTime\cf4 \strokec4 : \cf8 \strokec8 eventInfoFromMap\cf4 \strokec4 .\cf8 \strokec8 startTime\cf4 \strokec4  || \cf7 \strokec7 ''\cf4 \strokec4 , \cb1 \
+\cb3           \cf8 \strokec8 endTime\cf4 \strokec4 : \cf8 \strokec8 eventInfoFromMap\cf4 \strokec4 .\cf8 \strokec8 endTime\cf4 \strokec4  || \cf7 \strokec7 ''\cf4 \strokec4 , \cf8 \strokec8 maxAttendees\cf4 \strokec4 : \cf8 \strokec8 eventInfoFromMap\cf4 \strokec4 .\cf8 \strokec8 maxAttendees\cf4 \strokec4  || \cf11 \strokec11 999\cf4 \cb1 \strokec4 \
+\cb3         \};\cb1 \
+\cb3         \cf8 \strokec8 statsByEventId\cf4 \strokec4 [\cf8 \strokec8 eventId\cf4 \strokec4 ] = \{ \cf8 \strokec8 count\cf4 \strokec4 : \cf11 \strokec11 0\cf4 \strokec4 , \cf8 \strokec8 signups\cf4 \strokec4 : [], \cf8 \strokec8 eventInfo\cf4 \strokec4 : \cf8 \strokec8 eventInfo\cf4 \strokec4 , \cf8 \strokec8 label\cf4 \strokec4 : \cf7 \strokec7 `\cf4 \strokec4 $\{\cf8 \strokec8 eventInfo\cf4 \strokec4 .\cf8 \strokec8 title\cf4 \strokec4 \}\cf7 \strokec7  (\cf4 \strokec4 $\{\cf8 \strokec8 eventInfo\cf4 \strokec4 .\cf8 \strokec8 date\cf4 \strokec4 \}\cf7 \strokec7 )`\cf4 \strokec4  \};\cb1 \
+\cb3       \}\cb1 \
+\cb3       \cf8 \strokec8 statsByEventId\cf4 \strokec4 [\cf8 \strokec8 eventId\cf4 \strokec4 ].\cf8 \strokec8 count\cf4 \strokec4 ++;\cb1 \
+\cb3       \cf8 \strokec8 statsByEventId\cf4 \strokec4 [\cf8 \strokec8 eventId\cf4 \strokec4 ].\cf8 \strokec8 signups\cf4 \strokec4 .\cf8 \strokec8 push\cf4 \strokec4 (\{ \cf8 \strokec8 user\cf4 \strokec4 : \cf8 \strokec8 signup\cf4 \strokec4 .\cf8 \strokec8 user\cf4 \strokec4 , \cf8 \strokec8 position\cf4 \strokec4 : \cf8 \strokec8 signup\cf4 \strokec4 .\cf8 \strokec8 position\cf4 \strokec4  \});\cb1 \
+\cb3     \});\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 processedData\cf4 \strokec4  = \cf6 \strokec6 Object\cf4 \strokec4 .\cf8 \strokec8 values\cf4 \strokec4 (\cf8 \strokec8 statsByEventId\cf4 \strokec4 );\cb1 \
+\cb3     \cf8 \strokec8 processedData\cf4 \strokec4 .\cf8 \strokec8 sort\cf4 \strokec4 ((\cf8 \strokec8 a\cf4 \strokec4 , \cf8 \strokec8 b\cf4 \strokec4 ) => \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Date\cf4 \strokec4 (\cf8 \strokec8 a\cf4 \strokec4 .\cf8 \strokec8 eventInfo\cf4 \strokec4 .\cf8 \strokec8 date\cf4 \strokec4 ).\cf8 \strokec8 getTime\cf4 \strokec4 () - \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Date\cf4 \strokec4 (\cf8 \strokec8 b\cf4 \strokec4 .\cf8 \strokec8 eventInfo\cf4 \strokec4 .\cf8 \strokec8 date\cf4 \strokec4 ).\cf8 \strokec8 getTime\cf4 \strokec4 ());\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 labels\cf4 \strokec4  = \cf8 \strokec8 processedData\cf4 \strokec4 .\cf8 \strokec8 map\cf4 \strokec4 (\cf8 \strokec8 item\cf4 \strokec4  => \cf8 \strokec8 item\cf4 \strokec4 .\cf8 \strokec8 label\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 data\cf4 \strokec4  = \cf8 \strokec8 processedData\cf4 \strokec4 .\cf8 \strokec8 map\cf4 \strokec4 (\cf8 \strokec8 item\cf4 \strokec4  => \cf8 \strokec8 item\cf4 \strokec4 .\cf8 \strokec8 count\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 fullDetails\cf4 \strokec4  = \cf8 \strokec8 processedData\cf4 \strokec4 .\cf8 \strokec8 map\cf4 \strokec4 (\cf8 \strokec8 item\cf4 \strokec4  => \{\cb1 \
+\cb3       \cf8 \strokec8 item\cf4 \strokec4 .\cf8 \strokec8 signups\cf4 \strokec4 .\cf8 \strokec8 sort\cf4 \strokec4 ((\cf8 \strokec8 a\cf4 \strokec4 ,\cf8 \strokec8 b\cf4 \strokec4 ) => \cf8 \strokec8 a\cf4 \strokec4 .\cf8 \strokec8 position\cf4 \strokec4 .\cf8 \strokec8 localeCompare\cf4 \strokec4 (\cf8 \strokec8 b\cf4 \strokec4 .\cf8 \strokec8 position\cf4 \strokec4 ));\cb1 \
+\cb3       \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 eventInfo\cf4 \strokec4 : \cf8 \strokec8 item\cf4 \strokec4 .\cf8 \strokec8 eventInfo\cf4 \strokec4 , \cf8 \strokec8 signups\cf4 \strokec4 : \cf8 \strokec8 item\cf4 \strokec4 .\cf8 \strokec8 signups\cf4 \strokec4  \};\cb1 \
+\cb3     \});\cb1 \
+\cb3     \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 labels\cf4 \strokec4 , \cf8 \strokec8 data\cf4 \strokec4 , \cf8 \strokec8 fullDetails\cf4 \strokec4  \};\cb1 \
+\cb3   \} \cf5 \strokec5 catch\cf4 \strokec4  (\cf8 \strokec8 err\cf4 \strokec4 ) \{ \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 error\cf4 \strokec4 (\cf7 \strokec7 "getStatsData \uc0\u22833 \u25943 :"\cf4 \strokec4 , \cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 message\cf4 \strokec4 , \cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 stack\cf4 \strokec4 ); \cf5 \strokec5 throw\cf4 \strokec4  \cf8 \strokec8 err\cf4 \strokec4 ; \}\cb1 \
+\cb3 \}\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5 function\cf4 \strokec4  \cf8 \strokec8 getSignupsAsTextForToday\cf4 \strokec4 () \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 scriptTimeZone\cf4 \strokec4  = \cf6 \strokec6 Session\cf4 \strokec4 .\cf8 \strokec8 getScriptTimeZone\cf4 \strokec4 ();\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 today\cf4 \strokec4  = \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Date\cf4 \strokec4 ();\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 todayStr\cf4 \strokec4  = \cf6 \strokec6 Utilities\cf4 \strokec4 .\cf8 \strokec8 formatDate\cf4 \strokec4 (\cf8 \strokec8 today\cf4 \strokec4 , \cf8 \strokec8 scriptTimeZone\cf4 \strokec4 , \cf7 \strokec7 'yyyy-MM-dd'\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 result\cf4 \strokec4  = \cf8 \strokec8 getSignupsAsText\cf4 \strokec4 (\cf8 \strokec8 todayStr\cf4 \strokec4 , \cf8 \strokec8 todayStr\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 result\cf4 \strokec4  && \cf8 \strokec8 result\cf4 \strokec4 .\cf8 \strokec8 status\cf4 \strokec4  === \cf7 \strokec7 'success'\cf4 \strokec4  && \cf8 \strokec8 result\cf4 \strokec4 .\cf8 \strokec8 text\cf4 \strokec4 ) \{\cb1 \
+\cb3         \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 dateDisplay\cf4 \strokec4  = \cf6 \strokec6 Utilities\cf4 \strokec4 .\cf8 \strokec8 formatDate\cf4 \strokec4 (\cf8 \strokec8 today\cf4 \strokec4 , \cf8 \strokec8 scriptTimeZone\cf4 \strokec4 , \cf7 \strokec7 'MM/dd'\cf4 \strokec4 );\cb1 \
+\cb3         \cf8 \strokec8 result\cf4 \strokec4 .\cf8 \strokec8 text\cf4 \strokec4  = \cf8 \strokec8 result\cf4 \strokec4 .\cf8 \strokec8 text\cf4 \strokec4 .\cf8 \strokec8 replace\cf4 \strokec4 (\cf7 \strokec7 `\uc0\u26085 \u26399 \u65306 \cf4 \strokec4 $\{\cf8 \strokec8 todayStr\cf4 \strokec4 \}\cf7 \strokec7  ~ \cf4 \strokec4 $\{\cf8 \strokec8 todayStr\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 , \cf7 \strokec7 `\uc0\u26085 \u26399 \u65306 \u20170 \u22825  (\cf4 \strokec4 $\{\cf8 \strokec8 dateDisplay\cf4 \strokec4 \}\cf7 \strokec7 )`\cf4 \strokec4 );\cb1 \
+\cb3     \}\cb1 \
+\cb3     \cf5 \strokec5 return\cf4 \strokec4  \cf8 \strokec8 result\cf4 \strokec4 ;\cb1 \
+\cb3 \}\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5 function\cf4 \strokec4  \cf8 \strokec8 getSignupsAsTextForTomorrow\cf4 \strokec4 () \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 scriptTimeZone\cf4 \strokec4  = \cf6 \strokec6 Session\cf4 \strokec4 .\cf8 \strokec8 getScriptTimeZone\cf4 \strokec4 ();\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 tomorrow\cf4 \strokec4  = \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Date\cf4 \strokec4 ();\cb1 \
+\cb3     \cf8 \strokec8 tomorrow\cf4 \strokec4 .\cf8 \strokec8 setDate\cf4 \strokec4 (\cf8 \strokec8 tomorrow\cf4 \strokec4 .\cf8 \strokec8 getDate\cf4 \strokec4 () + \cf11 \strokec11 1\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 tomorrowStr\cf4 \strokec4  = \cf6 \strokec6 Utilities\cf4 \strokec4 .\cf8 \strokec8 formatDate\cf4 \strokec4 (\cf8 \strokec8 tomorrow\cf4 \strokec4 , \cf8 \strokec8 scriptTimeZone\cf4 \strokec4 , \cf7 \strokec7 'yyyy-MM-dd'\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 result\cf4 \strokec4  = \cf8 \strokec8 getSignupsAsText\cf4 \strokec4 (\cf8 \strokec8 tomorrowStr\cf4 \strokec4 , \cf8 \strokec8 tomorrowStr\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 result\cf4 \strokec4  && \cf8 \strokec8 result\cf4 \strokec4 .\cf8 \strokec8 status\cf4 \strokec4  === \cf7 \strokec7 'success'\cf4 \strokec4  && \cf8 \strokec8 result\cf4 \strokec4 .\cf8 \strokec8 text\cf4 \strokec4 ) \{\cb1 \
+\cb3         \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 dateDisplay\cf4 \strokec4  = \cf6 \strokec6 Utilities\cf4 \strokec4 .\cf8 \strokec8 formatDate\cf4 \strokec4 (\cf8 \strokec8 tomorrow\cf4 \strokec4 , \cf8 \strokec8 scriptTimeZone\cf4 \strokec4 , \cf7 \strokec7 'MM/dd'\cf4 \strokec4 );\cb1 \
+\cb3         \cf8 \strokec8 result\cf4 \strokec4 .\cf8 \strokec8 text\cf4 \strokec4  = \cf8 \strokec8 result\cf4 \strokec4 .\cf8 \strokec8 text\cf4 \strokec4 .\cf8 \strokec8 replace\cf4 \strokec4 (\cf7 \strokec7 `\uc0\u26085 \u26399 \u65306 \cf4 \strokec4 $\{\cf8 \strokec8 tomorrowStr\cf4 \strokec4 \}\cf7 \strokec7  ~ \cf4 \strokec4 $\{\cf8 \strokec8 tomorrowStr\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 , \cf7 \strokec7 `\uc0\u26085 \u26399 \u65306 \u26126 \u22825  (\cf4 \strokec4 $\{\cf8 \strokec8 dateDisplay\cf4 \strokec4 \}\cf7 \strokec7 )`\cf4 \strokec4 );\cb1 \
+\cb3     \}\cb1 \
+\cb3     \cf5 \strokec5 return\cf4 \strokec4  \cf8 \strokec8 result\cf4 \strokec4 ;\cb1 \
+\cb3 \}\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5 function\cf4 \strokec4  \cf8 \strokec8 getSignupsAsText\cf4 \strokec4 (\cf8 \strokec8 startDateStr\cf4 \strokec4 , \cf8 \strokec8 endDateStr\cf4 \strokec4 ) \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb3   \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 allSignups\cf4 \strokec4  = \cf8 \strokec8 getUnifiedSignups\cf4 \strokec4 (\cf7 \strokec7 ''\cf4 \strokec4 , \cf8 \strokec8 startDateStr\cf4 \strokec4 , \cf8 \strokec8 endDateStr\cf4 \strokec4 );\cb1 \
+\cb3   \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 allSignups\cf4 \strokec4  || \cf8 \strokec8 allSignups\cf4 \strokec4 .\cf8 \strokec8 length\cf4 \strokec4  === \cf11 \strokec11 0\cf4 \strokec4 ) \{\cb1 \
+\cb3     \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'nodata'\cf4 \strokec4  \};\cb1 \
+\cb3   \}\cb1 \
+\cb3   \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 eventsGroup\cf4 \strokec4  = \{\};\cb1 \
+\cb3   \cf8 \strokec8 allSignups\cf4 \strokec4 .\cf8 \strokec8 forEach\cf4 \strokec4 (\cf8 \strokec8 signup\cf4 \strokec4  => \{\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 key\cf4 \strokec4  = \cf7 \strokec7 `\cf4 \strokec4 $\{\cf8 \strokec8 signup\cf4 \strokec4 .\cf8 \strokec8 eventDate\cf4 \strokec4 \}\cf7 \strokec7  \cf4 \strokec4 $\{\cf8 \strokec8 signup\cf4 \strokec4 .\cf8 \strokec8 eventTitle\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 ;\cb1 \
+\cb3     \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 eventsGroup\cf4 \strokec4 [\cf8 \strokec8 key\cf4 \strokec4 ]) \{\cb1 \
+\cb3       \cf8 \strokec8 eventsGroup\cf4 \strokec4 [\cf8 \strokec8 key\cf4 \strokec4 ] = [];\cb1 \
+\cb3     \}\cb1 \
+\cb3     \cf8 \strokec8 eventsGroup\cf4 \strokec4 [\cf8 \strokec8 key\cf4 \strokec4 ].\cf8 \strokec8 push\cf4 \strokec4 (\cf7 \strokec7 `- \cf4 \strokec4 $\{\cf8 \strokec8 signup\cf4 \strokec4 .\cf8 \strokec8 position\cf4 \strokec4 \}\cf7 \strokec7 : \cf4 \strokec4 $\{\cf8 \strokec8 signup\cf4 \strokec4 .\cf8 \strokec8 user\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 );\cb1 \
+\cb3   \});\cb1 \
+\cb3   \cf5 \strokec5 let\cf4 \strokec4  \cf8 \strokec8 formattedText\cf4 \strokec4  = \cf7 \strokec7 `\uc0\u12304 AV\u25918 \u36865 \u31435 \u39000 \u22577 \u21517 \u35352 \u37636 \u12305 \\n\u26085 \u26399 \u65306 \cf4 \strokec4 $\{\cf8 \strokec8 startDateStr\cf4 \strokec4 \}\cf7 \strokec7  ~ \cf4 \strokec4 $\{\cf8 \strokec8 endDateStr\cf4 \strokec4 \}\cf7 \strokec7 \\n----------\\n\\n`\cf4 \strokec4 ;\cb1 \
+\cb3   \cf6 \strokec6 Object\cf4 \strokec4 .\cf8 \strokec8 keys\cf4 \strokec4 (\cf8 \strokec8 eventsGroup\cf4 \strokec4 ).\cf8 \strokec8 sort\cf4 \strokec4 ().\cf8 \strokec8 forEach\cf4 \strokec4 (\cf8 \strokec8 eventKey\cf4 \strokec4  => \{\cb1 \
+\cb3     \cf8 \strokec8 formattedText\cf4 \strokec4  += \cf7 \strokec7 `\uc0\u12304 \cf4 \strokec4 $\{\cf8 \strokec8 eventKey\cf4 \strokec4 \}\cf7 \strokec7 \uc0\u12305 \\n`\cf4 \strokec4 ;\cb1 \
+\cb3     \cf8 \strokec8 formattedText\cf4 \strokec4  += \cf8 \strokec8 eventsGroup\cf4 \strokec4 [\cf8 \strokec8 eventKey\cf4 \strokec4 ].\cf8 \strokec8 join\cf4 \strokec4 (\cf7 \strokec7 '\\n'\cf4 \strokec4 );\cb1 \
+\cb3     \cf8 \strokec8 formattedText\cf4 \strokec4  += \cf7 \strokec7 '\\n\\n'\cf4 \strokec4 ;\cb1 \
+\cb3   \});\cb1 \
+\cb3   \cf8 \strokec8 formattedText\cf4 \strokec4  += \cf7 \strokec7 '\uc0\u26597 \u30475 \u26368 \u26032 \u22577 \u21517 \u36039 \u35338 \u65306 \\nhttps://angewoo.github.io/AVschedule/'\cf4 \strokec4 ;\cb1 \
+\cb3   \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'success'\cf4 \strokec4 , \cf8 \strokec8 text\cf4 \strokec4 : \cf8 \strokec8 formattedText\cf4 \strokec4  \};\cb1 \
+\cb3 \}\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf2 \cb3 \strokec2 // -------------------- \uc0\u20027 \u35201 \u36039 \u26009 \u23531 \u20837 \u20989 \u24335  --------------------\cf4 \cb1 \strokec4 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5 function\cf4 \strokec4  \cf8 \strokec8 addSignup\cf4 \strokec4 (\cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 position\cf4 \strokec4 ) \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb3   \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 eventId\cf4 \strokec4  || !\cf8 \strokec8 userName\cf4 \strokec4  || !\cf8 \strokec8 position\cf4 \strokec4 ) \{ \cb1 \
+\cb3     \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'addSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 position\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22833 \u25943 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u32570 \u23569 \u24517 \u35201 \u36039 \u35338 '\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'error'\cf4 \strokec4 , \cf8 \strokec8 message\cf4 \strokec4 : \cf7 \strokec7 '\uc0\u32570 \u23569 \u24517 \u35201 \u36039 \u35338 \u12290 '\cf4 \strokec4  \}; \cb1 \
+\cb3   \}\cb1 \
+\cb3   \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 lock\cf4 \strokec4  = \cf6 \strokec6 LockService\cf4 \strokec4 .\cf8 \strokec8 getScriptLock\cf4 \strokec4 ();\cb1 \
+\cb3   \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 lock\cf4 \strokec4 .\cf8 \strokec8 tryLock\cf4 \strokec4 (\cf11 \strokec11 15000\cf4 \strokec4 )) \{ \cb1 \
+\cb3     \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'addSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 position\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22833 \u25943 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u31995 \u32113 \u24537 \u30860 \u20013 \u65292 \u37782 \u23450 \u22833 \u25943 '\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'error'\cf4 \strokec4 , \cf8 \strokec8 message\cf4 \strokec4 : \cf7 \strokec7 '\uc0\u31995 \u32113 \u24537 \u30860 \u20013 \u65292 \u35531 \u31245 \u24460 \u20877 \u35430 \u12290 '\cf4 \strokec4  \}; \cb1 \
+\cb3   \}\cb1 \
+\cb3   \cf5 \strokec5 try\cf4 \strokec4  \{\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 ss\cf4 \strokec4  = \cf6 \strokec6 SpreadsheetApp\cf4 \strokec4 .\cf8 \strokec8 openById\cf4 \strokec4 (\cf6 \strokec6 SHEET_ID\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 eventsSheet\cf4 \strokec4  = \cf8 \strokec8 ss\cf4 \strokec4 .\cf8 \strokec8 getSheetByName\cf4 \strokec4 (\cf6 \strokec6 EVENTS_SHEET_NAME\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 signupsSheet\cf4 \strokec4  = \cf8 \strokec8 ss\cf4 \strokec4 .\cf8 \strokec8 getSheetByName\cf4 \strokec4 (\cf6 \strokec6 SIGNUPS_SHEET_NAME\cf4 \strokec4 );\cb1 \
+\cb3     \cb1 \
+\cb3     \cf2 \strokec2 // \uc0\u27298 \u26597 \u27963 \u21205 \u26159 \u21542 \u23384 \u22312 \cf4 \cb1 \strokec4 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 eventData\cf4 \strokec4  = \cf8 \strokec8 eventsSheet\cf4 \strokec4 .\cf8 \strokec8 getDataRange\cf4 \strokec4 ().\cf8 \strokec8 getValues\cf4 \strokec4 ().\cf8 \strokec8 find\cf4 \strokec4 (\cf8 \strokec8 row\cf4 \strokec4  => \cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 0\cf4 \strokec4 ] === \cf8 \strokec8 eventId\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 eventData\cf4 \strokec4 ) \{\cb1 \
+\cb3       \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'addSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 position\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22833 \u25943 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u25214 \u19981 \u21040 \u27492 \u27963 \u21205 '\cf4 \strokec4 );\cb1 \
+\cb3       \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'error'\cf4 \strokec4 , \cf8 \strokec8 message\cf4 \strokec4 : \cf7 \strokec7 '\uc0\u25214 \u19981 \u21040 \u27492 \u27963 \u21205 \u12290 '\cf4 \strokec4  \};\cb1 \
+\cb3     \}\cb1 \
+\
+\cb3     \cf2 \strokec2 // \uc0\u27298 \u26597 \u27963 \u21205 \u26085 \u26399 \u26178 \u38291 \u26159 \u21542 \u26377 \u25928 \u19988 \u26410 \u32080 \u26463 \cf4 \cb1 \strokec4 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 eventDatePart\cf4 \strokec4  = \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Date\cf4 \strokec4 (\cf8 \strokec8 eventData\cf4 \strokec4 [\cf11 \strokec11 2\cf4 \strokec4 ]);\cb1 \
+\cb3     \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 isNaN\cf4 \strokec4 (\cf8 \strokec8 eventDatePart\cf4 \strokec4 .\cf8 \strokec8 getTime\cf4 \strokec4 ())) \{ \cb1 \
+\cb3       \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'addSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 position\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22833 \u25943 '\cf4 \strokec4 , \cf7 \strokec7 `\uc0\u27963 \u21205 \u26085 \u26399 \u26684 \u24335 \u28961 \u25928 : \cf4 \strokec4 $\{\cf8 \strokec8 eventData\cf4 \strokec4 [\cf11 \strokec11 2\cf4 \strokec4 ]\}\cf7 \strokec7 `\cf4 \strokec4 );\cb1 \
+\cb3       \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'error'\cf4 \strokec4 , \cf8 \strokec8 message\cf4 \strokec4 : \cf7 \strokec7 `\uc0\u27963 \u21205  (\cf4 \strokec4 $\{\cf8 \strokec8 eventData\cf4 \strokec4 [\cf11 \strokec11 1\cf4 \strokec4 ]\}\cf7 \strokec7 ) \uc0\u30340 \u26085 \u26399 \u26684 \u24335 \u28961 \u25928 \u65292 \u35531 \u31649 \u29702 \u32773 \u27298 \u26597 \u12290 `\cf4 \strokec4  \}; \cb1 \
+\cb3     \}\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 endTimeStr\cf4 \strokec4  = \cf8 \strokec8 padTime\cf4 \strokec4 (\cf8 \strokec8 eventData\cf4 \strokec4 [\cf11 \strokec11 4\cf4 \strokec4 ] || \cf7 \strokec7 '23:59'\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 if\cf4 \strokec4  (!\cf9 \strokec9 /^\\d\\d:\\d\\d$/\cf4 \strokec4 .\cf8 \strokec8 test\cf4 \strokec4 (\cf8 \strokec8 endTimeStr\cf4 \strokec4 )) \{ \cb1 \
+\cb3       \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'addSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 position\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22833 \u25943 '\cf4 \strokec4 , \cf7 \strokec7 `\uc0\u27963 \u21205 \u32080 \u26463 \u26178 \u38291 \u26684 \u24335 \u37679 \u35492 : \cf4 \strokec4 $\{\cf8 \strokec8 endTimeStr\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 );\cb1 \
+\cb3       \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'error'\cf4 \strokec4 , \cf8 \strokec8 message\cf4 \strokec4 : \cf7 \strokec7 `\uc0\u27963 \u21205  (\cf4 \strokec4 $\{\cf8 \strokec8 eventData\cf4 \strokec4 [\cf11 \strokec11 1\cf4 \strokec4 ]\}\cf7 \strokec7 ) \uc0\u30340 \u32080 \u26463 \u26178 \u38291 \u26684 \u24335 \u37679 \u35492 \u65292 \u35531 \u31649 \u29702 \u32773 \u27298 \u26597 \u12290 \u25033 \u28858  HH:mm \u26684 \u24335 \u12290 `\cf4 \strokec4  \}; \cb1 \
+\cb3     \}\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  [\cf8 \strokec8 hours\cf4 \strokec4 , \cf8 \strokec8 minutes\cf4 \strokec4 ] = \cf8 \strokec8 endTimeStr\cf4 \strokec4 .\cf8 \strokec8 split\cf4 \strokec4 (\cf7 \strokec7 ':'\cf4 \strokec4 ).\cf8 \strokec8 map\cf4 \strokec4 (\cf6 \strokec6 Number\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 eventEndDateTime\cf4 \strokec4  = \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Date\cf4 \strokec4 (\cf8 \strokec8 eventDatePart\cf4 \strokec4 .\cf8 \strokec8 getFullYear\cf4 \strokec4 (), \cf8 \strokec8 eventDatePart\cf4 \strokec4 .\cf8 \strokec8 getMonth\cf4 \strokec4 (), \cf8 \strokec8 eventDatePart\cf4 \strokec4 .\cf8 \strokec8 getDate\cf4 \strokec4 (), \cf8 \strokec8 hours\cf4 \strokec4 , \cf8 \strokec8 minutes\cf4 \strokec4 , \cf11 \strokec11 0\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 if\cf4 \strokec4  (\cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Date\cf4 \strokec4 () > \cf8 \strokec8 eventEndDateTime\cf4 \strokec4 ) \{ \cb1 \
+\cb3       \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'addSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 position\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22833 \u25943 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u27963 \u21205 \u24050 \u32080 \u26463 \u65292 \u28961 \u27861 \u22577 \u21517 '\cf4 \strokec4 );\cb1 \
+\cb3       \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'error'\cf4 \strokec4 , \cf8 \strokec8 message\cf4 \strokec4 : \cf7 \strokec7 '\uc0\u27492 \u27963 \u21205 \u24050 \u32080 \u26463 \u65292 \u28961 \u27861 \u22577 \u21517 \u12290 '\cf4 \strokec4  \}; \cb1 \
+\cb3     \}\cb1 \
+\
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 currentSignups\cf4 \strokec4  = \cf8 \strokec8 signupsSheet\cf4 \strokec4 .\cf8 \strokec8 getDataRange\cf4 \strokec4 ().\cf8 \strokec8 getValues\cf4 \strokec4 ().\cf8 \strokec8 filter\cf4 \strokec4 (\cf8 \strokec8 row\cf4 \strokec4  => \cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 1\cf4 \strokec4 ] === \cf8 \strokec8 eventId\cf4 \strokec4 );\cb1 \
+\cb3     \cb1 \
+\cb3     \cf2 \strokec2 // \uc0\u27298 \u26597 \u26159 \u21542 \u24050 \u22577 \u21517 \cf4 \cb1 \strokec4 \
+\cb3     \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 currentSignups\cf4 \strokec4 .\cf8 \strokec8 some\cf4 \strokec4 (\cf8 \strokec8 row\cf4 \strokec4  => \cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 2\cf4 \strokec4 ] === \cf8 \strokec8 userName\cf4 \strokec4 )) \{ \cb1 \
+\cb3       \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'addSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 position\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u37325 \u35079 \u22577 \u21517 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u24744 \u24050 \u32147 \u22577 \u21517 \u36942 \u27492 \u27963 \u21205 \u20102 '\cf4 \strokec4 );\cb1 \
+\cb3       \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'error'\cf4 \strokec4 , \cf8 \strokec8 message\cf4 \strokec4 : \cf7 \strokec7 '\uc0\u24744 \u24050 \u32147 \u22577 \u21517 \u36942 \u27492 \u27963 \u21205 \u20102 \u12290 '\cf4 \strokec4  \}; \cb1 \
+\cb3     \}\cb1 \
+\cb3     \cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 existingPositionHolder\cf4 \strokec4  = \cf8 \strokec8 currentSignups\cf4 \strokec4 .\cf8 \strokec8 find\cf4 \strokec4 (\cf8 \strokec8 row\cf4 \strokec4  => \cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 4\cf4 \strokec4 ] === \cf8 \strokec8 position\cf4 \strokec4 );\cb1 \
+\cb3     \cf2 \strokec2 // \uc0\u27298 \u26597 \u23831 \u20301 \u26159 \u21542 \u34987 \u20308 \u29992 \cf4 \cb1 \strokec4 \
+\cb3     \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 existingPositionHolder\cf4 \strokec4 ) \{ \cb1 \
+\cb3       \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'addSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 position\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u23831 \u20301 \u37325 \u35079 '\cf4 \strokec4 , \cf7 \strokec7 `\uc0\u27492 \u23831 \u20301 \u24050 \u34987  \cf4 \strokec4 $\{\cf8 \strokec8 existingPositionHolder\cf4 \strokec4 [\cf11 \strokec11 2\cf4 \strokec4 ]\}\cf7 \strokec7  \uc0\u22577 \u21517 `\cf4 \strokec4 );\cb1 \
+\cb3       \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'confirm_backup'\cf4 \strokec4 , \cf8 \strokec8 message\cf4 \strokec4 : \cf7 \strokec7 `\uc0\u27492 \u23831 \u20301 \u30446 \u21069 \u30001  [\cf4 \strokec4 $\{\cf8 \strokec8 existingPositionHolder\cf4 \strokec4 [\cf11 \strokec11 2\cf4 \strokec4 ]\}\cf7 \strokec7 ] \uc0\u22577 \u21517 \u65292 \u24744 \u35201 \u25913 \u28858 \u22577 \u21517 \u20633 \u25588 \u21966 \u65311 `\cf4 \strokec4  \}; \cb1 \
+\cb3     \}\cb1 \
+\
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 maxAttendees\cf4 \strokec4  = \cf8 \strokec8 eventData\cf4 \strokec4 [\cf11 \strokec11 5\cf4 \strokec4 ];\cb1 \
+\cb3     \cf2 \strokec2 // \uc0\u27298 \u26597 \u26159 \u21542 \u38989 \u28415 \cf4 \cb1 \strokec4 \
+\cb3     \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 currentSignups\cf4 \strokec4 .\cf8 \strokec8 length\cf4 \strokec4  >= \cf8 \strokec8 maxAttendees\cf4 \strokec4 ) \{ \cb1 \
+\cb3       \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'addSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 position\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u38989 \u28415 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u27963 \u21205 \u32317 \u20154 \u25976 \u24050 \u38989 \u28415 '\cf4 \strokec4 );\cb1 \
+\cb3       \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'error'\cf4 \strokec4 , \cf8 \strokec8 message\cf4 \strokec4 : \cf7 \strokec7 '\uc0\u27963 \u21205 \u32317 \u20154 \u25976 \u24050 \u38989 \u28415 \u12290 '\cf4 \strokec4  \}; \cb1 \
+\cb3     \}\cb1 \
+\
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 newSignupId\cf4 \strokec4  = \cf7 \strokec7 'su'\cf4 \strokec4  + \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Date\cf4 \strokec4 ().\cf8 \strokec8 getTime\cf4 \strokec4 ();\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 newRowData\cf4 \strokec4  = [\cf8 \strokec8 newSignupId\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Date\cf4 \strokec4 (), \cf8 \strokec8 position\cf4 \strokec4 ];\cb1 \
+\cb3     \cf8 \strokec8 signupsSheet\cf4 \strokec4 .\cf8 \strokec8 appendRow\cf4 \strokec4 (\cf8 \strokec8 newRowData\cf4 \strokec4 );\cb1 \
+\cb3     \cf6 \strokec6 SpreadsheetApp\cf4 \strokec4 .\cf8 \strokec8 flush\cf4 \strokec4 (); \cf2 \strokec2 // \uc0\u30906 \u20445 \u36039 \u26009 \u23531 \u20837 \cf4 \cb1 \strokec4 \
+\
+\cb3     \cf2 \strokec2 // \uc0\u23531 \u20837 \u39511 \u35657  (\u20877 \u27425 \u30906 \u35469 \u26159 \u21542 \u25104 \u21151 \u23531 \u20837 \u65292 \u20006 \u33287 \u26085 \u35468 \u21516 \u27493 )\cf4 \cb1 \strokec4 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 lastRowValues\cf4 \strokec4  = \cf8 \strokec8 signupsSheet\cf4 \strokec4 .\cf8 \strokec8 getRange\cf4 \strokec4 (\cf8 \strokec8 signupsSheet\cf4 \strokec4 .\cf8 \strokec8 getLastRow\cf4 \strokec4 (), \cf11 \strokec11 1\cf4 \strokec4 , \cf11 \strokec11 1\cf4 \strokec4 , \cf11 \strokec11 5\cf4 \strokec4 ).\cf8 \strokec8 getValues\cf4 \strokec4 ()[\cf11 \strokec11 0\cf4 \strokec4 ];\cb1 \
+\cb3     \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 lastRowValues\cf4 \strokec4 [\cf11 \strokec11 0\cf4 \strokec4 ] === \cf8 \strokec8 newSignupId\cf4 \strokec4  && \cf8 \strokec8 lastRowValues\cf4 \strokec4 [\cf11 \strokec11 2\cf4 \strokec4 ] === \cf8 \strokec8 userName\cf4 \strokec4 ) \{\cb1 \
+\cb3       \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'addSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 position\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u25104 \u21151 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22577 \u21517 \u36039 \u26009 \u23531 \u20837 \u20006 \u39511 \u35657 \u25104 \u21151 '\cf4 \strokec4 );\cb1 \
+\cb3       \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'success'\cf4 \strokec4 , \cf8 \strokec8 message\cf4 \strokec4 : \cf7 \strokec7 '\uc0\u22577 \u21517 \u25104 \u21151 \u65281 '\cf4 \strokec4  \};\cb1 \
+\cb3     \} \cf5 \strokec5 else\cf4 \strokec4  \{\cb1 \
+\cb3       \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 error\cf4 \strokec4 (\cf7 \strokec7 `\uc0\u23531 \u20837 \u39511 \u35657 \u22833 \u25943 \u65281 \u38928 \u26399 \u23531 \u20837  [\cf4 \strokec4 $\{\cf8 \strokec8 newSignupId\cf4 \strokec4 \}\cf7 \strokec7 , \cf4 \strokec4 $\{\cf8 \strokec8 userName\cf4 \strokec4 \}\cf7 \strokec7 ]\uc0\u65292 \u20294 \u26368 \u24460 \u19968 \u21015 \u26159  [\cf4 \strokec4 $\{\cf8 \strokec8 lastRowValues\cf4 \strokec4 [\cf11 \strokec11 0\cf4 \strokec4 ]\}\cf7 \strokec7 , \cf4 \strokec4 $\{\cf8 \strokec8 lastRowValues\cf4 \strokec4 [\cf11 \strokec11 2\cf4 \strokec4 ]\}\cf7 \strokec7 ]`\cf4 \strokec4 );\cb1 \
+\cb3       \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 lastRowValues\cf4 \strokec4 [\cf11 \strokec11 0\cf4 \strokec4 ] === \cf8 \strokec8 newSignupId\cf4 \strokec4 ) \{ \cb1 \
+\cb3         \cf8 \strokec8 signupsSheet\cf4 \strokec4 .\cf8 \strokec8 deleteRow\cf4 \strokec4 (\cf8 \strokec8 signupsSheet\cf4 \strokec4 .\cf8 \strokec8 getLastRow\cf4 \strokec4 ()); \cf2 \strokec2 // \uc0\u22039 \u35430 \u22238 \u28414 \cf4 \cb1 \strokec4 \
+\cb3         \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'addSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 position\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22833 \u25943 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22577 \u21517 \u36039 \u26009 \u23531 \u20837 \u39511 \u35657 \u22833 \u25943 \u65292 \u24050 \u22039 \u35430 \u22238 \u28414 '\cf4 \strokec4 );\cb1 \
+\cb3       \} \cf5 \strokec5 else\cf4 \strokec4  \{\cb1 \
+\cb3         \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'addSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 position\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22833 \u25943 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22577 \u21517 \u36039 \u26009 \u23531 \u20837 \u39511 \u35657 \u22833 \u25943 \u65292 \u28961 \u27861 \u22238 \u28414 '\cf4 \strokec4 );\cb1 \
+\cb3       \}\cb1 \
+\cb3       \cf5 \strokec5 throw\cf4 \strokec4  \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Error\cf4 \strokec4 (\cf7 \strokec7 '\uc0\u22577 \u21517 \u36039 \u26009 \u23531 \u20837 \u39511 \u35657 \u22833 \u25943 \u65292 \u35531 \u31245 \u24460 \u20877 \u35430 \u12290 '\cf4 \strokec4 );\cb1 \
+\cb3     \}\cb1 \
+\cb3   \} \cf5 \strokec5 catch\cf4 \strokec4 (\cf8 \strokec8 err\cf4 \strokec4 ) \{ \cb1 \
+\cb3     \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 error\cf4 \strokec4 (\cf7 \strokec7 "addSignup \uc0\u22833 \u25943 :"\cf4 \strokec4 , \cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 message\cf4 \strokec4 , \cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 stack\cf4 \strokec4 ); \cb1 \
+\cb3     \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'addSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 position\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22833 \u25943 '\cf4 \strokec4 , \cf7 \strokec7 `\uc0\u24460 \u31471 \u37679 \u35492 : \cf4 \strokec4 $\{\cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 message\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 throw\cf4 \strokec4  \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Error\cf4 \strokec4 (\cf7 \strokec7 '\uc0\u22577 \u21517 \u26178 \u30332 \u29983 \u24460 \u31471 \u37679 \u35492 \u65292 \u35531 \u32879 \u32363 \u31649 \u29702 \u21729 \u12290 '\cf4 \strokec4 );\cb1 \
+\cb3   \} \cf5 \strokec5 finally\cf4 \strokec4  \{ \cf8 \strokec8 lock\cf4 \strokec4 .\cf8 \strokec8 releaseLock\cf4 \strokec4 (); \}\cb1 \
+\cb3 \}\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5 function\cf4 \strokec4  \cf8 \strokec8 addBackupSignup\cf4 \strokec4 (\cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 position\cf4 \strokec4 ) \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb3   \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 eventId\cf4 \strokec4  || !\cf8 \strokec8 userName\cf4 \strokec4  || !\cf8 \strokec8 position\cf4 \strokec4 ) \{\cb1 \
+\cb3     \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'addBackupSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 position\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22833 \u25943 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u32570 \u23569 \u24517 \u35201 \u36039 \u35338 '\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'error'\cf4 \strokec4 , \cf8 \strokec8 message\cf4 \strokec4 : \cf7 \strokec7 '\uc0\u32570 \u23569 \u24517 \u35201 \u36039 \u35338 \u12290 '\cf4 \strokec4  \};\cb1 \
+\cb3   \}\cb1 \
+\cb3   \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 lock\cf4 \strokec4  = \cf6 \strokec6 LockService\cf4 \strokec4 .\cf8 \strokec8 getScriptLock\cf4 \strokec4 ();\cb1 \
+\cb3   \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 lock\cf4 \strokec4 .\cf8 \strokec8 tryLock\cf4 \strokec4 (\cf11 \strokec11 15000\cf4 \strokec4 )) \{ \cb1 \
+\cb3     \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'addBackupSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 position\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22833 \u25943 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u31995 \u32113 \u24537 \u30860 \u20013 \u65292 \u37782 \u23450 \u22833 \u25943 '\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'error'\cf4 \strokec4 , \cf8 \strokec8 message\cf4 \strokec4 : \cf7 \strokec7 '\uc0\u31995 \u32113 \u24537 \u30860 \u20013 \u65292 \u35531 \u31245 \u24460 \u20877 \u35430 \u12290 '\cf4 \strokec4  \}; \cb1 \
+\cb3   \}\cb1 \
+\cb3   \cf5 \strokec5 try\cf4 \strokec4  \{\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 ss\cf4 \strokec4  = \cf6 \strokec6 SpreadsheetApp\cf4 \strokec4 .\cf8 \strokec8 openById\cf4 \strokec4 (\cf6 \strokec6 SHEET_ID\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 signupsSheet\cf4 \strokec4  = \cf8 \strokec8 ss\cf4 \strokec4 .\cf8 \strokec8 getSheetByName\cf4 \strokec4 (\cf6 \strokec6 SIGNUPS_SHEET_NAME\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 newSignupId\cf4 \strokec4  = \cf7 \strokec7 'su'\cf4 \strokec4  + \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Date\cf4 \strokec4 ().\cf8 \strokec8 getTime\cf4 \strokec4 ();\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 backupPosition\cf4 \strokec4  = \cf7 \strokec7 `\cf4 \strokec4 $\{\cf8 \strokec8 position\cf4 \strokec4 \}\cf7 \strokec7  (\uc0\u20633 \u25588 )`\cf4 \strokec4 ;\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 newRowData\cf4 \strokec4  = [\cf8 \strokec8 newSignupId\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Date\cf4 \strokec4 (), \cf8 \strokec8 backupPosition\cf4 \strokec4 ];\cb1 \
+\cb3     \cf8 \strokec8 signupsSheet\cf4 \strokec4 .\cf8 \strokec8 appendRow\cf4 \strokec4 (\cf8 \strokec8 newRowData\cf4 \strokec4 );\cb1 \
+\cb3     \cf6 \strokec6 SpreadsheetApp\cf4 \strokec4 .\cf8 \strokec8 flush\cf4 \strokec4 (); \cf2 \strokec2 // \uc0\u30906 \u20445 \u36039 \u26009 \u23531 \u20837 \cf4 \cb1 \strokec4 \
+\
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 lastRowValues\cf4 \strokec4  = \cf8 \strokec8 signupsSheet\cf4 \strokec4 .\cf8 \strokec8 getRange\cf4 \strokec4 (\cf8 \strokec8 signupsSheet\cf4 \strokec4 .\cf8 \strokec8 getLastRow\cf4 \strokec4 (), \cf11 \strokec11 1\cf4 \strokec4 , \cf11 \strokec11 1\cf4 \strokec4 , \cf11 \strokec11 5\cf4 \strokec4 ).\cf8 \strokec8 getValues\cf4 \strokec4 ()[\cf11 \strokec11 0\cf4 \strokec4 ];\cb1 \
+\cb3     \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 lastRowValues\cf4 \strokec4 [\cf11 \strokec11 0\cf4 \strokec4 ] === \cf8 \strokec8 newSignupId\cf4 \strokec4  && \cf8 \strokec8 lastRowValues\cf4 \strokec4 [\cf11 \strokec11 2\cf4 \strokec4 ] === \cf8 \strokec8 userName\cf4 \strokec4 ) \{\cb1 \
+\cb3       \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'addBackupSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 backupPosition\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u25104 \u21151 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u20633 \u25588 \u22577 \u21517 \u36039 \u26009 \u23531 \u20837 \u20006 \u39511 \u35657 \u25104 \u21151 '\cf4 \strokec4 );\cb1 \
+\cb3       \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'success'\cf4 \strokec4  \};\cb1 \
+\cb3     \} \cf5 \strokec5 else\cf4 \strokec4  \{\cb1 \
+\cb3       \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 error\cf4 \strokec4 (\cf7 \strokec7 `\uc0\u20633 \u25588 \u23531 \u20837 \u39511 \u35657 \u22833 \u25943 \u65281 \u38928 \u26399 \u23531 \u20837  [\cf4 \strokec4 $\{\cf8 \strokec8 newSignupId\cf4 \strokec4 \}\cf7 \strokec7 , \cf4 \strokec4 $\{\cf8 \strokec8 userName\cf4 \strokec4 \}\cf7 \strokec7 ]\uc0\u65292 \u20294 \u26368 \u24460 \u19968 \u21015 \u26159  [\cf4 \strokec4 $\{\cf8 \strokec8 lastRowValues\cf4 \strokec4 [\cf11 \strokec11 0\cf4 \strokec4 ]\}\cf7 \strokec7 , \cf4 \strokec4 $\{\cf8 \strokec8 lastRowValues\cf4 \strokec4 [\cf11 \strokec11 2\cf4 \strokec4 ]\}\cf7 \strokec7 ]`\cf4 \strokec4 );\cb1 \
+\cb3       \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 lastRowValues\cf4 \strokec4 [\cf11 \strokec11 0\cf4 \strokec4 ] === \cf8 \strokec8 newSignupId\cf4 \strokec4 ) \{ \cb1 \
+\cb3         \cf8 \strokec8 signupsSheet\cf4 \strokec4 .\cf8 \strokec8 deleteRow\cf4 \strokec4 (\cf8 \strokec8 signupsSheet\cf4 \strokec4 .\cf8 \strokec8 getLastRow\cf4 \strokec4 ()); \cf2 \strokec2 // \uc0\u22039 \u35430 \u22238 \u28414 \cf4 \cb1 \strokec4 \
+\cb3         \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'addBackupSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 backupPosition\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22833 \u25943 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u20633 \u25588 \u22577 \u21517 \u36039 \u26009 \u23531 \u20837 \u39511 \u35657 \u22833 \u25943 \u65292 \u24050 \u22039 \u35430 \u22238 \u28414 '\cf4 \strokec4 );\cb1 \
+\cb3       \} \cf5 \strokec5 else\cf4 \strokec4  \{\cb1 \
+\cb3         \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'addBackupSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 backupPosition\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22833 \u25943 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u20633 \u25588 \u22577 \u21517 \u36039 \u26009 \u23531 \u20837 \u39511 \u35657 \u22833 \u25943 \u65292 \u28961 \u27861 \u22238 \u28414 '\cf4 \strokec4 );\cb1 \
+\cb3       \}\cb1 \
+\cb3       \cf5 \strokec5 throw\cf4 \strokec4  \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Error\cf4 \strokec4 (\cf7 \strokec7 '\uc0\u20633 \u25588 \u22577 \u21517 \u36039 \u26009 \u23531 \u20837 \u39511 \u35657 \u22833 \u25943 \u65292 \u35531 \u31245 \u24460 \u20877 \u35430 \u12290 '\cf4 \strokec4 );\cb1 \
+\cb3     \}\cb1 \
+\cb3   \} \cf5 \strokec5 catch\cf4 \strokec4  (\cf8 \strokec8 err\cf4 \strokec4 ) \{\cb1 \
+\cb3     \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 error\cf4 \strokec4 (\cf7 \strokec7 "addBackupSignup \uc0\u22833 \u25943 :"\cf4 \strokec4 , \cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 message\cf4 \strokec4 , \cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 stack\cf4 \strokec4 );\cb1 \
+\cb3     \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'addBackupSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 position\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22833 \u25943 '\cf4 \strokec4 , \cf7 \strokec7 `\uc0\u24460 \u31471 \u37679 \u35492 : \cf4 \strokec4 $\{\cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 message\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 throw\cf4 \strokec4  \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Error\cf4 \strokec4 (\cf7 \strokec7 '\uc0\u20633 \u25588 \u22577 \u21517 \u26178 \u30332 \u29983 \u24460 \u31471 \u37679 \u35492 \u12290 '\cf4 \strokec4 );\cb1 \
+\cb3   \} \cf5 \strokec5 finally\cf4 \strokec4  \{ \cf8 \strokec8 lock\cf4 \strokec4 .\cf8 \strokec8 releaseLock\cf4 \strokec4 (); \}\cb1 \
+\cb3 \}\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5 function\cf4 \strokec4  \cf8 \strokec8 removeSignup\cf4 \strokec4 (\cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 ) \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb3   \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 eventId\cf4 \strokec4  || !\cf8 \strokec8 userName\cf4 \strokec4 ) \{\cb1 \
+\cb3     \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'removeSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf7 \strokec7 ''\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22833 \u25943 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u32570 \u23569 \u20107 \u20214 ID\u25110 \u22995 \u21517 '\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'error'\cf4 \strokec4 , \cf8 \strokec8 message\cf4 \strokec4 : \cf7 \strokec7 '\uc0\u32570 \u23569 \u20107 \u20214 ID\u25110 \u22995 \u21517 \u12290 '\cf4 \strokec4  \};\cb1 \
+\cb3   \}\cb1 \
+\cb3   \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 lock\cf4 \strokec4  = \cf6 \strokec6 LockService\cf4 \strokec4 .\cf8 \strokec8 getScriptLock\cf4 \strokec4 ();\cb1 \
+\cb3   \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 lock\cf4 \strokec4 .\cf8 \strokec8 tryLock\cf4 \strokec4 (\cf11 \strokec11 15000\cf4 \strokec4 )) \{ \cb1 \
+\cb3     \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'removeSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf7 \strokec7 ''\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22833 \u25943 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u31995 \u32113 \u24537 \u30860 \u20013 \u65292 \u37782 \u23450 \u22833 \u25943 '\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'error'\cf4 \strokec4 , \cf8 \strokec8 message\cf4 \strokec4 : \cf7 \strokec7 '\uc0\u31995 \u32113 \u24537 \u30860 \u20013 \u65292 \u28961 \u27861 \u21462 \u28040 \u22577 \u21517 \u65292 \u35531 \u31245 \u24460 \u20877 \u35430 \u12290 '\cf4 \strokec4  \}; \cb1 \
+\cb3   \}\cb1 \
+\cb3   \cf5 \strokec5 let\cf4 \strokec4  \cf8 \strokec8 removedPosition\cf4 \strokec4  = \cf7 \strokec7 ''\cf4 \strokec4 ;\cb1 \
+\cb3   \cf5 \strokec5 let\cf4 \strokec4  \cf8 \strokec8 rowToDeleteIndex\cf4 \strokec4  = -\cf11 \strokec11 1\cf4 \strokec4 ;\cb1 \
+\cb3   \cf5 \strokec5 try\cf4 \strokec4  \{\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 ss\cf4 \strokec4  = \cf6 \strokec6 SpreadsheetApp\cf4 \strokec4 .\cf8 \strokec8 openById\cf4 \strokec4 (\cf6 \strokec6 SHEET_ID\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 signupsSheet\cf4 \strokec4  = \cf8 \strokec8 ss\cf4 \strokec4 .\cf8 \strokec8 getSheetByName\cf4 \strokec4 (\cf6 \strokec6 SIGNUPS_SHEET_NAME\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 signupsData\cf4 \strokec4  = \cf8 \strokec8 signupsSheet\cf4 \strokec4 .\cf8 \strokec8 getDataRange\cf4 \strokec4 ().\cf8 \strokec8 getValues\cf4 \strokec4 ();\cb1 \
+\cb3     \cb1 \
+\cb3     \cf2 \strokec2 // \uc0\u24478 \u24460 \u24448 \u21069 \u25214 \u65292 \u36991 \u20813 \u21034 \u38500 \u34892 \u24460 \u32034 \u24341 \u35722 \u21205 \cf4 \cb1 \strokec4 \
+\cb3     \cf5 \strokec5 for\cf4 \strokec4  (\cf5 \strokec5 let\cf4 \strokec4  \cf8 \strokec8 i\cf4 \strokec4  = \cf8 \strokec8 signupsData\cf4 \strokec4 .\cf8 \strokec8 length\cf4 \strokec4  - \cf11 \strokec11 1\cf4 \strokec4 ; \cf8 \strokec8 i\cf4 \strokec4  >= \cf11 \strokec11 1\cf4 \strokec4 ; \cf8 \strokec8 i\cf4 \strokec4 --) \{ \cb1 \
+\cb3       \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 signupsData\cf4 \strokec4 [\cf8 \strokec8 i\cf4 \strokec4 ][\cf11 \strokec11 1\cf4 \strokec4 ] === \cf8 \strokec8 eventId\cf4 \strokec4  && \cf8 \strokec8 signupsData\cf4 \strokec4 [\cf8 \strokec8 i\cf4 \strokec4 ][\cf11 \strokec11 2\cf4 \strokec4 ] === \cf8 \strokec8 userName\cf4 \strokec4 ) \{ \cb1 \
+\cb3         \cf8 \strokec8 rowToDeleteIndex\cf4 \strokec4  = \cf8 \strokec8 i\cf4 \strokec4  + \cf11 \strokec11 1\cf4 \strokec4 ; \cf2 \strokec2 // Apps Script \uc0\u30340 \u34892 \u34399 \u26159  1-based\cf4 \cb1 \strokec4 \
+\cb3         \cf8 \strokec8 removedPosition\cf4 \strokec4  = \cf8 \strokec8 signupsData\cf4 \strokec4 [\cf8 \strokec8 i\cf4 \strokec4 ][\cf11 \strokec11 4\cf4 \strokec4 ]; \cf2 \strokec2 // \uc0\u29554 \u21462 \u23831 \u20301 \u20449 \u24687 \cf4 \cb1 \strokec4 \
+\cb3         \cf8 \strokec8 signupsSheet\cf4 \strokec4 .\cf8 \strokec8 deleteRow\cf4 \strokec4 (\cf8 \strokec8 rowToDeleteIndex\cf4 \strokec4 ); \cb1 \
+\cb3         \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'removeSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 removedPosition\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u25104 \u21151 '\cf4 \strokec4 , \cf7 \strokec7 `\uc0\u24050 \u21034 \u38500 \u34892  \cf4 \strokec4 $\{\cf8 \strokec8 rowToDeleteIndex\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 );\cb1 \
+\cb3         \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'success'\cf4 \strokec4 , \cf8 \strokec8 message\cf4 \strokec4 : \cf7 \strokec7 '\uc0\u24050 \u28858 \u24744 \u21462 \u28040 \u22577 \u21517 \u12290 '\cf4 \strokec4  \}; \cb1 \
+\cb3       \} \cb1 \
+\cb3     \}\cb1 \
+\cb3     \cf2 \strokec2 // \uc0\u22914 \u26524 \u25214 \u19981 \u21040 \cf4 \cb1 \strokec4 \
+\cb3     \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'removeSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf7 \strokec7 ''\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u25214 \u19981 \u21040 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u25214 \u19981 \u21040 \u24744 \u30340 \u22577 \u21517 \u32000 \u37636 '\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'error'\cf4 \strokec4 , \cf8 \strokec8 message\cf4 \strokec4 : \cf7 \strokec7 '\uc0\u25214 \u19981 \u21040 \u24744 \u30340 \u22577 \u21517 \u32000 \u37636 \u12290 '\cf4 \strokec4  \};\cb1 \
+\cb3   \} \cf5 \strokec5 catch\cf4 \strokec4 (\cf8 \strokec8 err\cf4 \strokec4 ) \{ \cb1 \
+\cb3     \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 error\cf4 \strokec4 (\cf7 \strokec7 "removeSignup \uc0\u22833 \u25943 :"\cf4 \strokec4 , \cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 message\cf4 \strokec4 , \cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 stack\cf4 \strokec4 ); \cb1 \
+\cb3     \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'removeSignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf8 \strokec8 removedPosition\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22833 \u25943 '\cf4 \strokec4 , \cf7 \strokec7 `\uc0\u24460 \u31471 \u37679 \u35492 : \cf4 \strokec4 $\{\cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 message\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 throw\cf4 \strokec4  \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Error\cf4 \strokec4 (\cf7 \strokec7 '\uc0\u21462 \u28040 \u22577 \u21517 \u26178 \u30332 \u29983 \u37679 \u35492 \u12290 '\cf4 \strokec4 );\cb1 \
+\cb3   \} \cf5 \strokec5 finally\cf4 \strokec4  \{ \cf8 \strokec8 lock\cf4 \strokec4 .\cf8 \strokec8 releaseLock\cf4 \strokec4 (); \}\cb1 \
+\cb3 \}\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5 function\cf4 \strokec4  \cf8 \strokec8 modifySignup\cf4 \strokec4 (\cf8 \strokec8 signupId\cf4 \strokec4 , \cf8 \strokec8 newPosition\cf4 \strokec4 ) \{\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb3   \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 signupId\cf4 \strokec4  || !\cf8 \strokec8 newPosition\cf4 \strokec4 ) \{ \cb1 \
+\cb3     \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'modifySignup'\cf4 \strokec4 , \cf8 \strokec8 signupId\cf4 \strokec4 , \cf7 \strokec7 ''\cf4 \strokec4 , \cf8 \strokec8 newPosition\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22833 \u25943 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u32570 \u23569 \u22577 \u21517 ID\u25110 \u26032 \u23831 \u20301 \u36039 \u35338 '\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'error'\cf4 \strokec4 , \cf8 \strokec8 message\cf4 \strokec4 : \cf7 \strokec7 '\uc0\u32570 \u23569 \u22577 \u21517 ID\u25110 \u26032 \u23831 \u20301 \u36039 \u35338 \u12290 '\cf4 \strokec4  \}; \cb1 \
+\cb3   \}\cb1 \
+\cb3   \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 lock\cf4 \strokec4  = \cf6 \strokec6 LockService\cf4 \strokec4 .\cf8 \strokec8 getScriptLock\cf4 \strokec4 ();\cb1 \
+\cb3   \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 lock\cf4 \strokec4 .\cf8 \strokec8 tryLock\cf4 \strokec4 (\cf11 \strokec11 15000\cf4 \strokec4 )) \{ \cb1 \
+\cb3     \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'modifySignup'\cf4 \strokec4 , \cf8 \strokec8 signupId\cf4 \strokec4 , \cf7 \strokec7 ''\cf4 \strokec4 , \cf8 \strokec8 newPosition\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22833 \u25943 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u31995 \u32113 \u24537 \u30860 \u20013 \u65292 \u37782 \u23450 \u22833 \u25943 '\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'error'\cf4 \strokec4 , \cf8 \strokec8 message\cf4 \strokec4 : \cf7 \strokec7 '\uc0\u31995 \u32113 \u24537 \u30860 \u20013 \u65292 \u35531 \u31245 \u24460 \u20877 \u35430 \u12290 '\cf4 \strokec4  \}; \cb1 \
+\cb3   \}\cb1 \
+\cb3   \cf5 \strokec5 let\cf4 \strokec4  \cf8 \strokec8 eventId\cf4 \strokec4  = \cf7 \strokec7 ''\cf4 \strokec4 ;\cb1 \
+\cb3   \cf5 \strokec5 let\cf4 \strokec4  \cf8 \strokec8 userName\cf4 \strokec4  = \cf7 \strokec7 ''\cf4 \strokec4 ;\cb1 \
+\cb3   \cf5 \strokec5 let\cf4 \strokec4  \cf8 \strokec8 oldPosition\cf4 \strokec4  = \cf7 \strokec7 ''\cf4 \strokec4 ;\cb1 \
+\cb3   \cf5 \strokec5 let\cf4 \strokec4  \cf8 \strokec8 targetRowIndex\cf4 \strokec4  = -\cf11 \strokec11 1\cf4 \strokec4 ;\cb1 \
+\cb3   \cf5 \strokec5 try\cf4 \strokec4  \{\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 ss\cf4 \strokec4  = \cf6 \strokec6 SpreadsheetApp\cf4 \strokec4 .\cf8 \strokec8 openById\cf4 \strokec4 (\cf6 \strokec6 SHEET_ID\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 signupsSheet\cf4 \strokec4  = \cf8 \strokec8 ss\cf4 \strokec4 .\cf8 \strokec8 getSheetByName\cf4 \strokec4 (\cf6 \strokec6 SIGNUPS_SHEET_NAME\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 signupsData\cf4 \strokec4  = \cf8 \strokec8 signupsSheet\cf4 \strokec4 .\cf8 \strokec8 getDataRange\cf4 \strokec4 ().\cf8 \strokec8 getValues\cf4 \strokec4 ();\cb1 \
+\cb3     \cb1 \
+\cb3     \cf2 \strokec2 // \uc0\u23563 \u25214 \u30446 \u27161 \u34892 \cf4 \cb1 \strokec4 \
+\cb3     \cf5 \strokec5 for\cf4 \strokec4  (\cf5 \strokec5 let\cf4 \strokec4  \cf8 \strokec8 i\cf4 \strokec4  = \cf11 \strokec11 1\cf4 \strokec4 ; \cf8 \strokec8 i\cf4 \strokec4  < \cf8 \strokec8 signupsData\cf4 \strokec4 .\cf8 \strokec8 length\cf4 \strokec4 ; \cf8 \strokec8 i\cf4 \strokec4 ++) \{ \cf2 \strokec2 // \uc0\u24478 \u31532 2\u34892 (\u32034 \u24341 1)\u38283 \u22987 \cf4 \cb1 \strokec4 \
+\cb3       \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 signupsData\cf4 \strokec4 [\cf8 \strokec8 i\cf4 \strokec4 ][\cf11 \strokec11 0\cf4 \strokec4 ] === \cf8 \strokec8 signupId\cf4 \strokec4 ) \{\cb1 \
+\cb3         \cf8 \strokec8 targetRowIndex\cf4 \strokec4  = \cf8 \strokec8 i\cf4 \strokec4  + \cf11 \strokec11 1\cf4 \strokec4 ; \cf2 \strokec2 // Google Sheet \uc0\u30340 \u34892 \u34399 \u26159  1-based\cf4 \cb1 \strokec4 \
+\cb3         \cf8 \strokec8 eventId\cf4 \strokec4  = \cf8 \strokec8 signupsData\cf4 \strokec4 [\cf8 \strokec8 i\cf4 \strokec4 ][\cf11 \strokec11 1\cf4 \strokec4 ];\cb1 \
+\cb3         \cf8 \strokec8 userName\cf4 \strokec4  = \cf8 \strokec8 signupsData\cf4 \strokec4 [\cf8 \strokec8 i\cf4 \strokec4 ][\cf11 \strokec11 2\cf4 \strokec4 ];\cb1 \
+\cb3         \cf8 \strokec8 oldPosition\cf4 \strokec4  = \cf8 \strokec8 signupsData\cf4 \strokec4 [\cf8 \strokec8 i\cf4 \strokec4 ][\cf11 \strokec11 4\cf4 \strokec4 ];\cb1 \
+\cb3         \cf5 \strokec5 break\cf4 \strokec4 ;\cb1 \
+\cb3       \}\cb1 \
+\cb3     \}\cb1 \
+\cb3     \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 targetRowIndex\cf4 \strokec4  === -\cf11 \strokec11 1\cf4 \strokec4 ) \{ \cb1 \
+\cb3       \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'modifySignup'\cf4 \strokec4 , \cf7 \strokec7 ''\cf4 \strokec4 , \cf7 \strokec7 ''\cf4 \strokec4 , \cf8 \strokec8 newPosition\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22833 \u25943 '\cf4 \strokec4 , \cf7 \strokec7 `\uc0\u25214 \u19981 \u21040 \u25351 \u23450 \u30340 \u22577 \u21517 \u32000 \u37636 ID: \cf4 \strokec4 $\{\cf8 \strokec8 signupId\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 );\cb1 \
+\cb3       \cf5 \strokec5 throw\cf4 \strokec4  \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Error\cf4 \strokec4 (\cf7 \strokec7 '\uc0\u25214 \u19981 \u21040 \u25351 \u23450 \u30340 \u22577 \u21517 \u32000 \u37636 ID\u12290 '\cf4 \strokec4 ); \cb1 \
+\cb3     \}\cb1 \
+\
+\cb3     \cf2 \strokec2 // \uc0\u27298 \u26597 \u26032 \u23831 \u20301 \u26159 \u21542 \u24050 \u34987 \u20308 \u29992 \cf4 \cb1 \strokec4 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 positionTaken\cf4 \strokec4  = \cf8 \strokec8 signupsData\cf4 \strokec4 .\cf8 \strokec8 some\cf4 \strokec4 (\cf8 \strokec8 row\cf4 \strokec4  => \cb1 \
+\cb3       \cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 1\cf4 \strokec4 ] === \cf8 \strokec8 eventId\cf4 \strokec4  && \cf2 \strokec2 // \uc0\u21516 \u19968 \u20491 \u27963 \u21205 \cf4 \cb1 \strokec4 \
+\cb3       \cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 4\cf4 \strokec4 ] === \cf8 \strokec8 newPosition\cf4 \strokec4  && \cf2 \strokec2 // \uc0\u26032 \u23831 \u20301 \u24050 \u23384 \u22312 \cf4 \cb1 \strokec4 \
+\cb3       \cf8 \strokec8 row\cf4 \strokec4 [\cf11 \strokec11 0\cf4 \strokec4 ] !== \cf8 \strokec8 signupId\cf4 \strokec4  \cf2 \strokec2 // \uc0\u20294 \u19981 \u26159 \u30446 \u21069 \u27491 \u22312 \u20462 \u25913 \u30340 \u36889 \u19968 \u34892 \cf4 \cb1 \strokec4 \
+\cb3     );\cb1 \
+\
+\cb3     \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 positionTaken\cf4 \strokec4 ) \{ \cb1 \
+\cb3       \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'modifySignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf7 \strokec7 `\cf4 \strokec4 $\{\cf8 \strokec8 oldPosition\cf4 \strokec4 \}\cf7 \strokec7  -> \cf4 \strokec4 $\{\cf8 \strokec8 newPosition\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u23831 \u20301 \u37325 \u35079 '\cf4 \strokec4 , \cf7 \strokec7 `\uc0\u28961 \u27861 \u20462 \u25913 \u65292 \u23831 \u20301  [\cf4 \strokec4 $\{\cf8 \strokec8 newPosition\cf4 \strokec4 \}\cf7 \strokec7 ] \uc0\u24050 \u34987 \u20854 \u20182 \u20154 \u22577 \u21517 `\cf4 \strokec4 );\cb1 \
+\cb3       \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'error'\cf4 \strokec4 , \cf8 \strokec8 message\cf4 \strokec4 : \cf7 \strokec7 `\uc0\u28961 \u27861 \u20462 \u25913 \u65292 \u23831 \u20301  [\cf4 \strokec4 $\{\cf8 \strokec8 newPosition\cf4 \strokec4 \}\cf7 \strokec7 ] \uc0\u24050 \u34987 \u20854 \u20182 \u20154 \u22577 \u21517 \u12290 `\cf4 \strokec4  \}; \cb1 \
+\cb3     \}\cb1 \
+\
+\cb3     \cf8 \strokec8 signupsSheet\cf4 \strokec4 .\cf8 \strokec8 getRange\cf4 \strokec4 (\cf8 \strokec8 targetRowIndex\cf4 \strokec4 , \cf11 \strokec11 5\cf4 \strokec4 ).\cf8 \strokec8 setValue\cf4 \strokec4 (\cf8 \strokec8 newPosition\cf4 \strokec4 ); \cf2 \strokec2 // \uc0\u20462 \u25913 \u23831 \u20301  (\u31532 5\u27396 )\cf4 \cb1 \strokec4 \
+\cb3     \cf6 \strokec6 SpreadsheetApp\cf4 \strokec4 .\cf8 \strokec8 flush\cf4 \strokec4 (); \cf2 \strokec2 // \uc0\u30906 \u20445 \u36039 \u26009 \u23531 \u20837 \cf4 \cb1 \strokec4 \
+\
+\cb3     \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'modifySignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf7 \strokec7 `\cf4 \strokec4 $\{\cf8 \strokec8 oldPosition\cf4 \strokec4 \}\cf7 \strokec7  -> \cf4 \strokec4 $\{\cf8 \strokec8 newPosition\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u25104 \u21151 '\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u23831 \u20301 \u24050 \u25104 \u21151 \u20462 \u25913 '\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'success'\cf4 \strokec4 , \cf8 \strokec8 message\cf4 \strokec4 : \cf7 \strokec7 '\uc0\u23831 \u20301 \u24050 \u25104 \u21151 \u20462 \u25913 \u65281 '\cf4 \strokec4  \};\cb1 \
+\cb3   \} \cf5 \strokec5 catch\cf4 \strokec4  (\cf8 \strokec8 err\cf4 \strokec4 ) \{\cb1 \
+\cb3     \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 error\cf4 \strokec4 (\cf7 \strokec7 "modifySignup \uc0\u22833 \u25943 :"\cf4 \strokec4 , \cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 message\cf4 \strokec4 , \cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 stack\cf4 \strokec4 );\cb1 \
+\cb3     \cf8 \strokec8 logOperation\cf4 \strokec4 (\cf7 \strokec7 'modifySignup'\cf4 \strokec4 , \cf8 \strokec8 eventId\cf4 \strokec4 , \cf8 \strokec8 userName\cf4 \strokec4 , \cf7 \strokec7 `\cf4 \strokec4 $\{\cf8 \strokec8 oldPosition\cf4 \strokec4  || \cf7 \strokec7 ''\cf4 \strokec4 \}\cf7 \strokec7  -> \cf4 \strokec4 $\{\cf8 \strokec8 newPosition\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 , \cf7 \strokec7 '\uc0\u22833 \u25943 '\cf4 \strokec4 , \cf7 \strokec7 `\uc0\u24460 \u31471 \u37679 \u35492 : \cf4 \strokec4 $\{\cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 message\cf4 \strokec4 \}\cf7 \strokec7 `\cf4 \strokec4 );\cb1 \
+\cb3     \cf5 \strokec5 throw\cf4 \strokec4  \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Error\cf4 \strokec4 (\cf7 \strokec7 '\uc0\u20462 \u25913 \u22577 \u21517 \u26178 \u30332 \u29983 \u24460 \u31471 \u37679 \u35492 \u12290 '\cf4 \strokec4 );\cb1 \
+\cb3   \} \cf5 \strokec5 finally\cf4 \strokec4  \{\cb1 \
+\cb3     \cf8 \strokec8 lock\cf4 \strokec4 .\cf8 \strokec8 releaseLock\cf4 \strokec4 ();\cb1 \
+\cb3   \}\cb1 \
+\cb3 \}\cb1 \
+\
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5 function\cf4 \strokec4  \cf8 \strokec8 createTempSheetAndExport\cf4 \strokec4 (\cf8 \strokec8 startDateStr\cf4 \strokec4 , \cf8 \strokec8 endDateStr\cf4 \strokec4 ) \{ \cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf4 \cb3   \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 ss\cf4 \strokec4  = \cf6 \strokec6 SpreadsheetApp\cf4 \strokec4 .\cf8 \strokec8 openById\cf4 \strokec4 (\cf6 \strokec6 SHEET_ID\cf4 \strokec4 ); \cb1 \
+\cb3   \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 spreadsheetId\cf4 \strokec4  = \cf8 \strokec8 ss\cf4 \strokec4 .\cf8 \strokec8 getId\cf4 \strokec4 (); \cb1 \
+\cb3   \cf5 \strokec5 let\cf4 \strokec4  \cf8 \strokec8 tempSheet\cf4 \strokec4  = \cf5 \strokec5 null\cf4 \strokec4 ; \cf5 \strokec5 let\cf4 \strokec4  \cf8 \strokec8 tempFile\cf4 \strokec4  = \cf5 \strokec5 null\cf4 \strokec4 ; \cb1 \
+\cb3   \cf5 \strokec5 try\cf4 \strokec4  \{ \cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 tempSheetName\cf4 \strokec4  = \cf7 \strokec7 "\uc0\u21295 \u20986 \u22577 \u34920 _"\cf4 \strokec4  + \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Date\cf4 \strokec4 ().\cf8 \strokec8 getTime\cf4 \strokec4 (); \cb1 \
+\cb3     \cf8 \strokec8 tempSheet\cf4 \strokec4  = \cf8 \strokec8 ss\cf4 \strokec4 .\cf8 \strokec8 insertSheet\cf4 \strokec4 (\cf8 \strokec8 tempSheetName\cf4 \strokec4 ); \cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 data\cf4 \strokec4  = \cf8 \strokec8 getUnifiedSignups\cf4 \strokec4 (\cf7 \strokec7 ''\cf4 \strokec4 , \cf8 \strokec8 startDateStr\cf4 \strokec4 , \cf8 \strokec8 endDateStr\cf4 \strokec4 ); \cb1 \
+\cb3     \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 data\cf4 \strokec4  || \cf8 \strokec8 data\cf4 \strokec4 .\cf8 \strokec8 length\cf4 \strokec4  === \cf11 \strokec11 0\cf4 \strokec4 ) \{ \cb1 \
+\cb3       \cf8 \strokec8 ss\cf4 \strokec4 .\cf8 \strokec8 deleteSheet\cf4 \strokec4 (\cf8 \strokec8 tempSheet\cf4 \strokec4 ); \cb1 \
+\cb3       \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'nodata'\cf4 \strokec4 , \cf8 \strokec8 message\cf4 \strokec4 : \cf7 \strokec7 '\uc0\u22312 \u36984 \u23450 \u30340 \u26085 \u26399 \u31684 \u22285 \u20839 \u27794 \u26377 \u20219 \u20309 \u22577 \u21517 \u35352 \u37636 \u12290 '\cf4 \strokec4  \}; \cb1 \
+\cb3     \} \cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 title\cf4 \strokec4  = \cf7 \strokec7 `AV\uc0\u25918 \u36865 \u31435 \u39000 \u22577 \u21517 \u35352 \u37636  (\cf4 \strokec4 $\{\cf8 \strokec8 startDateStr\cf4 \strokec4  || \cf7 \strokec7 '\uc0\u25152 \u26377 '\cf4 \strokec4 \}\cf7 \strokec7  - \cf4 \strokec4 $\{\cf8 \strokec8 endDateStr\cf4 \strokec4  || \cf7 \strokec7 '\uc0\u25152 \u26377 '\cf4 \strokec4 \}\cf7 \strokec7 )`\cf4 \strokec4 ; \cb1 \
+\cb3     \cf8 \strokec8 tempSheet\cf4 \strokec4 .\cf8 \strokec8 getRange\cf4 \strokec4 (\cf7 \strokec7 "A1:E1"\cf4 \strokec4 ).\cf8 \strokec8 merge\cf4 \strokec4 ().\cf8 \strokec8 setValue\cf4 \strokec4 (\cf8 \strokec8 title\cf4 \strokec4 ).\cf8 \strokec8 setFontWeight\cf4 \strokec4 (\cf7 \strokec7 "bold"\cf4 \strokec4 ).\cf8 \strokec8 setFontSize\cf4 \strokec4 (\cf11 \strokec11 15\cf4 \strokec4 ).\cf8 \strokec8 setHorizontalAlignment\cf4 \strokec4 (\cf7 \strokec7 'center'\cf4 \strokec4 ); \cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 headers\cf4 \strokec4  = [\cf7 \strokec7 "\uc0\u27963 \u21205 \u26085 \u26399 "\cf4 \strokec4 , \cf7 \strokec7 "\uc0\u27963 \u21205 "\cf4 \strokec4 , \cf7 \strokec7 "\uc0\u23831 \u20301 "\cf4 \strokec4 , \cf7 \strokec7 "\uc0\u22577 \u21517 \u32773 "\cf4 \strokec4 , \cf7 \strokec7 "\uc0\u22577 \u21517 \u26178 \u38291 "\cf4 \strokec4 ]; \cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 fields\cf4 \strokec4  = [\cf7 \strokec7 "eventDate"\cf4 \strokec4 , \cf7 \strokec7 "eventTitle"\cf4 \strokec4 , \cf7 \strokec7 "position"\cf4 \strokec4 , \cf7 \strokec7 "user"\cf4 \strokec4 , \cf7 \strokec7 "timestamp"\cf4 \strokec4 ]; \cb1 \
+\cb3     \cf8 \strokec8 tempSheet\cf4 \strokec4 .\cf8 \strokec8 getRange\cf4 \strokec4 (\cf11 \strokec11 2\cf4 \strokec4 , \cf11 \strokec11 1\cf4 \strokec4 , \cf11 \strokec11 1\cf4 \strokec4 , \cf8 \strokec8 headers\cf4 \strokec4 .\cf8 \strokec8 length\cf4 \strokec4 ).\cf8 \strokec8 setValues\cf4 \strokec4 ([\cf8 \strokec8 headers\cf4 \strokec4 ]).\cf8 \strokec8 setFontWeight\cf4 \strokec4 (\cf7 \strokec7 "bold"\cf4 \strokec4 ).\cf8 \strokec8 setBackground\cf4 \strokec4 (\cf7 \strokec7 "#d9ead3"\cf4 \strokec4 ).\cf8 \strokec8 setFontSize\cf4 \strokec4 (\cf11 \strokec11 15\cf4 \strokec4 ).\cf8 \strokec8 setHorizontalAlignment\cf4 \strokec4 (\cf7 \strokec7 'center'\cf4 \strokec4 ); \cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 outputData\cf4 \strokec4  = \cf8 \strokec8 data\cf4 \strokec4 .\cf8 \strokec8 map\cf4 \strokec4 (\cf8 \strokec8 row\cf4 \strokec4  => \cf8 \strokec8 fields\cf4 \strokec4 .\cf8 \strokec8 map\cf4 \strokec4 (\cf8 \strokec8 field\cf4 \strokec4  => \cf8 \strokec8 row\cf4 \strokec4 [\cf8 \strokec8 field\cf4 \strokec4 ] || \cf7 \strokec7 ""\cf4 \strokec4 )); \cb1 \
+\cb3     \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 outputData\cf4 \strokec4 .\cf8 \strokec8 length\cf4 \strokec4  > \cf11 \strokec11 0\cf4 \strokec4 ) \{ \cf8 \strokec8 tempSheet\cf4 \strokec4 .\cf8 \strokec8 getRange\cf4 \strokec4 (\cf11 \strokec11 3\cf4 \strokec4 , \cf11 \strokec11 1\cf4 \strokec4 , \cf8 \strokec8 outputData\cf4 \strokec4 .\cf8 \strokec8 length\cf4 \strokec4 , \cf8 \strokec8 headers\cf4 \strokec4 .\cf8 \strokec8 length\cf4 \strokec4 ).\cf8 \strokec8 setValues\cf4 \strokec4 (\cf8 \strokec8 outputData\cf4 \strokec4 ).\cf8 \strokec8 setFontSize\cf4 \strokec4 (\cf11 \strokec11 15\cf4 \strokec4 ).\cf8 \strokec8 setHorizontalAlignment\cf4 \strokec4 (\cf7 \strokec7 'left'\cf4 \strokec4 ); \} \cb1 \
+\cb3     \cf8 \strokec8 tempSheet\cf4 \strokec4 .\cf8 \strokec8 autoResizeColumns\cf4 \strokec4 (\cf11 \strokec11 1\cf4 \strokec4 , \cf11 \strokec11 5\cf4 \strokec4 ); \cb1 \
+\cb3     \cf6 \strokec6 SpreadsheetApp\cf4 \strokec4 .\cf8 \strokec8 flush\cf4 \strokec4 (); \cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 blob\cf4 \strokec4  = \cf6 \strokec6 Drive\cf4 \strokec4 .\cf6 \strokec6 Files\cf4 \strokec4 .\cf5 \strokec5 export\cf4 \strokec4 (\cf8 \strokec8 spreadsheetId\cf4 \strokec4 , \cf6 \strokec6 MimeType\cf4 \strokec4 .\cf6 \strokec6 MICROSOFT_EXCEL\cf4 \strokec4 , \{ \cf8 \strokec8 gid\cf4 \strokec4 : \cf8 \strokec8 tempSheet\cf4 \strokec4 .\cf8 \strokec8 getSheetId\cf4 \strokec4 (), \cf8 \strokec8 alt\cf4 \strokec4 : \cf7 \strokec7 'media'\cf4 \strokec4  \}); \cb1 \
+\cb3     \cf8 \strokec8 blob\cf4 \strokec4 .\cf8 \strokec8 setName\cf4 \strokec4 (\cf7 \strokec7 `AV\uc0\u31435 \u39000 \u22577 \u21517 \u35352 \u37636 _\cf4 \strokec4 $\{\cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Date\cf4 \strokec4 ().\cf8 \strokec8 toISOString\cf4 \strokec4 ().\cf8 \strokec8 slice\cf4 \strokec4 (\cf11 \strokec11 0\cf4 \strokec4 ,\cf11 \strokec11 10\cf4 \strokec4 )\}\cf7 \strokec7 .xlsx`\cf4 \strokec4 ); \cb1 \
+\cb3     \cf8 \strokec8 tempFile\cf4 \strokec4  = \cf6 \strokec6 DriveApp\cf4 \strokec4 .\cf8 \strokec8 createFile\cf4 \strokec4 (\cf8 \strokec8 blob\cf4 \strokec4 ); \cb1 \
+\cb3     \cf8 \strokec8 tempFile\cf4 \strokec4 .\cf8 \strokec8 setSharing\cf4 \strokec4 (\cf6 \strokec6 DriveApp\cf4 \strokec4 .\cf6 \strokec6 Access\cf4 \strokec4 .\cf6 \strokec6 ANYONE_WITH_LINK\cf4 \strokec4 , \cf6 \strokec6 DriveApp\cf4 \strokec4 .\cf6 \strokec6 Permission\cf4 \strokec4 .\cf6 \strokec6 VIEW\cf4 \strokec4 ); \cb1 \
+\cb3     \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 downloadUrl\cf4 \strokec4  = \cf8 \strokec8 tempFile\cf4 \strokec4 .\cf8 \strokec8 getWebContentLink\cf4 \strokec4 (); \cb1 \
+\cb3     \cf8 \strokec8 scheduleDeletion\cf4 \strokec4 (\cf8 \strokec8 tempFile\cf4 \strokec4 .\cf8 \strokec8 getId\cf4 \strokec4 ()); \cb1 \
+\cb3     \cf8 \strokec8 ss\cf4 \strokec4 .\cf8 \strokec8 deleteSheet\cf4 \strokec4 (\cf8 \strokec8 tempSheet\cf4 \strokec4 ); \cb1 \
+\cb3     \cf5 \strokec5 return\cf4 \strokec4  \{ \cf8 \strokec8 status\cf4 \strokec4 : \cf7 \strokec7 'success'\cf4 \strokec4 , \cf8 \strokec8 url\cf4 \strokec4 : \cf8 \strokec8 downloadUrl\cf4 \strokec4 , \cf8 \strokec8 fileId\cf4 \strokec4 : \cf8 \strokec8 tempFile\cf4 \strokec4 .\cf8 \strokec8 getId\cf4 \strokec4 () \}; \cb1 \
+\cb3   \} \cf5 \strokec5 catch\cf4 \strokec4  (\cf8 \strokec8 e\cf4 \strokec4 ) \{ \cb1 \
+\cb3     \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 error\cf4 \strokec4 (\cf7 \strokec7 "createTempSheetAndExport \uc0\u22833 \u25943 : "\cf4 \strokec4  + \cf8 \strokec8 e\cf4 \strokec4 .\cf8 \strokec8 toString\cf4 \strokec4 ()); \cb1 \
+\cb3     \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 tempFile\cf4 \strokec4 ) \{ \cf5 \strokec5 try\cf4 \strokec4  \{ \cf6 \strokec6 DriveApp\cf4 \strokec4 .\cf8 \strokec8 getFileById\cf4 \strokec4 (\cf8 \strokec8 tempFile\cf4 \strokec4 .\cf8 \strokec8 getId\cf4 \strokec4 ()).\cf8 \strokec8 setTrashed\cf4 \strokec4 (\cf5 \strokec5 true\cf4 \strokec4 ); \} \cf5 \strokec5 catch\cf4 \strokec4  (\cf8 \strokec8 f\cf4 \strokec4 ) \{ \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 error\cf4 \strokec4 (\cf7 \strokec7 "\uc0\u28961 \u27861 \u21034 \u38500 \u33256 \u26178 \u27284 \u26696 : "\cf4 \strokec4  + \cf8 \strokec8 f\cf4 \strokec4 .\cf8 \strokec8 toString\cf4 \strokec4 ()); \} \} \cb1 \
+\cb3     \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 tempSheet\cf4 \strokec4  && \cf8 \strokec8 ss\cf4 \strokec4 .\cf8 \strokec8 getSheetByName\cf4 \strokec4 (\cf8 \strokec8 tempSheet\cf4 \strokec4 .\cf8 \strokec8 getName\cf4 \strokec4 ())) \{ \cf8 \strokec8 ss\cf4 \strokec4 .\cf8 \strokec8 deleteSheet\cf4 \strokec4 (\cf8 \strokec8 tempSheet\cf4 \strokec4 ); \} \cb1 \
+\cb3     \cf5 \strokec5 throw\cf4 \strokec4  \cf5 \strokec5 new\cf4 \strokec4  \cf6 \strokec6 Error\cf4 \strokec4 (\cf7 \strokec7 '\uc0\u21295 \u20986 \u26178 \u30332 \u29983 \u37679 \u35492 : '\cf4 \strokec4  + \cf8 \strokec8 e\cf4 \strokec4 .\cf8 \strokec8 toString\cf4 \strokec4 ()); \cb1 \
+\cb3   \} \cb1 \
+\cb3 \}\cb1 \
+\pard\pardeftab720\partightenfactor0
+\cf5 \cb3 \strokec5 function\cf4 \strokec4  \cf8 \strokec8 scheduleDeletion\cf4 \strokec4 (\cf8 \strokec8 fileId\cf4 \strokec4 ) \{ \cf5 \strokec5 if\cf4 \strokec4  (!\cf8 \strokec8 fileId\cf4 \strokec4 ) \cf5 \strokec5 return\cf4 \strokec4 ; \cf5 \strokec5 try\cf4 \strokec4  \{ \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 trigger\cf4 \strokec4  = \cf6 \strokec6 ScriptApp\cf4 \strokec4 .\cf8 \strokec8 newTrigger\cf4 \strokec4 (\cf7 \strokec7 'triggeredDeleteHandler'\cf4 \strokec4 ).\cf8 \strokec8 timeBased\cf4 \strokec4 ().\cf8 \strokec8 after\cf4 \strokec4 (\cf11 \strokec11 24\cf4 \strokec4  * \cf11 \strokec11 60\cf4 \strokec4  * \cf11 \strokec11 60\cf4 \strokec4  * \cf11 \strokec11 1000\cf4 \strokec4 ).\cf8 \strokec8 create\cf4 \strokec4 (); \cf6 \strokec6 PropertiesService\cf4 \strokec4 .\cf8 \strokec8 getScriptProperties\cf4 \strokec4 ().\cf8 \strokec8 setProperty\cf4 \strokec4 (\cf8 \strokec8 trigger\cf4 \strokec4 .\cf8 \strokec8 getUniqueId\cf4 \strokec4 (), \cf8 \strokec8 fileId\cf4 \strokec4 ); \} \cf5 \strokec5 catch\cf4 \strokec4  (\cf8 \strokec8 e\cf4 \strokec4 ) \{ \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 error\cf4 \strokec4 (\cf7 \strokec7 `\uc0\u25490 \u31243 \u21034 \u38500 \u27284 \u26696  '\cf4 \strokec4 $\{\cf8 \strokec8 fileId\cf4 \strokec4 \}\cf7 \strokec7 ' \uc0\u26178 \u22833 \u25943 : \cf4 \strokec4 $\{\cf8 \strokec8 e\cf4 \strokec4 .\cf8 \strokec8 toString\cf4 \strokec4 ()\}\cf7 \strokec7 `\cf4 \strokec4 ); \} \}\cb1 \
+\cf5 \cb3 \strokec5 function\cf4 \strokec4  \cf8 \strokec8 triggeredDeleteHandler\cf4 \strokec4 (\cf8 \strokec8 e\cf4 \strokec4 ) \{ \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 triggerId\cf4 \strokec4  = \cf8 \strokec8 e\cf4 \strokec4 .\cf8 \strokec8 triggerUid\cf4 \strokec4 ; \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 scriptProperties\cf4 \strokec4  = \cf6 \strokec6 PropertiesService\cf4 \strokec4 .\cf8 \strokec8 getScriptProperties\cf4 \strokec4 (); \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 fileId\cf4 \strokec4  = \cf8 \strokec8 scriptProperties\cf4 \strokec4 .\cf8 \strokec8 getProperty\cf4 \strokec4 (\cf8 \strokec8 triggerId\cf4 \strokec4 ); \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 fileId\cf4 \strokec4 ) \{ \cf5 \strokec5 try\cf4 \strokec4  \{ \cf6 \strokec6 DriveApp\cf4 \strokec4 .\cf8 \strokec8 getFileById\cf4 \strokec4 (\cf8 \strokec8 fileId\cf4 \strokec4 ).\cf8 \strokec8 setTrashed\cf4 \strokec4 (\cf5 \strokec5 true\cf4 \strokec4 ); \} \cf5 \strokec5 catch\cf4 \strokec4  (\cf8 \strokec8 err\cf4 \strokec4 ) \{ \cf8 \strokec8 console\cf4 \strokec4 .\cf8 \strokec8 error\cf4 \strokec4 (\cf7 \strokec7 `\uc0\u21034 \u38500 \u27284 \u26696  \cf4 \strokec4 $\{\cf8 \strokec8 fileId\cf4 \strokec4 \}\cf7 \strokec7  \uc0\u22833 \u25943 : \cf4 \strokec4 $\{\cf8 \strokec8 err\cf4 \strokec4 .\cf8 \strokec8 toString\cf4 \strokec4 ()\}\cf7 \strokec7 `\cf4 \strokec4 ); \} \cf8 \strokec8 scriptProperties\cf4 \strokec4 .\cf8 \strokec8 deleteProperty\cf4 \strokec4 (\cf8 \strokec8 triggerId\cf4 \strokec4 ); \} \cf5 \strokec5 const\cf4 \strokec4  \cf8 \strokec8 allTriggers\cf4 \strokec4  = \cf6 \strokec6 ScriptApp\cf4 \strokec4 .\cf8 \strokec8 getProjectTriggers\cf4 \strokec4 (); \cf5 \strokec5 for\cf4 \strokec4  (\cf5 \strokec5 let\cf4 \strokec4  \cf8 \strokec8 i\cf4 \strokec4  = \cf11 \strokec11 0\cf4 \strokec4 ; \cf8 \strokec8 i\cf4 \strokec4  < \cf8 \strokec8 allTriggers\cf4 \strokec4 .\cf8 \strokec8 length\cf4 \strokec4 ; \cf8 \strokec8 i\cf4 \strokec4 ++) \{ \cf5 \strokec5 if\cf4 \strokec4  (\cf8 \strokec8 allTriggers\cf4 \strokec4 [\cf8 \strokec8 i\cf4 \strokec4 ].\cf8 \strokec8 getUniqueId\cf4 \strokec4 () === \cf8 \strokec8 triggerId\cf4 \strokec4 ) \{ \cf6 \strokec6 ScriptApp\cf4 \strokec4 .\cf8 \strokec8 deleteTrigger\cf4 \strokec4 (\cf8 \strokec8 allTriggers\cf4 \strokec4 [\cf8 \strokec8 i\cf4 \strokec4 ]); \cf5 \strokec5 break\cf4 \strokec4 ; \} \} \}\cb1 \
+}

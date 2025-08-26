@@ -113,8 +113,8 @@
         #marquee-container { height: 40px; background: #fffaf5; color: var(--primary-dark); border-radius: var(--border-radius-sm); margin-bottom: 25px; padding: 0 20px; position: relative; overflow: hidden; display: flex; align-items: center; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--primary-light); transition: max-height 0.4s ease-out, opacity 0.3s ease-out, margin-bottom 0.4s ease-out; }
         #marquee-text { position: absolute; width: calc(100% - 40px); text-align: center; font-weight: 600; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         @keyframes marquee-scroll { 0% { transform: translateY(120%); opacity: 0; } 15% { transform: translateY(0); opacity: 1; } 85% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-120%); opacity: 0; } }
-        #admin-tab .button-grid { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-top: 10px; }
-        #admin-tab .button-grid .btn { flex-grow: 1; }
+        #admin-tab .button-grid, #download-tab .button-grid { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-top: 10px; }
+        #admin-tab .button-grid .btn, #download-tab .button-grid .btn { flex-grow: 1; }
         @media (min-width: 769px) { .container { width: 90vw; max-width: 1600px; } }
         @media (max-width: 768px) {
             html { height: 100%; } body { padding: 10px; margin: 0; min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
@@ -135,7 +135,7 @@
             .inline-form { display: flex; flex-direction: column; align-items: center; gap: 15px; }
             .inline-form > * { width: 90% !important; max-width: 450px; }
             #admin-tab > .inline-form { align-items: center !important; }
-            #admin-tab .button-grid .btn { flex-basis: calc(50% - 7.5px); flex-grow: 1; }
+            #admin-tab .button-grid .btn, #download-tab .button-grid .btn { flex-basis: calc(50% - 7.5px); flex-grow: 1; }
             .btn { padding: 12px 15px; font-size: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transform: translateY(0); }
             .btn-primary:hover, .btn-danger:hover, .toolbar-chunk .btn:hover, .view-switcher-btn:hover { transform: translateY(0); box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
             .btn-primary:active, .btn-danger:active, .toolbar-chunk .btn:active, .view-switcher-btn:active { box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
@@ -168,6 +168,7 @@
             <button class="tab-button active" onclick="openTab(event, 'calendar-tab')">📅 活動行事曆</button>
             <button class="tab-button" onclick="openTab(event, 'my-signups-tab')">🔍 報名查詢</button>
             <button class="tab-button" onclick="openTab(event, 'stats-tab')">📊 統計報表</button>
+            <button class="tab-button" onclick="openTab(event, 'download-tab')">📄 文件下載</button>
             <button class="tab-button" onclick="openTab(event, 'admin-tab')">🛠️ 匯出與下載</button>
         </div>
 
@@ -214,6 +215,30 @@
             <div id="stats-details-container"></div>
         </div>
         
+        <div id="download-tab" class="tab-content">
+            <h4>📄 相關文件下載</h4>
+            <div class="button-grid">
+                <button id="download-poster" class="btn btn-primary">AV招生海報</button>
+                <button id="download-manual" class="btn btn-primary">一如祈念次第</button>
+            </div>
+            <hr>
+            <h4>📄 SOP文件下載</h4>
+            <div class="button-grid">
+                <button id="download-doc-computer" class="btn btn-primary">電腦</button>
+                <button id="download-doc-lighting" class="btn btn-primary">燈光</button>
+                <button id="download-doc-audio" class="btn btn-primary">音控</button>
+                <button id="download-doc-camera" class="btn btn-primary">攝影</button>
+            </div>
+            <hr>
+            <h4>🎬 影音檔案下載</h4>
+            <div class="button-grid">
+                <button id="download-video-signup-sop" class="btn btn-primary">立願報名SOP</button>
+                <button id="download-video-delete-sop" class="btn btn-primary">立願刪除SOP</button>
+                <button id="download-video-query-sop" class="btn btn-primary">立願查詢SOP</button>
+                <button id="download-video-cable-wrap" class="btn btn-primary">攝影師收線示範</button>
+            </div>
+        </div>
+        
         <div id="admin-tab" class="tab-content">
             <hr style="margin-top:0;">
             <h4>📊 匯出 Excel / 快速分享</h4>
@@ -230,23 +255,6 @@
                     <button id="share-tomorrow-line-btn" class="btn btn-success">分享明日報名資料至Line(限chrome)</button>
                     <button id="share-to-clipboard-btn" class="btn btn-success" style="background-color: #17a2b8;">分享至剪貼簿</button>
                 </div>
-            </div>
-
-            <hr>
-            <h4>📄 SOP文件下載</h4>
-            <div class="button-grid">
-                <button id="download-doc-computer" class="btn btn-primary">電腦</button>
-                <button id="download-doc-lighting" class="btn btn-primary">燈光</button>
-                <button id="download-doc-audio" class="btn btn-primary">音控</button>
-                <button id="download-doc-camera" class="btn btn-primary">攝影</button>
-            </div>
-
-            <hr>
-            <h4>🎬 影音檔案下載</h4>
-            <div class="button-grid">
-                <button id="download-video-signup-sop" class="btn btn-primary">立願報名SOP</button>
-                <button id="download-video-delete-sop" class="btn btn-primary">立願刪除SOP</button>
-                <button id="download-video-query-sop" class="btn btn-primary">立願查詢SOP</button>
             </div>
         </div>
     </div>
@@ -396,7 +404,6 @@
             document.getElementById('export-from-query-btn').addEventListener('click', exportCurrentQueryResultToExcel); 
             const shareToLine = async (type) => { showLoading(); try { const response = await callAppsScript(type); const data = response.data; if (data.status === 'nodata') { Swal.fire('無資料', `${type === 'getSignupsAsTextForToday' ? '今天' : '明天'}沒有任何報名記錄可供分享。`, 'info'); } else if (data.text) { const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(data.text)}`; window.open(lineUrl, '_blank'); } else { throw new Error("後端未回傳有效的文字資料。"); } } catch (e) { Swal.fire('分享失敗', e.message, 'error'); } finally { hideLoading(); } }; document.getElementById('share-today-line-btn').addEventListener('click', () => shareToLine('getSignupsAsTextForToday')); document.getElementById('share-tomorrow-line-btn').addEventListener('click', () => shareToLine('getSignupsAsTextForTomorrow')); 
             
-            // Refactored shareToClipboard function to be more generic
             const shareToClipboardContent = async (functionToCall, params = {}) => {
                 showLoading();
                 try {
@@ -444,36 +451,34 @@
                 }
             };
 
-            // MODIFIED: Click listener for '分享至剪貼簿' button
             document.getElementById('share-to-clipboard-btn').addEventListener('click', async () => {
                 const today = new Date();
-                const todayStr = today.toLocaleDateString('en-CA'); // YYYY-MM-DD
+                const todayStr = today.toLocaleDateString('en-CA');
                 const tomorrow = new Date();
                 tomorrow.setDate(tomorrow.getDate() + 1);
-                const tomorrowStr = tomorrow.toLocaleDateString('en-CA'); // YYYY-MM-DD
+                const tomorrowStr = tomorrow.toLocaleDateString('en-CA');
 
                 const { isConfirmed, isDenied, dismiss } = await Swal.fire({
                     title: '選擇要分享的日期',
                     text: '您要分享今天、明天還是指定日期區間的報名資料？',
-                    showDenyButton: true, // Used for "明天"
-                    showCancelButton: true, // Used for "按日期"
-                    showCloseButton: true, // Added: Displays an 'X' button in the top right corner
+                    showDenyButton: true, 
+                    showCancelButton: true,
+                    showCloseButton: true,
                     confirmButtonText: '今天',
                     denyButtonText: '明天',
-                    cancelButtonText: '按日期', // This will be the "按日期" button
+                    cancelButtonText: '按日期',
                     icon: 'question',
-                    // Added custom button styling for "按日期" to make it look like an action button
                     customClass: {
-                        cancelButton: 'swal2-styled swal2-default-outline' // Mimic default Swal styling but can be customized further
+                        cancelButton: 'swal2-styled swal2-default-outline'
                     },
-                    buttonsStyling: true // Ensure default styling is applied
+                    buttonsStyling: true
                 });
 
-                if (isConfirmed) { // "今天" button clicked
-                    shareToClipboardContent('getSignupsAsTextForToday'); // No params needed for today/tomorrow as backend calculates them
-                } else if (isDenied) { // "明天" button clicked
-                    shareToClipboardContent('getSignupsAsTextForTomorrow'); // No params needed
-                } else if (dismiss === Swal.DismissReason.cancel) { // "按日期" button clicked
+                if (isConfirmed) {
+                    shareToClipboardContent('getSignupsAsTextForToday');
+                } else if (isDenied) {
+                    shareToClipboardContent('getSignupsAsTextForTomorrow');
+                } else if (dismiss === Swal.DismissReason.cancel) {
                     const startDateAdmin = document.getElementById('export-start-date').value;
                     const endDateAdmin = document.getElementById('export-end-date').value;
 
@@ -488,10 +493,8 @@
 
                     shareToClipboardContent('getSignupsAsTextForDateRange', { startDateStr: startDateAdmin, endDateStr: endDateAdmin });
                 }
-                // If user dismisses the dialog by clicking outside or pressing Esc, no action is taken.
             });
             
-            // MODIFIED: share-query-to-clipboard-btn to add URL at the end
             document.getElementById('share-query-to-clipboard-btn').addEventListener('click', () => { 
                 if (!lastQuery || !lastQuery.data || lastQuery.data.length === 0) { return Swal.fire('無資料', '沒有可分享的查詢結果。', 'info'); } 
                 const { searchText, startDateStr, endDateStr } = lastQuery.params; 
@@ -538,9 +541,18 @@
             
             document.getElementById('export-stats-pdf-btn').addEventListener('click', async () => { if (!statsChart || !lastStatsData || lastStatsData.labels.length === 0) { return Swal.fire('提示', '請先點擊「產生報表」以生成統計圖表和數據。', 'info'); } const sourceElement = document.getElementById('stats-details-container'); if (!sourceElement || sourceElement.children.length <= 1) { return Swal.fire('提示', '沒有詳細資料可供匯出。', 'info'); } showLoading(); try { const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }); const startDateStr = document.getElementById('stats-start-date').value, endDateStr = document.getElementById('stats-end-date').value; const dateRangeText = `${startDateStr || '所有'} - ${endDateStr || '所有'}`; const docTitle = `AV放送立願統計報表 (${dateRangeText})`; const generateTime = new Date().toLocaleString('zh-TW'); const pdfContentEl = document.createElement('div'); pdfContentEl.style.cssText = "position:absolute;left:-9999px;width:210mm;padding:15mm;background-color:white;font-family:'Microsoft JhengHei','PingFang TC',sans-serif;color:#333;";                 const pdfStyles = `<style>.details-grid{display:flex;flex-wrap:wrap;justify-content:space-between;}.details-grid .stats-event-block{width:48%;border:1px solid #ccc;padding:8px;margin-bottom:10px;page-break-inside:avoid;box-sizing:border-box;}.details-grid h3{font-size:8px;margin:0 0 4px 0;color:#FF8C42;font-weight:bold;}.details-grid p{font-size:6px;margin:1px 0;line-height:1.3;}.details-grid ul{list-style-type:none;padding-left:0;margin:4px 0 0 0;}.details-grid li{background:#f9f9f9;padding:1px 3px;border-radius:2px;margin-bottom:1px;font-size:6px;}</style>`; const titleHtml = `<div style="text-align:center;border-bottom:2px solid #333;padding-bottom:10px;margin-bottom:15px;"><h1 style="font-size:20px;margin:0;color:#FF8C42;">${docTitle}</h1><p style="font-size:10px;margin:5px 0 0 0;">報表生成時間：${generateTime}</p></div>`; const chartImageData = statsChart.canvas.toDataURL('image/png', 1.0); const chartHtml = `<div style="text-align:center;margin-bottom:15px;page-break-inside:avoid;"><img src="${chartImageData}" style="width:100%;max-width:180mm;"/></div>`; const detailsTitle = sourceElement.querySelector('h2') ? sourceElement.querySelector('h2').outerHTML : ''; let eventBlocksHtml = ''; sourceElement.querySelectorAll('.stats-event-block').forEach(block => { eventBlocksHtml += block.outerHTML; }); const detailsGridHtml = `<div class="details-grid">${eventBlocksHtml}</div>`; pdfContentEl.innerHTML = pdfStyles + titleHtml + chartHtml + detailsTitle + detailsGridHtml; document.body.appendChild(pdfContentEl); const canvas = await html2canvas(pdfContentEl, { scale: 2, useCORS: true }); const imgData = canvas.toDataURL('image/png'); const pdfWidth = pdf.internal.pageSize.getWidth(), pdfHeight = pdf.internal.pageSize.getHeight(); const imgProps = pdf.getImageProperties(imgData); const imgWidth = pdfWidth, imgHeight = (imgProps.height * imgWidth) / imgProps.width; let heightLeft = imgHeight, position = 0; pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight); heightLeft -= pdfHeight; while (heightLeft > 0) { position -= pdfHeight; pdf.addPage(); pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight); heightLeft -= pdfHeight; } pdf.save(`AV立願統計報表_${startDateStr}_${endDateStr}.pdf`); document.body.removeChild(pdfContentEl); } catch (e) { console.error("PDF generation failed:", e); Swal.fire('PDF 匯出失敗', `前端生成PDF時發生錯誤: ${e.message}`, 'error'); } finally { hideLoading(); } });
             
-            // --- UPDATED: Document Download Logic with flexible actions ---
             const handleDocDownload = (docType) => {
                 const docMap = {
+                    poster: { 
+                        action: 'download',
+                        url: '01.pdf', 
+                        filename: 'AV招生海報.pdf' 
+                    },
+                    manual: { 
+                        action: 'download',
+                        url: '02.pdf', 
+                        filename: '一如祈念次第.pdf' 
+                    },
                     computer: { 
                         action: 'open',
                         url: 'https://docs.google.com/presentation/d/1dtRM_tI9JlBvQxQTzfaYWuUNh206BC88/edit?usp=sharing&ouid=116073418031278322428&rtpof=true&sd=true', 
@@ -561,7 +573,6 @@
                         url: 'https://docs.google.com/presentation/d/1zZ-9Z7QvP-I-R4NtLSFNFOHArsRsjhyZ/edit?usp=sharing&ouid=116073418031278322428&rtpof=true&sd=true', 
                         filename: '攝影操作手冊.pptx' 
                     },
-                    // New video SOP entries
                     videoSignupSOP: {
                         action: 'open',
                         url: 'https://www.youtube.com/shorts/hBQ18yN0PKs',
@@ -576,27 +587,30 @@
                         action: 'open',
                         url: 'https://www.youtube.com/shorts/1oE9SEIzeX4',
                         filename: '立願查詢SOP.mp4'
+                    },
+                    // *** 新增的項目 ***
+                    videoCableWrap: {
+                        action: 'open',
+                        url: 'https://www.youtube.com/shorts/HxcL-E3ecCA',
+                        filename: '攝影師收線示範.mp4'
                     }
                 };
                 
                 const doc = docMap[docType];
 
-                if (!doc.url || doc.url === '#') {
+                if (!doc || !doc.url || doc.url === '#') {
                     Swal.fire({
                         icon: 'warning',
                         title: '功能尚未啟用',
-                        text: `此文件 (${doc.filename}) 的連結尚未設定。`,
+                        text: `此文件 (${doc ? doc.filename : '未知'}) 的連結尚未設定。`,
                         confirmButtonColor: 'var(--primary-color)'
                     });
                     return;
                 }
                 
-                // Check the action type and perform accordingly
                 if (doc.action === 'open') {
-                    // Open the link in a new browser tab
                     window.open(doc.url, '_blank');
                 } else {
-                    // Default to download behavior
                     const link = document.createElement('a');
                     link.href = doc.url;
                     link.download = doc.filename;
@@ -606,15 +620,18 @@
                 }
             };
 
+            document.getElementById('download-poster').addEventListener('click', () => handleDocDownload('poster'));
+            document.getElementById('download-manual').addEventListener('click', () => handleDocDownload('manual'));
             document.getElementById('download-doc-computer').addEventListener('click', () => handleDocDownload('computer'));
             document.getElementById('download-doc-lighting').addEventListener('click', () => handleDocDownload('lighting'));
             document.getElementById('download-doc-audio').addEventListener('click', () => handleDocDownload('audio'));
             document.getElementById('download-doc-camera').addEventListener('click', () => handleDocDownload('camera'));
 
-            // New event listeners for video SOPs
             document.getElementById('download-video-signup-sop').addEventListener('click', () => handleDocDownload('videoSignupSOP'));
             document.getElementById('download-video-delete-sop').addEventListener('click', () => handleDocDownload('videoDeleteSOP'));
             document.getElementById('download-video-query-sop').addEventListener('click', () => handleDocDownload('videoQuerySOP'));
+            // *** 新增的事件監聽器 ***
+            document.getElementById('download-video-cable-wrap').addEventListener('click', () => handleDocDownload('videoCableWrap'));
         });
     </script>
 </body>

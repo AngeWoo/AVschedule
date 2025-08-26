@@ -1,16 +1,16 @@
 // ====================================================================
 //  檔案：code.gs (AV放送立願報名行事曆 - 後端 API)
-//  版本：6.28 (修改資料讀取方式為直接讀取Sheet，解決CSV發布延遲問題)
+//  版本：6.29 (新增直接讀取 "News" 工作表作為公告來源)
 // ====================================================================
 
-const BACKEND_VERSION = "0812_SheetRead"; // *** 後端版本號 ***
+const BACKEND_VERSION = "0813_NewsRead"; // *** 後端版本號 ***
 
 // --- 全域設定 ---
-// *** 重要 ***：請確認此 ID 是您 AV 放送立願報名試算表的正確 ID。
 const SHEET_ID = '1gBIlhEKPQHBvslY29veTdMEJeg2eVcaJx_7A-8cTWIM'; 
 const EVENTS_SHEET_NAME = 'Events';
 const SIGNUPS_SHEET_NAME = 'Signups';
 const LOGS_SHEET_NAME = 'Logs';
+const NEWS_SHEET_NAME = 'News'; // 新增 News 工作表名稱
 
 // -------------------- API 核心路由函式 --------------------
 
@@ -30,6 +30,7 @@ function doGet(e) {
 
     switch (functionName) {
       case 'getEventsAndSignups': result = getEventsAndSignups(); break;
+      case 'getNewsAnnouncements': result = getNewsAnnouncements(); break; // 新增處理公告的 case
       case 'getUnifiedSignups': result = getUnifiedSignups(params.searchText, params.startDateStr, params.endDateStr); break;
       case 'getStatsData': result = getStatsData(params.startDateStr, params.endDateStr); break;
       case 'addSignup': result = addSignup(params.eventId, params.userName, params.position); break;
@@ -65,25 +66,19 @@ function doPost(e) {
 
 // -------------------- 輔助函式 --------------------
 function padTime(timeValue) {
-  // 當從 getValues() 獲取時間格式的儲存格時，它會是一個 Date 物件
   if (timeValue instanceof Date) {
     try {
       const scriptTimeZone = Session.getScriptTimeZone();
       return Utilities.formatDate(timeValue, scriptTimeZone, 'HH:mm');
     } catch (e) {
-      return '00:00'; // 格式化失敗時的回退
+      return '00:00';
     }
   }
-  // 處理舊的字串格式以保持相容性
   let trimmedTime = String(timeValue || '').trim();
   if (/^\d:\d\d$/.test(trimmedTime)) { return '0' + trimmedTime; }
   return trimmedTime;
 }
 
-
-/**
- * 將操作日誌記錄到 Google Sheet 的 Logs 分頁。
- */
 function logOperation(action, eventId, userName, position, result, details) {
   try {
     const ss = SpreadsheetApp.openById(SHEET_ID);
@@ -108,8 +103,59 @@ function logOperation(action, eventId, userName, position, result, details) {
 // -------------------- 資料獲取與處理函式 --------------------
 
 /**
- * [修改後] 直接從 Google Sheet 讀取 Events 和 Signups 的資料，以確保即時性。
+ * [新增] 讀取 "News" 工作表並回傳有效的公告訊息。
  */
+function getNewsAnnouncements() {
+  try {
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    const newsSheet = ss.getSheetByName(NEWS_SHEET_NAME);
+    if (!newsSheet) {
+      console.warn(`找不到公告工作表: "${NEWS_SHEET_NAME}"`);
+      return []; // 如果找不到工作表，回傳空陣列
+    }
+
+    const data = newsSheet.getDataRange().getValues();
+    data.shift(); // 移除標頭
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const scriptTimeZone = Session.getScriptTimeZone();
+
+    const messages = data.map(row => {
+      const dateValue = row[0];
+      const messageTitle = row[1];
+      const messageContent = row[2];
+
+      if (dateValue && messageTitle && messageContent) {
+        try {
+          const messageDate = new Date(dateValue);
+          if (isNaN(messageDate.getTime())) return null; // 略過無效日期
+          
+          messageDate.setHours(0, 0, 0, 0);
+
+          // 只顯示今天及未來的公告
+          if (messageDate >= today) {
+            const dateStr = Utilities.formatDate(messageDate, scriptTimeZone, 'yyyy/MM/dd');
+            return `${dateStr}：${messageTitle} - ${messageContent}`;
+          }
+        } catch (e) {
+          console.error(`處理公告日期時發生錯誤: ${dateValue}. Error: ${e.message}`);
+          return null;
+        }
+      }
+      return null;
+    }).filter(Boolean); // 過濾掉所有 null 的項目
+
+    console.log(`getNewsAnnouncements: 找到 ${messages.length} 則有效公告。`);
+    return messages;
+  } catch (err) {
+    console.error(`getNewsAnnouncements 失敗: ${err.message}`, err.stack);
+    // 發生錯誤時回傳空陣列，避免前端頁面崩潰
+    return [];
+  }
+}
+
+
 function getMasterData() {
   try {
     const ss = SpreadsheetApp.openById(SHEET_ID);
@@ -123,7 +169,6 @@ function getMasterData() {
       throw new Error(`試算表中找不到名為 "${SIGNUPS_SHEET_NAME}" 的工作表。`);
     }
 
-    // .getValues() 會回傳一個二維陣列
     const eventsData = eventsSheet.getDataRange().getValues();
     const signupsData = signupsSheet.getDataRange().getValues();
     
@@ -131,19 +176,15 @@ function getMasterData() {
     console.log(`getMasterData: ${EVENTS_SHEET_NAME} 讀取到 ${eventsData.length} 行 (含標頭)。`);
     console.log(`getMasterData: ${SIGNUPS_SHEET_NAME} 讀取到 ${signupsData.length} 行 (含標頭)。`);
 
-    eventsData.shift(); // 移除標頭列
-    signupsData.shift(); // 移除標頭列
-
-    console.log(`getMasterData: Events Data (移除標頭後): ${eventsData.length} 筆`);
-    console.log(`getMasterData: Signups Data (移除標頭後): ${signupsData.length} 筆`);
+    eventsData.shift();
+    signupsData.shift();
 
     const scriptTimeZone = Session.getScriptTimeZone();
     const eventsMap = new Map();
     eventsData.forEach(row => {
       const eventId = row[0];
-      if (eventId && row[2]) { // row[2] 是日期欄
+      if (eventId && row[2]) {
         try {
-            // getValues() 會自動將日期欄位解析成 Date 物件
             const dateObj = new Date(row[2]);
             if (isNaN(dateObj.getTime())) {
                 console.warn(`getMasterData: 無效日期格式，跳過活動 ID ${eventId}: ${row[2]}`);
@@ -153,8 +194,8 @@ function getMasterData() {
               title: row[1] || '未知事件',
               dateString: Utilities.formatDate(dateObj, scriptTimeZone, 'yyyy/MM/dd'),
               dateObj: dateObj,
-              startTime: padTime(row[3]), // row[3] 是開始時間
-              endTime: padTime(row[4]),   // row[4] 是結束時間
+              startTime: padTime(row[3]),
+              endTime: padTime(row[4]),
               maxAttendees: parseInt(row[5], 10) || 999,
               description: row[7] || ''
             });
@@ -163,7 +204,6 @@ function getMasterData() {
         }
       }
     });
-    console.log(`getMasterData: 建立 eventsMap 完成。共 ${eventsMap.size} 個有效活動。`);
     return { eventsData, signupsData, eventsMap };
   } catch (err) {
     console.error(`getMasterData (Sheet) 失敗: ${err.message}`, err.stack);
@@ -182,12 +222,10 @@ function getEventsAndSignups() {
       if (!signupsByEventId.has(eventId)) { signupsByEventId.set(eventId, []); }
       signupsByEventId.get(eventId).push({ user: row[2], position: row[4] });
     });
-    console.log(`getEventsAndSignups: signupsByEventId 建立完成。共 ${signupsByEventId.size} 個活動有報名資料。`);
 
     return eventsData.map(row => {
       const [eventId, title, rawDate, rawStartTime, rawEndTime, maxAttendees, positions, description] = row;
       if (!eventId || !title || !rawDate || !rawStartTime) {
-          console.warn(`getEventsAndSignups: 跳過無效活動資料: ${JSON.stringify(row)}`);
           return null;
       }
       
@@ -198,12 +236,10 @@ function getEventsAndSignups() {
       try {
           const dateObj = new Date(rawDate);
           if (isNaN(dateObj.getTime())) {
-              console.warn(`getEventsAndSignups: 無效日期字串，跳過活動 ID ${eventId}: ${rawDate}`);
               return null;
           }
           datePart = Utilities.formatDate(dateObj, scriptTimeZone, "yyyy-MM-dd");
       } catch (e) {
-          console.error(`getEventsAndSignups: 處理日期時發生錯誤 ${rawDate} for event ${eventId}: ${e.message}`);
           return null;
       }
 
@@ -232,10 +268,8 @@ function getEventsAndSignups() {
 }
 
 function getUnifiedSignups(searchText, startDateStr, endDateStr) {
-  console.log(`getUnifiedSignups: 接收參數 - searchText: "${searchText}", startDateStr: "${startDateStr}", endDateStr: "${endDateStr}"`);
   try {
     const { signupsData, eventsMap } = getMasterData();
-    console.log(`getUnifiedSignups: 從 getMasterData 取得 ${signupsData.length} 筆報名資料，${eventsMap.size} 筆活動資料。`);
     const searchLower = searchText ? searchText.toLowerCase() : '';
     const dayMap = ['日', '一', '二', '三', '四', '五', '六'];
 
@@ -245,21 +279,17 @@ function getUnifiedSignups(searchText, startDateStr, endDateStr) {
         if (startDateStr) {
             start = new Date(startDateStr);
             start.setHours(0, 0, 0, 0);
-            console.log(`getUnifiedSignups: 解析開始日期為 ${start}`);
         }
         if (endDateStr) {
             end = new Date(endDateStr);
             end.setHours(23, 59, 59, 999);
-            console.log(`getUnifiedSignups: 解析結束日期為 ${end}`);
         }
     } catch(e) {
-        console.error(`getUnifiedSignups: 日期解析錯誤 - startDateStr: ${startDateStr}, endDateStr: ${endDateStr}. 錯誤: ${e.message}`);
         throw new Error('日期格式不正確。');
     }
 
-    let filteredSignups = signupsData.filter((row, index) => {
+    let filteredSignups = signupsData.filter((row) => {
       if (row.length < 5) {
-          console.warn(`getUnifiedSignups: 跳過格式不正確的報名資料列 (索引 ${index}): ${JSON.stringify(row)}`);
           return false;
       }
 
@@ -267,11 +297,9 @@ function getUnifiedSignups(searchText, startDateStr, endDateStr) {
       const eventDetail = eventsMap.get(eventId);
 
       if (!eventDetail) {
-          console.warn(`getUnifiedSignups: 報名資料列 (索引 ${index}) 的 Event ID: "${eventId}" 在 eventsMap 中找不到，跳過。`);
           return false; 
       }
       if (!eventDetail.dateObj || isNaN(eventDetail.dateObj.getTime())) { 
-          console.warn(`getUnifiedSignups: 活動 ID: "${eventId}" 的日期物件無效，跳過。`);
           return false; 
       }
 
@@ -296,14 +324,11 @@ function getUnifiedSignups(searchText, startDateStr, endDateStr) {
       return true;
     });
 
-    console.log(`getUnifiedSignups: 經過過濾後，剩餘 ${filteredSignups.length} 筆報名資料。`);
-
     const mappedSignups = filteredSignups.map(row => {
       const eventId = row[1];
       const eventDetail = eventsMap.get(eventId) || { title: '未知事件', dateString: '日期無效'};
       let eventDayOfWeek = eventDetail.dateObj ? dayMap[eventDetail.dateObj.getDay()] : '';
       
-      // 從工作表直接讀取的時間戳是 Date 物件，需要格式化
       let formattedTimestamp = '';
       if (row[3] instanceof Date) {
         try {
@@ -328,13 +353,11 @@ function getUnifiedSignups(searchText, startDateStr, endDateStr) {
         const dateA = new Date(a.eventDate);
         const dateB = new Date(b.eventDate);
         if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
-            console.warn(`getUnifiedSignups: 排序時發現無效日期: A: ${a.eventDate}, B: ${b.eventDate}`);
             return 0;
         }
         return dateA.getTime() - dateB.getTime();
     });
 
-    console.log(`getUnifiedSignups: 最終回傳 ${mappedSignups.length} 筆報名資料。`);
     return mappedSignups;
   } catch(err) { 
       console.error("getUnifiedSignups 失敗:", err.message, err.stack); 
@@ -342,7 +365,6 @@ function getUnifiedSignups(searchText, startDateStr, endDateStr) {
   }
 }
 
-// ... (檔案中剩餘的函式 addSignup, removeSignup, modifySignup, LINE API 等都無需修改，保持原樣) ...
 function getStatsData(startDateStr, endDateStr) {
   try {
     const allSignups = getUnifiedSignups('', startDateStr, endDateStr);
@@ -440,14 +462,12 @@ function addSignup(eventId, userName, position) {
     const eventsSheet = ss.getSheetByName(EVENTS_SHEET_NAME);
     const signupsSheet = ss.getSheetByName(SIGNUPS_SHEET_NAME);
     
-    // 檢查活動是否存在
     const eventData = eventsSheet.getDataRange().getValues().find(row => row[0] === eventId);
     if (!eventData) {
       logOperation('addSignup', eventId, userName, position, '失敗', '找不到此活動');
       return { status: 'error', message: '找不到此活動。' };
     }
 
-    // 檢查活動日期時間是否有效且未結束
     const eventDatePart = new Date(eventData[2]);
     if (isNaN(eventDatePart.getTime())) { 
       logOperation('addSignup', eventId, userName, position, '失敗', `活動日期格式無效: ${eventData[2]}`);
@@ -467,21 +487,18 @@ function addSignup(eventId, userName, position) {
 
     const currentSignups = signupsSheet.getDataRange().getValues().filter(row => row[1] === eventId);
     
-    // 檢查是否已報名
     if (currentSignups.some(row => row[2] === userName)) { 
       logOperation('addSignup', eventId, userName, position, '重複報名', '您已經報名過此活動了');
       return { status: 'error', message: '您已經報名過此活動了。' }; 
     }
     
     const existingPositionHolder = currentSignups.find(row => row[4] === position);
-    // 檢查崗位是否被佔用
     if (existingPositionHolder) { 
       logOperation('addSignup', eventId, userName, position, '崗位重複', `此崗位已被 ${existingPositionHolder[2]} 報名`);
       return { status: 'confirm_backup', message: `此崗位目前由 [${existingPositionHolder[2]}] 報名，您要改為報名備援嗎？` }; 
     }
 
     const maxAttendees = eventData[5];
-    // 檢查是否額滿
     if (currentSignups.length >= maxAttendees) { 
       logOperation('addSignup', eventId, userName, position, '額滿', '活動總人數已額滿');
       return { status: 'error', message: '活動總人數已額滿。' }; 
@@ -490,17 +507,15 @@ function addSignup(eventId, userName, position) {
     const newSignupId = 'su' + new Date().getTime();
     const newRowData = [newSignupId, eventId, userName, new Date(), position];
     signupsSheet.appendRow(newRowData);
-    SpreadsheetApp.flush(); // 確保資料寫入
+    SpreadsheetApp.flush();
 
-    // 寫入驗證 (再次確認是否成功寫入，並與日誌同步)
     const lastRowValues = signupsSheet.getRange(signupsSheet.getLastRow(), 1, 1, 5).getValues()[0];
     if (lastRowValues[0] === newSignupId && lastRowValues[2] === userName) {
       logOperation('addSignup', eventId, userName, position, '成功', '報名資料寫入並驗證成功');
       return { status: 'success', message: '報名成功！' };
     } else {
-      console.error(`寫入驗證失敗！預期寫入 [${newSignupId}, ${userName}]，但最後一列是 [${lastRowValues[0]}, ${lastRowValues[2]}]`);
       if (lastRowValues[0] === newSignupId) { 
-        signupsSheet.deleteRow(signupsSheet.getLastRow()); // 嘗試回滾
+        signupsSheet.deleteRow(signupsSheet.getLastRow());
         logOperation('addSignup', eventId, userName, position, '失敗', '報名資料寫入驗證失敗，已嘗試回滾');
       } else {
         logOperation('addSignup', eventId, userName, position, '失敗', '報名資料寫入驗證失敗，無法回滾');
@@ -531,16 +546,15 @@ function addBackupSignup(eventId, userName, position) {
     const backupPosition = `${position} (備援)`;
     const newRowData = [newSignupId, eventId, userName, new Date(), backupPosition];
     signupsSheet.appendRow(newRowData);
-    SpreadsheetApp.flush(); // 確保資料寫入
+    SpreadsheetApp.flush();
 
     const lastRowValues = signupsSheet.getRange(signupsSheet.getLastRow(), 1, 1, 5).getValues()[0];
     if (lastRowValues[0] === newSignupId && lastRowValues[2] === userName) {
       logOperation('addBackupSignup', eventId, userName, backupPosition, '成功', '備援報名資料寫入並驗證成功');
       return { status: 'success' };
     } else {
-      console.error(`備援寫入驗證失敗！預期寫入 [${newSignupId}, ${userName}]，但最後一列是 [${lastRowValues[0]}, ${lastRowValues[2]}]`);
       if (lastRowValues[0] === newSignupId) { 
-        signupsSheet.deleteRow(signupsSheet.getLastRow()); // 嘗試回滾
+        signupsSheet.deleteRow(signupsSheet.getLastRow());
         logOperation('addBackupSignup', eventId, userName, backupPosition, '失敗', '備援報名資料寫入驗證失敗，已嘗試回滾');
       } else {
         logOperation('addBackupSignup', eventId, userName, backupPosition, '失敗', '備援報名資料寫入驗證失敗，無法回滾');
@@ -565,23 +579,20 @@ function removeSignup(eventId, userName) {
     return { status: 'error', message: '系統忙碌中，無法取消報名，請稍後再試。' }; 
   }
   let removedPosition = '';
-  let rowToDeleteIndex = -1;
   try {
     const ss = SpreadsheetApp.openById(SHEET_ID);
     const signupsSheet = ss.getSheetByName(SIGNUPS_SHEET_NAME);
     const signupsData = signupsSheet.getDataRange().getValues();
     
-    // 從後往前找，避免刪除行後索引變動
     for (let i = signupsData.length - 1; i >= 1; i--) { 
       if (signupsData[i][1] === eventId && signupsData[i][2] === userName) { 
-        rowToDeleteIndex = i + 1; // Apps Script 的行號是 1-based
-        removedPosition = signupsData[i][4]; // 獲取崗位信息
+        let rowToDeleteIndex = i + 1;
+        removedPosition = signupsData[i][4];
         signupsSheet.deleteRow(rowToDeleteIndex); 
         logOperation('removeSignup', eventId, userName, removedPosition, '成功', `已刪除行 ${rowToDeleteIndex}`);
         return { status: 'success', message: '已為您取消報名。' }; 
       } 
     }
-    // 如果找不到
     logOperation('removeSignup', eventId, userName, '', '找不到', '找不到您的報名紀錄');
     return { status: 'error', message: '找不到您的報名紀錄。' };
   } catch(err) { 
@@ -604,16 +615,15 @@ function modifySignup(signupId, newPosition) {
   let eventId = '';
   let userName = '';
   let oldPosition = '';
-  let targetRowIndex = -1;
   try {
     const ss = SpreadsheetApp.openById(SHEET_ID);
     const signupsSheet = ss.getSheetByName(SIGNUPS_SHEET_NAME);
     const signupsData = signupsSheet.getDataRange().getValues();
     
-    // 尋找目標行
-    for (let i = 1; i < signupsData.length; i++) { // 從第2行(索引1)開始
+    let targetRowIndex = -1;
+    for (let i = 1; i < signupsData.length; i++) {
       if (signupsData[i][0] === signupId) {
-        targetRowIndex = i + 1; // Google Sheet 的行號是 1-based
+        targetRowIndex = i + 1;
         eventId = signupsData[i][1];
         userName = signupsData[i][2];
         oldPosition = signupsData[i][4];
@@ -625,11 +635,10 @@ function modifySignup(signupId, newPosition) {
       throw new Error('找不到指定的報名紀錄ID。'); 
     }
 
-    // 檢查新崗位是否已被佔用
     const positionTaken = signupsData.some(row => 
-      row[1] === eventId && // 同一個活動
-      row[4] === newPosition && // 新崗位已存在
-      row[0] !== signupId // 但不是目前正在修改的這一行
+      row[1] === eventId &&
+      row[4] === newPosition &&
+      row[0] !== signupId
     );
 
     if (positionTaken) { 
@@ -637,8 +646,8 @@ function modifySignup(signupId, newPosition) {
       return { status: 'error', message: `無法修改，崗位 [${newPosition}] 已被其他人報名。` }; 
     }
 
-    signupsSheet.getRange(targetRowIndex, 5).setValue(newPosition); // 修改崗位 (第5欄)
-    SpreadsheetApp.flush(); // 確保資料寫入
+    signupsSheet.getRange(targetRowIndex, 5).setValue(newPosition);
+    SpreadsheetApp.flush();
 
     logOperation('modifySignup', eventId, userName, `${oldPosition} -> ${newPosition}`, '成功', '崗位已成功修改');
     return { status: 'success', message: '崗位已成功修改！' };
@@ -691,107 +700,10 @@ function scheduleDeletion(fileId) { if (!fileId) return; try { const trigger = S
 function triggeredDeleteHandler(e) { const triggerId = e.triggerUid; const scriptProperties = PropertiesService.getScriptProperties(); const fileId = scriptProperties.getProperty(triggerId); if (fileId) { try { DriveApp.getFileById(fileId).setTrashed(true); } catch (err) { console.error(`刪除檔案 ${fileId} 失敗: ${err.toString()}`); } scriptProperties.deleteProperty(triggerId); } const allTriggers = ScriptApp.getProjectTriggers(); for (let i = 0; i < allTriggers.length; i++) { if (allTriggers[i].getUniqueId() === triggerId) { ScriptApp.deleteTrigger(allTriggers[i]); break; } } }
 
 
-// ===================== [LINE Messaging API 自動推播整合 - START] =====================
+// ===================== [LINE Messaging API 自動推播整合] =====================
 const LINE_CHANNEL_ACCESS_TOKEN = 'MaSV+Q15S2BXNVYW6xroMRfJwIl5Oe8ZsRWRtuo9HpbQRssOXQceAUYPwuGQ9L8wa9pkbZyWudE+DFZ2MwRzHqBEkNUmM+gIen+YQyXncJGz4/MO+QuB4u6niSLPzUAM5wNacDP2uMXHc51laR2/3gdB04t89/1O/w1cDnyilFU=';
-const LINE_RECIPIENT_IDS = [
-  'Ufefb59896be6a2030d5c97e25f00d5d7',
-];
-
-function lineSendMessages(toIds, messages, options) {
-  if (!LINE_CHANNEL_ACCESS_TOKEN) {
-    const msg = 'LINE_CHANNEL_ACCESS_TOKEN 未設定，請先填入你的 Messaging API Token。';
-    console.error(msg);
-    return { status: 'error', error: msg };
-  }
-  try {
-    const hasTargets = Array.isArray(toIds) && toIds.length > 0;
-    const isMulti = hasTargets && toIds.length > 1;
-    const isSingle = hasTargets && toIds.length === 1;
-
-    let url = 'https://api.line.me/v2/bot/message/';
-    let body = {};
-    if (isMulti) {
-      url += 'multicast';
-      body = { to: toIds, messages };
-    } else if (isSingle) {
-      url += 'push';
-      body = { to: toIds[0], messages };
-    } else {
-      url += 'broadcast';
-      body = { messages };
-    }
-
-    const req = Object.assign({
-      method: 'post',
-      contentType: 'application/json; charset=utf-8',
-      payload: JSON.stringify(body),
-      headers: { 'Authorization': 'Bearer ' + LINE_CHANNEL_ACCESS_TOKEN },
-      muteHttpExceptions: true
-    }, options || {});
-
-    const r = UrlFetchApp.fetch(url, req);
-    const code = r.getResponseCode();
-    const bodyTxt = r.getContentText();
-    console.log(`[MessagingAPI] ${url} -> ${code} ${bodyTxt}`);
-
-    return { status: (code >= 200 && code < 300) ? 'success' : 'error', code, body: bodyTxt };
-  } catch (e) {
-    console.error('[MessagingAPI] 發送例外: ' + e.toString());
-    return { status: 'error', error: e.toString() };
-  }
-}
-
-function buildTextMessages(text) {
-  const MAX = 4800;
-  if (!text) return [{ type: 'text', text: '' }];
-  const msgs = [];
-  for (let i = 0; i < text.length; i += MAX) {
-    msgs.push({ type: 'text', text: text.substring(i, i + MAX) });
-  }
-  return msgs;
-}
-
-function dailyNotifyTomorrow_MessageAPI() {
-  try {
-    const res = getSignupsAsTextForTomorrow();
-    if (!res || res.status === 'nodata') {
-      const msg = '（提醒）明日無報名資料。';
-      console.log('[dailyNotifyTomorrow_MessageAPI] ' + msg);
-      return lineSendMessages(LINE_RECIPIENT_IDS, buildTextMessages(msg));
-    }
-    if (res.status !== 'success' || !res.text) {
-      const msg = '取得明日報名文字失敗。';
-      console.error('[dailyNotifyTomorrow_MessageAPI] ' + msg);
-      return { status: 'error', error: msg };
-    }
-    return lineSendMessages(LINE_RECIPIENT_IDS, buildTextMessages(res.text));
-  } catch (e) {
-    console.error('[dailyNotifyTomorrow_MessageAPI] 例外: ' + e.toString());
-    return { status: 'error', error: e.toString() };
-  }
-}
-
-function setupDaily20Trigger_MessageAPI() {
-  const funcName = 'dailyNotifyTomorrow_MessageAPI';
-  try {
-    const triggers = ScriptApp.getProjectTriggers() || [];
-    triggers.forEach(t => {
-      if (t.getHandlerFunction && t.getHandlerFunction() === funcName) {
-        ScriptApp.deleteTrigger(t);
-      }
-    });
-    ScriptApp.newTrigger(funcName)
-      .timeBased()
-      .atHour(20)
-      .everyDays(1)
-      .inTimezone('Asia/Taipei')
-      .create();
-
-    console.log('[setupDaily20Trigger_MessageAPI] 已建立每日 20:00 排程（Asia/Taipei）。');
-    return { status: 'success' };
-  } catch (e) {
-    console.error('[setupDaily20Trigger_MessageAPI] 失敗: ' + e.toString());
-    return { status: 'error', error: e.toString() };
-  }
-}
-// ===================== [LINE Messaging API 自動推播整合 - END] =====================
+const LINE_RECIPIENT_IDS = [ 'Ufefb59896be6a2030d5c97e25f00d5d7', ];
+function lineSendMessages(toIds, messages, options) { if (!LINE_CHANNEL_ACCESS_TOKEN) { const msg = 'LINE_CHANNEL_ACCESS_TOKEN 未設定。'; console.error(msg); return { status: 'error', error: msg }; } try { const hasTargets = Array.isArray(toIds) && toIds.length > 0; const isMulti = hasTargets && toIds.length > 1; const isSingle = hasTargets && toIds.length === 1; let url = 'https://api.line.me/v2/bot/message/'; let body = {}; if (isMulti) { url += 'multicast'; body = { to: toIds, messages }; } else if (isSingle) { url += 'push'; body = { to: toIds[0], messages }; } else { url += 'broadcast'; body = { messages }; } const req = Object.assign({ method: 'post', contentType: 'application/json; charset=utf-8', payload: JSON.stringify(body), headers: { 'Authorization': 'Bearer ' + LINE_CHANNEL_ACCESS_TOKEN }, muteHttpExceptions: true }, options || {}); const r = UrlFetchApp.fetch(url, req); const code = r.getResponseCode(); const bodyTxt = r.getContentText(); console.log(`[MessagingAPI] ${url} -> ${code} ${bodyTxt}`); return { status: (code >= 200 && code < 300) ? 'success' : 'error', code, body: bodyTxt }; } catch (e) { console.error('[MessagingAPI] 發送例外: ' + e.toString()); return { status: 'error', error: e.toString() }; } }
+function buildTextMessages(text) { const MAX = 4800; if (!text) return [{ type: 'text', text: '' }]; const msgs = []; for (let i = 0; i < text.length; i += MAX) { msgs.push({ type: 'text', text: text.substring(i, i + MAX) }); } return msgs; }
+function dailyNotifyTomorrow_MessageAPI() { try { const res = getSignupsAsTextForTomorrow(); if (!res || res.status === 'nodata') { const msg = '（提醒）明日無報名資料。'; console.log('[dailyNotifyTomorrow_MessageAPI] ' + msg); return lineSendMessages(LINE_RECIPIENT_IDS, buildTextMessages(msg)); } if (res.status !== 'success' || !res.text) { const msg = '取得明日報名文字失敗。'; console.error('[dailyNotifyTomorrow_MessageAPI] ' + msg); return { status: 'error', error: msg }; } return lineSendMessages(LINE_RECIPIENT_IDS, buildTextMessages(res.text)); } catch (e) { console.error('[dailyNotifyTomorrow_MessageAPI] 例外: ' + e.toString()); return { status: 'error', error: e.toString() }; } }
+function setupDaily20Trigger_MessageAPI() { const funcName = 'dailyNotifyTomorrow_MessageAPI'; try { const triggers = ScriptApp.getProjectTriggers() || []; triggers.forEach(t => { if (t.getHandlerFunction && t.getHandlerFunction() === funcName) { ScriptApp.deleteTrigger(t); } }); ScriptApp.newTrigger(funcName) .timeBased() .atHour(20) .everyDays(1) .inTimezone('Asia/Taipei') .create(); console.log('[setupDaily20Trigger_MessageAPI] 已建立每日 20:00 排程（Asia/Taipei）。'); return { status: 'success' }; } catch (e) { console.error('[setupDaily20Trigger_MessageAPI] 失敗: ' + e.toString()); return { status: 'error', error: e.toString() }; } }

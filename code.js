@@ -1,16 +1,24 @@
 // ====================================================================
 //  檔案：code.gs (AV放送立願報名行事曆 - 後端 API)
-//  版本：6.29 (新增直接讀取 "News" 工作表作為公告來源)
+//  版本：0815_CSV_Confirmed (確認使用 CSV URL 讀取資料)
 // ====================================================================
 
-const BACKEND_VERSION = "0813_NewsRead"; // *** 後端版本號 ***
+const BACKEND_VERSION = "0815_CSV_Confirmed"; // *** 後端版本號 ***
 
 // --- 全域設定 ---
+// [重要] SHEET_ID 仍然需要，用於所有寫入、修改、刪除操作
 const SHEET_ID = '1gBIlhEKPQHBvslY29veTdMEJeg2eVcaJx_7A-8cTWIM'; 
 const EVENTS_SHEET_NAME = 'Events';
 const SIGNUPS_SHEET_NAME = 'Signups';
 const LOGS_SHEET_NAME = 'Logs';
-const NEWS_SHEET_NAME = 'News'; // 新增 News 工作表名稱
+
+// --- CSV 公開網址設定 (用於唯讀操作) ---
+const EVENTS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRT5YNZcSXbE6ULGft15cba4Mx8kK1Eb7bLftucmkmUGmTxkrA8vw5uerAP2dYqptBHnbmq_3QNOOJx/pub?gid=795926947&single=true&output=csv';
+const SIGNUPS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRT5YNZcSXbE6ULGft15cba4Mx8kK1Eb7bLftucmkmUGmTxkrA8vw5uerAP2dYqptBHnbmq_3QNOOJx/pub?gid=767193030&single=true&output=csv';
+const NEWS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTRBfLLti6pcfbynd6kjfZT6Gp5trB8PdXvikHoTNMgLsDzDYsGYmexOqEw6ZkrIedyeAd6DE0bHpso/pub?gid=0&single=true&output=csv';
+// 註：Logs 工作表為「寫入專用」，記錄操作日誌時無法透過唯讀的 CSV 進行，故以下 URL 不會被使用。
+// const LOGS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRT5YNZcSXbE6ULGft15cba4Mx8kK1Eb7bLftucmkmUGmTxkrA8vw5uerAP2dYqptBHnbmq_3QNOOJx/pub?gid=214281427&single=true&output=csv';
+
 
 // -------------------- API 核心路由函式 --------------------
 
@@ -30,14 +38,16 @@ function doGet(e) {
 
     switch (functionName) {
       case 'getEventsAndSignups': result = getEventsAndSignups(); break;
-      case 'getNewsAnnouncements': result = getNewsAnnouncements(); break; // 新增處理公告的 case
+      case 'getNewsAnnouncements': result = getNewsAnnouncements(); break;
       case 'getUnifiedSignups': result = getUnifiedSignups(params.searchText, params.startDateStr, params.endDateStr); break;
       case 'getStatsData': result = getStatsData(params.startDateStr, params.endDateStr); break;
+      // --- 以下為寫入操作，維持使用 SpreadsheetApp ---
       case 'addSignup': result = addSignup(params.eventId, params.userName, params.position); break;
       case 'addBackupSignup': result = addBackupSignup(params.eventId, params.userName, params.position); break;
       case 'removeSignup': result = removeSignup(params.eventId, params.userName); break;
       case 'modifySignup': result = modifySignup(params.signupId, params.newPosition); break;
       case 'createTempSheetAndExport': result = createTempSheetAndExport(params.startDateStr, params.endDateStr); break;
+      // --- 分享功能依賴讀取函式，會自動使用新方法 ---
       case 'getSignupsAsTextForToday': result = getSignupsAsTextForToday(); break;
       case 'getSignupsAsTextForTomorrow': result = getSignupsAsTextForTomorrow(); break;
       case 'getSignupsAsTextForDateRange': result = getSignupsAsText(params.startDateStr, params.endDateStr); break;
@@ -81,6 +91,7 @@ function padTime(timeValue) {
 
 function logOperation(action, eventId, userName, position, result, details) {
   try {
+    // 日誌記錄為寫入操作，必須使用 SpreadsheetApp
     const ss = SpreadsheetApp.openById(SHEET_ID);
     const logSheet = ss.getSheetByName(LOGS_SHEET_NAME);
     if (!logSheet) {
@@ -99,22 +110,52 @@ function logOperation(action, eventId, userName, position, result, details) {
   }
 }
 
+/**
+ * 從指定的 URL 獲取並解析 CSV 內容，並使用快取。
+ * @param {string} url CSV 檔案的 URL。
+ * @param {string} cacheKey 用於快取的鍵。
+ * @returns {Array<Array<string>>} 解析後的 CSV 資料。
+ */
+function fetchAndParseCsvWithCache(url, cacheKey) {
+  const cache = CacheService.getScriptCache();
+  const cachedData = cache.get(cacheKey);
+  if (cachedData) {
+    console.log(`fetchAndParseCsvWithCache: '${cacheKey}' 從快取中讀取。`);
+    return JSON.parse(cachedData);
+  }
+  try {
+    const response = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    const responseCode = response.getResponseCode();
+    if (responseCode === 200) {
+      const csvContent = response.getContentText('UTF-8');
+      const data = Utilities.parseCsv(csvContent);
+      // 快取 90 秒，避免請求頻繁，同時確保資料有一定即時性
+      cache.put(cacheKey, JSON.stringify(data), 90);
+      console.log(`fetchAndParseCsvWithCache: '${cacheKey}' 已擷取並快取。`);
+      return data;
+    } else {
+      throw new Error(`無法擷取 CSV 資料。狀態碼: ${responseCode}`);
+    }
+  } catch (e) {
+    console.error(`fetchAndParseCsvWithCache: 擷取 ${url} 失敗: ${e.message}`);
+    throw new Error(`從 ${url} 讀取資料時發生錯誤。`);
+  }
+}
 
-// -------------------- 資料獲取與處理函式 --------------------
+
+// -------------------- 資料獲取與處理函式 (已修改為 CSV 模式) --------------------
 
 /**
- * [新增] 讀取 "News" 工作表並回傳有效的公告訊息。
+ * 讀取 "News" 的 CSV 網址並回傳有效的公告訊息。
  */
 function getNewsAnnouncements() {
   try {
-    const ss = SpreadsheetApp.openById(SHEET_ID);
-    const newsSheet = ss.getSheetByName(NEWS_SHEET_NAME);
-    if (!newsSheet) {
-      console.warn(`找不到公告工作表: "${NEWS_SHEET_NAME}"`);
-      return []; // 如果找不到工作表，回傳空陣列
+    const data = fetchAndParseCsvWithCache(NEWS_CSV_URL, 'news_data');
+    if (!data || data.length <= 1) {
+        console.warn(`公告 CSV 中沒有資料或只有標頭。`);
+        return [];
     }
 
-    const data = newsSheet.getDataRange().getValues();
     data.shift(); // 移除標頭
 
     const today = new Date();
@@ -155,35 +196,29 @@ function getNewsAnnouncements() {
   }
 }
 
-
+/**
+ * 從 CSV 網址獲取 Events 和 Signups 的主要資料。
+ */
 function getMasterData() {
   try {
-    const ss = SpreadsheetApp.openById(SHEET_ID);
-    const eventsSheet = ss.getSheetByName(EVENTS_SHEET_NAME);
-    const signupsSheet = ss.getSheetByName(SIGNUPS_SHEET_NAME);
+    const eventsData = fetchAndParseCsvWithCache(EVENTS_CSV_URL, 'events_data');
+    const signupsData = fetchAndParseCsvWithCache(SIGNUPS_CSV_URL, 'signups_data');
 
-    if (!eventsSheet) {
-      throw new Error(`試算表中找不到名為 "${EVENTS_SHEET_NAME}" 的工作表。`);
-    }
-    if (!signupsSheet) {
-      throw new Error(`試算表中找不到名為 "${SIGNUPS_SHEET_NAME}" 的工作表。`);
-    }
-
-    const eventsData = eventsSheet.getDataRange().getValues();
-    const signupsData = signupsSheet.getDataRange().getValues();
+    console.log(`getMasterData (CSV): 成功讀取資料。`);
+    console.log(`getMasterData: Events CSV 讀取到 ${eventsData.length} 行 (含標頭)。`);
+    console.log(`getMasterData: Signups CSV 讀取到 ${signupsData.length} 行 (含標頭)。`);
     
-    console.log(`getMasterData: 成功從工作表直接讀取資料。`);
-    console.log(`getMasterData: ${EVENTS_SHEET_NAME} 讀取到 ${eventsData.length} 行 (含標頭)。`);
-    console.log(`getMasterData: ${SIGNUPS_SHEET_NAME} 讀取到 ${signupsData.length} 行 (含標頭)。`);
-
-    eventsData.shift();
-    signupsData.shift();
-
+    // 移除標頭，回傳純資料部分
+    const eventsDataWithoutHeader = eventsData.slice(1);
+    const signupsDataWithoutHeader = signupsData.slice(1);
+    
     const scriptTimeZone = Session.getScriptTimeZone();
     const eventsMap = new Map();
-    eventsData.forEach(row => {
+    
+    eventsDataWithoutHeader.forEach(row => {
+      // CSV Columns: ID,Title,Date,StartTime,EndTime,MaxAttendees,Positions,Description
       const eventId = row[0];
-      if (eventId && row[2]) {
+      if (eventId && row[2]) { // 檢查 ID 和 Date 存在
         try {
             const dateObj = new Date(row[2]);
             if (isNaN(dateObj.getTime())) {
@@ -204,10 +239,11 @@ function getMasterData() {
         }
       }
     });
-    return { eventsData, signupsData, eventsMap };
+    
+    return { eventsData: eventsDataWithoutHeader, signupsData: signupsDataWithoutHeader, eventsMap };
   } catch (err) {
-    console.error(`getMasterData (Sheet) 失敗: ${err.message}`, err.stack);
-    throw new Error(`從 Google Sheet 直接讀取資料時發生錯誤: ${err.message}`);
+    console.error(`getMasterData (CSV) 失敗: ${err.message}`, err.stack);
+    throw new Error(`從 CSV 讀取資料時發生錯誤: ${err.message}`);
   }
 }
 
@@ -217,10 +253,10 @@ function getEventsAndSignups() {
     const scriptTimeZone = Session.getScriptTimeZone();
     const signupsByEventId = new Map();
     signupsData.forEach(row => {
-      const eventId = row[1];
+      const eventId = row[1]; // Column B: EventID
       if (!eventId) return;
       if (!signupsByEventId.has(eventId)) { signupsByEventId.set(eventId, []); }
-      signupsByEventId.get(eventId).push({ user: row[2], position: row[4] });
+      signupsByEventId.get(eventId).push({ user: row[2], position: row[4] }); // Column C: User, Column E: Position
     });
 
     return eventsData.map(row => {
@@ -293,7 +329,7 @@ function getUnifiedSignups(searchText, startDateStr, endDateStr) {
           return false;
       }
 
-      const eventId = row[1];
+      const eventId = row[1]; // Column B: EventID
       const eventDetail = eventsMap.get(eventId);
 
       if (!eventDetail) {
@@ -309,8 +345,8 @@ function getUnifiedSignups(searchText, startDateStr, endDateStr) {
       if (end && eventDate > end) { return false; }
 
       if (searchLower) {
-        const user = String(row[2] || '').toLowerCase();
-        const position = String(row[4] || '').toLowerCase();
+        const user = String(row[2] || '').toLowerCase(); // Column C: User
+        const position = String(row[4] || '').toLowerCase(); // Column E: Position
         const eventTitle = String(eventDetail.title || '').toLowerCase();
         const eventDescription = String(eventDetail.description || '').toLowerCase();
         
@@ -330,13 +366,13 @@ function getUnifiedSignups(searchText, startDateStr, endDateStr) {
       let eventDayOfWeek = eventDetail.dateObj ? dayMap[eventDetail.dateObj.getDay()] : '';
       
       let formattedTimestamp = '';
-      if (row[3] instanceof Date) {
+      if (row[3] instanceof Date) { // 如果是 Date 物件
         try {
           formattedTimestamp = Utilities.formatDate(row[3], Session.getScriptTimeZone(), 'yyyy/MM/dd HH:mm:ss');
         } catch (e) {
           formattedTimestamp = 'Invalid Date';
         }
-      } else {
+      } else { // 如果是從 CSV 來的字串
         formattedTimestamp = row[3] || '';
       }
 
@@ -445,7 +481,7 @@ function getSignupsAsText(startDateStr, endDateStr) {
   return { status: 'success', text: formattedText };
 }
 
-// -------------------- 主要資料寫入函式 --------------------
+// -------------------- 主要資料寫入函式 (維持不變，繼續使用 SpreadsheetApp) --------------------
 
 function addSignup(eventId, userName, position) {
   if (!eventId || !userName || !position) { 
@@ -700,7 +736,7 @@ function scheduleDeletion(fileId) { if (!fileId) return; try { const trigger = S
 function triggeredDeleteHandler(e) { const triggerId = e.triggerUid; const scriptProperties = PropertiesService.getScriptProperties(); const fileId = scriptProperties.getProperty(triggerId); if (fileId) { try { DriveApp.getFileById(fileId).setTrashed(true); } catch (err) { console.error(`刪除檔案 ${fileId} 失敗: ${err.toString()}`); } scriptProperties.deleteProperty(triggerId); } const allTriggers = ScriptApp.getProjectTriggers(); for (let i = 0; i < allTriggers.length; i++) { if (allTriggers[i].getUniqueId() === triggerId) { ScriptApp.deleteTrigger(allTriggers[i]); break; } } }
 
 
-// ===================== [LINE Messaging API 自動推播整合] =====================
+// ===================== [LINE Messaging API 自動推播整合] (維持不變) =====================
 const LINE_CHANNEL_ACCESS_TOKEN = 'MaSV+Q15S2BXNVYW6xroMRfJwIl5Oe8ZsRWRtuo9HpbQRssOXQceAUYPwuGQ9L8wa9pkbZyWudE+DFZ2MwRzHqBEkNUmM+gIen+YQyXncJGz4/MO+QuB4u6niSLPzUAM5wNacDP2uMXHc51laR2/3gdB04t89/1O/w1cDnyilFU=';
 const LINE_RECIPIENT_IDS = [ 'Ufefb59896be6a2030d5c97e25f00d5d7', ];
 function lineSendMessages(toIds, messages, options) { if (!LINE_CHANNEL_ACCESS_TOKEN) { const msg = 'LINE_CHANNEL_ACCESS_TOKEN 未設定。'; console.error(msg); return { status: 'error', error: msg }; } try { const hasTargets = Array.isArray(toIds) && toIds.length > 0; const isMulti = hasTargets && toIds.length > 1; const isSingle = hasTargets && toIds.length === 1; let url = 'https://api.line.me/v2/bot/message/'; let body = {}; if (isMulti) { url += 'multicast'; body = { to: toIds, messages }; } else if (isSingle) { url += 'push'; body = { to: toIds[0], messages }; } else { url += 'broadcast'; body = { messages }; } const req = Object.assign({ method: 'post', contentType: 'application/json; charset=utf-8', payload: JSON.stringify(body), headers: { 'Authorization': 'Bearer ' + LINE_CHANNEL_ACCESS_TOKEN }, muteHttpExceptions: true }, options || {}); const r = UrlFetchApp.fetch(url, req); const code = r.getResponseCode(); const bodyTxt = r.getContentText(); console.log(`[MessagingAPI] ${url} -> ${code} ${bodyTxt}`); return { status: (code >= 200 && code < 300) ? 'success' : 'error', code, body: bodyTxt }; } catch (e) { console.error('[MessagingAPI] 發送例外: ' + e.toString()); return { status: 'error', error: e.toString() }; } }

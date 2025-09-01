@@ -97,24 +97,24 @@
         .event-popover ul { list-style: none; margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--card-border); }
         .event-popover ul li { margin-bottom: 5px; }
         .event-popover strong { color: var(--primary-dark); }
-        #stats-details-container { margin-top: 40px; }
-        #stats-details-container h2 { font-size: 1.5rem; text-align: left; border-bottom: 1px solid var(--card-border); padding-bottom: 10px; margin-bottom: 20px; }
+        #stats-details-container, #performance-details-container { margin-top: 40px; }
+        #stats-details-container h2, #performance-details-container h2 { font-size: 1.5rem; text-align: left; border-bottom: 1px solid var(--card-border); padding-bottom: 10px; margin-bottom: 20px; }
         .stats-event-block { page-break-inside: avoid; margin-bottom: 15px; border: 1px solid #eee; padding: 15px; border-radius: 8px; background: #fdfdfd; }
         .stats-event-block h3 { font-size: 1.2rem; margin: 0 0 10px 0; color: var(--primary-dark); }
         .stats-event-block p { margin: 0 0 5px 0; font-size: 0.9rem; }
         .stats-event-block ul { list-style-type: none; padding-left: 0; margin: 10px 0 0 0; font-size: 0.85rem; }
         .stats-event-block li { background: #f8f9fa; padding: 5px 10px; border-radius: 3px; margin-bottom: 3px; }
         @media (min-width: 769px) {
-            #stats-details-container { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px 0; }
-            #stats-details-container > h2 { flex-basis: 100%; margin-bottom: 0; }
-            #stats-details-container .stats-event-block { width: 48.5%; margin-bottom: 0; }
+            #stats-details-container, #performance-details-container { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 20px 0; }
+            #stats-details-container > h2, #performance-details-container > h2 { flex-basis: 100%; margin-bottom: 0; }
+            #stats-details-container .stats-event-block, #performance-details-container .stats-event-block { width: 48.5%; margin-bottom: 0; }
             .stats-event-block h3 { font-size: 1.1rem; } .stats-event-block p { font-size: 0.85rem; } .stats-event-block ul { font-size: 0.8rem; }
         }
         #marquee-container { height: 40px; background: #fffaf5; color: var(--primary-dark); border-radius: var(--border-radius-sm); margin-bottom: 25px; padding: 0 20px; position: relative; overflow: hidden; display: flex; align-items: center; box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--primary-light); transition: max-height 0.4s ease-out, opacity 0.3s ease-out, margin-bottom 0.4s ease-out; }
         #marquee-text { position: absolute; width: calc(100% - 40px); text-align: center; font-weight: 600; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         @keyframes marquee-scroll { 0% { transform: translateY(120%); opacity: 0; } 15% { transform: translateY(0); opacity: 1; } 85% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-120%); opacity: 0; } }
-        #admin-tab .button-grid { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-top: 10px; }
-        #admin-tab .button-grid .btn { flex-grow: 1; }
+        #admin-tab .button-grid, #download-tab .button-grid { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-top: 10px; }
+        #admin-tab .button-grid .btn, #download-tab .button-grid .btn { flex-grow: 1; }
         @media (min-width: 769px) { .container { width: 90vw; max-width: 1600px; } }
         @media (max-width: 768px) {
             html { height: 100%; } body { padding: 10px; margin: 0; min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
@@ -132,10 +132,23 @@
             .tab-button:not(.active):hover::after { opacity: 0.6; }
             #custom-calendar-toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 15px; }
             #custom-calendar-title { order: 1; flex-basis: 100%; font-size: 1.5rem; text-align: center; } .toolbar-chunk { flex-grow: 1; justify-content: center; } .toolbar-chunk:nth-of-type(1) { order: 2; } .toolbar-chunk:nth-of-type(2) { order: 3; }
-            .inline-form { display: flex; flex-direction: column; align-items: center; gap: 15px; }
-            .inline-form > * { width: 90% !important; max-width: 450px; }
-            #admin-tab > .inline-form { align-items: center !important; }
-            #admin-tab .button-grid .btn { flex-basis: calc(50% - 7.5px); flex-grow: 1; }
+            
+            /* --- FINAL MOBILE FORM ALIGNMENT FIX --- */
+            .inline-form {
+                flex-direction: column;
+                align-items: center; /* Center the form block itself */
+            }
+            .inline-form > .form-group, .inline-form > .btn {
+                width: 90%; /* Set width on children */
+                max-width: 450px;
+                flex-grow: 1;
+            }
+            .form-group input[type="date"] {
+                min-width: 0; /* Override browser default min-width */
+            }
+            /* --- END FIX --- */
+
+            #admin-tab .button-grid .btn, #download-tab .button-grid .btn { flex-basis: calc(50% - 7.5px); flex-grow: 1; }
             .btn { padding: 12px 15px; font-size: 1rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transform: translateY(0); }
             .btn-primary:hover, .btn-danger:hover, .toolbar-chunk .btn:hover, .view-switcher-btn:hover { transform: translateY(0); box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
             .btn-primary:active, .btn-danger:active, .toolbar-chunk .btn:active, .view-switcher-btn:active { box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
@@ -147,7 +160,61 @@
         #simple-list-view .table-responsive table, #my-signups-result.table-responsive table { width: max-content !important; min-width: 100%; }
         #simple-list-view .table-responsive th, #simple-list-view .table-responsive td, #my-signups-result.table-responsive th, #my-signups-result.table-responsive td { white-space: nowrap !important; vertical-align: middle !important; }
         @media (max-width: 768px) { #simple-list-view .table-responsive th, #simple-list-view .table-responsive td, #my-signups-result.table-responsive th, #my-signups-result.table-responsive td { font-size: 14px !important; padding: 12px 10px !important; } }
-    </style>
+    
+/* --- MOBILE DATE INPUT FIX (追加) --- */
+@media (max-width: 768px) {
+  .inline-form {
+    flex-direction: column;
+    align-items: center;
+  }
+  .inline-form > .form-group,
+  .inline-form > .btn {
+    width: 92vw;
+    max-width: 480px;
+  }
+  .inline-form .form-group > input,
+  .inline-form .form-group > select {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .inline-form input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+
+/* --- HOTFIX: 修正手機超出容器（覆寫前一版 92vw 設定） --- */
+@media (max-width: 768px) {
+  .inline-form { 
+    align-items: stretch !important; 
+    width: 100% !important;
+  }
+  .inline-form > .form-group,
+  .inline-form > .btn {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  .inline-form .form-group > input,
+  .inline-form .form-group > select {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+  .inline-form input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+</style>
 </head>
 <body>
     
@@ -168,6 +235,8 @@
             <button class="tab-button active" onclick="openTab(event, 'calendar-tab')">📅 活動行事曆</button>
             <button class="tab-button" onclick="openTab(event, 'my-signups-tab')">🔍 報名查詢</button>
             <button class="tab-button" onclick="openTab(event, 'stats-tab')">📊 統計報表</button>
+            <button class="tab-button" onclick="openTab(event, 'performance-tab')">🏆 立願績效</button>
+            <button class="tab-button" onclick="openTab(event, 'download-tab')">📄 文件下載</button>
             <button class="tab-button" onclick="openTab(event, 'admin-tab')">🛠️ 匯出與下載</button>
         </div>
 
@@ -213,6 +282,45 @@
             <div class="chart-container" style="position: relative; height:40vh; margin-bottom: 20px;"><canvas id="stats-chart"></canvas></div>
             <div id="stats-details-container"></div>
         </div>
+
+        <div id="performance-tab" class="tab-content">
+            <h4>🏆 立願績效圖表 (依個人統計)</h4>
+            <div class="inline-form">
+                <div class="form-group"><label for="performance-start-date">開始日期</label><input type="date" id="performance-start-date"></div>
+                <div class="form-group"><label for="performance-end-date">結束日期</label><input type="date" id="performance-end-date"></div>
+                <button id="generate-performance-report" class="btn btn-primary">🚀 產生績效圖表</button>
+            </div>
+            <div class="chart-container" style="position: relative; height:60vh; margin-bottom: 20px;"><canvas id="performance-chart"></canvas></div>
+            <div id="performance-details-container"></div>
+        </div>
+        
+        <div id="download-tab" class="tab-content">
+            <h4>📄 相關文件下載</h4>
+            <div class="button-grid">
+
+<button id="download-jobhtml" class="btn btn-primary" onclick="window.open('job.html', '_blank')">奉仕崗位職掌（網頁版）</button>
+
+                <button id="download-poster" class="btn btn-primary">AV招生海報</button>
+                <button id="download-manual" class="btn btn-primary">一如祈念次第</button>
+                <button id="download-bulletin" class="btn btn-primary">放送奉侍佈告</button>
+            </div>
+            <hr>
+            <h4>📄 SOP文件下載</h4>
+            <div class="button-grid">
+                <button id="download-doc-computer" class="btn btn-primary">電腦</button>
+                <button id="download-doc-lighting" class="btn btn-primary">燈光</button>
+                <button id="download-doc-audio" class="btn btn-primary">音控</button>
+                <button id="download-doc-camera" class="btn btn-primary">攝影</button>
+            </div>
+            <hr>
+            <h4>🎬 影音檔案下載</h4>
+            <div class="button-grid">
+                <button id="download-video-signup-sop" class="btn btn-primary">立願報名SOP</button>
+                <button id="download-video-delete-sop" class="btn btn-primary">立願刪除SOP</button>
+                <button id="download-video-query-sop" class="btn btn-primary">立願查詢SOP</button>
+                <button id="download-video-cable-wrap" class="btn btn-primary">攝影師收線示範</button>
+            </div>
+        </div>
         
         <div id="admin-tab" class="tab-content">
             <hr style="margin-top:0;">
@@ -231,23 +339,6 @@
                     <button id="share-to-clipboard-btn" class="btn btn-success" style="background-color: #17a2b8;">分享至剪貼簿</button>
                 </div>
             </div>
-
-            <hr>
-            <h4>📄 SOP文件下載</h4>
-            <div class="button-grid">
-                <button id="download-doc-computer" class="btn btn-primary">電腦</button>
-                <button id="download-doc-lighting" class="btn btn-primary">燈光</button>
-                <button id="download-doc-audio" class="btn btn-primary">音控</button>
-                <button id="download-doc-camera" class="btn btn-primary">攝影</button>
-            </div>
-
-            <hr>
-            <h4>🎬 影音檔案下載</h4>
-            <div class="button-grid">
-                <button id="download-video-signup-sop" class="btn btn-primary">立願報名SOP</button>
-                <button id="download-video-delete-sop" class="btn btn-primary">立願刪除SOP</button>
-                <button id="download-video-query-sop" class="btn btn-primary">立願查詢SOP</button>
-            </div>
         </div>
     </div>
     
@@ -260,11 +351,11 @@
     <div id="loading" class="loading-overlay" style="display: none;"></div>
 
     <script>
-        const FRONTEND_VERSION = "0716";
+        const FRONTEND_VERSION = "0717";
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1dCHAzjMNklN96jXKpWYcTv-NvzKoB8J6CcY30L55dAtaAf0bTRWTJTc20Fk2MZbgeQ/exec"; 
         
         function reloadSystem() { showLoading(); setTimeout(() => { location.reload(); }, 200); }
-        let calendar = null, statsChart, allCalendarEvents = [], currentDisplayDate = new Date(), lastQuery = { type: null, params: {}, data: [] }, lastStatsData = null;
+        let calendar = null, statsChart, performanceChart, allCalendarEvents = [], currentDisplayDate = new Date(), lastQuery = { type: null, params: {}, data: [] }, lastStatsData = null;
         const isMobile = window.innerWidth <= 768;
         let currentCalendarOptions = { height: isMobile ? 'auto' : undefined, aspectRatio: isMobile ? 0.8 : 1.35 };
         function showLoading() { document.getElementById('loading').style.display = 'flex'; }
@@ -274,7 +365,6 @@
         
         function openTab(evt, tabName) { document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none'); document.querySelectorAll('.tab-button').forEach(tb => tb.classList.remove('active')); document.getElementById(tabName).style.display = 'block'; evt.currentTarget.classList.add('active'); if (tabName === 'calendar-tab' && calendar) { setTimeout(() => { calendar.updateSize(); }, 0); } }
         async function promptForName() { let currentUserName = localStorage.getItem('av_signup_username') || ''; const { value: name } = await Swal.fire({ title: "請輸入您的姓名", input: "text", inputValue: currentUserName, inputPlaceholder: "請輸入姓名", showCancelButton: true, inputValidator: (v) => !v && "姓名不能為空！" }); if (name) { localStorage.setItem('av_signup_username', name); } return name; }
-
         async function handleEventClick(info) {
             const eventObject = allCalendarEvents.find(e => e.id === info.event.id); if (!eventObject) return;
             const props = eventObject.extendedProps;
@@ -311,92 +401,316 @@
                 finally { hideLoading(); }
             }
         }
-        
         function showEventPopover(info) { const { event, el } = info; const props = event.extendedProps; const popoverEl = document.getElementById('event-popover'); let content = `<h5>${props.full_title}</h5><p><b>日期:</b> ${new Date(event.start).toLocaleDateString('en-CA')}</p><p><b>時間:</b> ${props.startTime}${props.endTime ? ' - ' + props.endTime : ''}</p><p><b>額滿人數:</b> ${props.maxAttendees} 人</p>`; if (props.description) { content += `<p><b>說明:</b> ${props.description}</p>`; } if (props.signups && props.signups.length > 0) { content += '<hr style="margin: 8px 0; border-top: 1px dashed var(--card-border);"><ul>'; props.signups.forEach(s => { content += `<li><strong>${s.position}:</strong> ${s.user}</li>`; }); content += '</ul>'; } else { content += '<p style="margin-top: 8px;">目前尚無人報名</p>'; } popoverEl.innerHTML = content; popoverEl.style.visibility = 'hidden'; popoverEl.style.display = 'block'; const rect = el.getBoundingClientRect(); const popoverHeight = popoverEl.offsetHeight; const popoverWidth = popoverEl.offsetWidth; const margin = 10; let left = rect.left + window.scrollX; if (left + popoverWidth > window.innerWidth - margin) { left = window.innerWidth - popoverWidth - margin; } if (left < margin) { left = margin; } let top; if (rect.bottom + popoverHeight + margin > window.innerHeight) { top = rect.top + window.scrollY - popoverHeight - 5; } else { top = rect.bottom + window.scrollY + 5; } if (top < window.scrollY + margin) { top = window.scrollY + margin; } popoverEl.style.left = `${left}px`; popoverEl.style.top = `${top}px`; popoverEl.style.visibility = 'visible'; }
         function hideEventPopover() { document.getElementById('event-popover').style.display = 'none'; }
-        
         function renderSimpleListView() { const container = document.getElementById('simple-list-view'); document.getElementById('custom-calendar-title').textContent = `${currentDisplayDate.getFullYear()}年 ${currentDisplayDate.getMonth() + 1}月`; const viewStart = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth(), 1); const viewEnd = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth() + 1, 0); viewEnd.setHours(23, 59, 59, 999); const currentMonthEvents = allCalendarEvents.filter(e => new Date(e.start) >= viewStart && new Date(e.start) <= viewEnd).sort((a, b) => new Date(a.start) - new Date(b.start)); if (currentMonthEvents.length === 0) { container.innerHTML = '<div class="table-responsive" style="margin-top:0;"><p style="text-align:center; padding: 20px;">本月尚無活動。</p></div>'; return; } let tableHtml = `<div class="table-responsive" style="margin-top:0;"><table><thead><tr><th>日期</th><th>星期</th><th>標題</th><th>開始</th><th>結束</th><th>上限 (已報)</th><th>報名詳情</th></tr></thead><tbody>`; currentMonthEvents.forEach(event => { const props = event.extendedProps; const startDate = new Date(event.start); const dateString = startDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Taipei' }); const dayOfWeek = startDate.toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', weekday: 'short' }); const signupCount = props.signups ? props.signups.length : 0; let signupsDetail = props.signups && props.signups.length > 0 ? props.signups.map(s => `${s.position}：${s.user}`).join('，') : ''; tableHtml += `<tr data-event-id="${event.id}"><td><span class="status-dot" style="background-color: ${event.backgroundColor};"></span>${dateString.substring(5)}</td><td>${dayOfWeek.replace('週', '')}</td><td class="event-title-cell">${event.title}</td><td>${props.startTime || ''}</td><td>${props.endTime || ''}</td><td>${props.maxAttendees} (${signupCount})</td><td>${signupsDetail}</td></tr>`; }); container.innerHTML = `${tableHtml}</tbody></table></div>`; container.querySelectorAll('tbody tr').forEach(row => { const eventId = row.dataset.eventId; const eventObject = allCalendarEvents.find(e => e.id === eventId); if (!eventObject) return; row.addEventListener('click', (e) => { if (e.target.tagName !== 'BUTTON') { handleEventClick({ event: { id: eventId, ...eventObject }, jsEvent: e }) } }); const titleCell = row.querySelector('.event-title-cell'); if (titleCell) { titleCell.addEventListener('mouseenter', (e) => showEventPopover({ event: { extendedProps: eventObject.extendedProps, start: eventObject.start }, el: e.currentTarget })); titleCell.addEventListener('mouseleave', hideEventPopover); } }); }
-        
         function initializeFullCalendar() { const calendarEl = document.getElementById('calendar'); if (calendar) calendar.destroy(); let options = { headerToolbar: false, initialDate: currentDisplayDate, locale: 'zh-tw', events: allCalendarEvents, datesSet: (dateInfo) => { currentDisplayDate = dateInfo.view.currentStart; document.getElementById('custom-calendar-title').textContent = dateInfo.view.title; if (document.getElementById('simple-list-view').style.display === 'block') { renderSimpleListView(); } }, eventClick: handleEventClick, eventMouseEnter: showEventPopover, eventMouseLeave: hideEventPopover, ...currentCalendarOptions }; calendar = new FullCalendar.Calendar(calendarEl, options); calendar.render(); }
         async function setupCalendarTab(forceRefresh = false) { if (!forceRefresh && allCalendarEvents.length > 0) { if (calendar) { calendar.refetchEvents(); } else { initializeFullCalendar(); } return; } showLoading(); try { const response = await callAppsScript('getEventsAndSignups'); allCalendarEvents = response.data; if(response.version) { document.getElementById('backend-version').textContent = response.version; } if (!document.getElementById('custom-prev-btn')._isInitialized) { document.getElementById('custom-prev-btn').addEventListener('click', () => calendar.prev()); document.getElementById('custom-next-btn').addEventListener('click', () => calendar.next()); document.getElementById('custom-today-btn').addEventListener('click', () => calendar.today()); const fullViewBtn = document.getElementById('show-full-view-btn'); const simpleViewBtn = document.getElementById('show-simple-view-btn'); fullViewBtn.addEventListener('click', () => { document.getElementById('simple-list-view').style.display = 'none'; document.getElementById('full-calendar-view').style.display = 'block'; fullViewBtn.classList.add('active'); simpleViewBtn.classList.remove('active'); currentCalendarOptions = { height: isMobile ? 'auto' : undefined, aspectRatio: isMobile ? 0.8 : 1.35 }; initializeFullCalendar(); calendar.updateSize(); }); simpleViewBtn.addEventListener('click', () => { document.getElementById('full-calendar-view').style.display = 'none'; document.getElementById('simple-list-view').style.display = 'block'; simpleViewBtn.classList.add('active'); fullViewBtn.classList.remove('active'); renderSimpleListView(); }); document.getElementById('custom-prev-btn')._isInitialized = true; } initializeFullCalendar(); if (document.getElementById('simple-list-view').style.display === 'block') { renderSimpleListView(); } else { if (isMobile) { document.getElementById('show-simple-view-btn').click(); } else { document.getElementById('show-full-view-btn').click(); } } } catch (error) { Swal.fire('載入失敗', error.message, 'error'); } finally { hideLoading(); } }
         
-        function renderMySignupsTable(signups) {
-            console.log('renderMySignupsTable: Received signups data for rendering:', signups); // Debug: Log data received for rendering
-            const resultDiv = document.getElementById('my-signups-result'); const actionsContainer = document.getElementById('query-actions-container');
-            resultDiv.innerHTML = ''; actionsContainer.style.display = 'none';
-            if (!signups || signups.length === 0) { Swal.fire({ icon: 'info', title: '查無資料', text: '在您指定的條件下，找不到相關的報名紀錄。' }); lastQuery.data = []; return; }
-            lastQuery.data = signups;
-            let tableHtml = `<table class="all-signups-table"><thead><tr><th>活動日期</th><th>星期</th><th>活動名稱</th><th>開始時間</th><th>結束時間</th><th>崗位</th><th>姓名</th><th>報名時間</th><th>操作</th></tr></thead><tbody>`;
-            signups.forEach(s => {
-                tableHtml += `<tr><td>${s.eventDate || ''}</td><td>${s.eventDayOfWeek || ''}</td><td>${s.eventTitle || ''}</td><td>${s.startTime || ''}</td><td>${s.endTime || ''}</td><td>${s.position || ''}</td><td>${s.user || ''}</td><td>${s.timestamp || ''}</td>
-                              <td style="display: flex; gap: 8px; white-space: nowrap;">
-                                <button class="btn btn-sm" style="background-color: #ffc107; color: #212529;" onclick='promptToModifySignup(${JSON.stringify(s).replace(/'/g, "\\'")})'>修改</button>
-                                <button class="btn btn-danger btn-sm" onclick='promptToDeleteSignup(${JSON.stringify(s).replace(/'/g, "\\'")})'>刪除</button>
-                              </td></tr>`;
-            });
-            resultDiv.innerHTML = tableHtml + '</tbody></table>'; actionsContainer.style.display = 'flex';
-        }
-
-        async function promptToModifySignup(signup) {
-            const eventDetails = allCalendarEvents.find(e => e.id === signup.eventId);
-            if (!eventDetails) { return Swal.fire('錯誤', '找不到此報名的相關活動資訊，無法修改。', 'error'); }
-            const allPositions = eventDetails.extendedProps.positions;
-            if (!allPositions || allPositions.length === 0) { return Swal.fire('錯誤', '此活動沒有可用的崗位列表。', 'error'); }
-            let optionsHtml = allPositions.map(pos => `<option value="${pos}" ${pos === signup.position ? 'selected' : ''}>${pos}</option>`).join('');
-            const { value: newPosition } = await Swal.fire({
-                title: '修改報名崗位',
-                html: `
-                    <div style="text-align: left; margin: 1em 0; line-height: 1.8;">
-                        <p><strong>活動:</strong> ${signup.eventTitle}</p>
-                        <p><strong>日期:</strong> ${signup.eventDate}</p>
-                        <p><strong>時間:</strong> ${eventDetails.extendedProps.startTime || ''}${eventDetails.extendedProps.endTime ? ' - ' + eventDetails.extendedProps.endTime : ''}</p>
-                        <p><strong>姓名:</strong> ${signup.user}</p>
-                        <hr style="margin: 1rem 0; height: 1px; background: #ddd; border: none;">
-                        <p style="margin-top: 1em;"><strong>修改崗位為:</strong></p>
-                        <select id="swal-position-select" class="swal2-select" style="width: 100%; max-width: 300px; margin-top: 0.5em;">${optionsHtml}</select>
-                    </div>`,
-                width: isMobile ? '90vw' : '500px',
-                focusConfirm: false, showCancelButton: true, confirmButtonText: '確認修改', cancelButtonText: '取消',
-                preConfirm: () => document.getElementById('swal-position-select').value
-            });
-            if (newPosition && newPosition !== signup.position) {
-                showLoading();
-                try {
-                    const response = await callAppsScript('modifySignup', { signupId: signup.signupId, newPosition: newPosition });
-                    await Swal.fire('修改成功', response.data.message, 'success');
-                    executeUnifiedSignupQuery(lastQuery.params.searchText, lastQuery.params.startDateStr, lastQuery.params.endDateStr);
-                    setupCalendarTab(true);
-                } catch (e) { Swal.fire('修改失敗', e.message, 'error'); } 
-                finally { hideLoading(); }
-            }
-        }
-
-        async function executeUnifiedSignupQuery(searchText, startDateStr, endDateStr) { 
-            console.log('executeUnifiedSignupQuery: Called with searchText:', searchText, 'startDateStr:', startDateStr, 'endDateStr:', endDateStr); // Debug: Log input parameters
-            showLoading(); try { 
-                const response = await callAppsScript('getUnifiedSignups', { searchText, startDateStr, endDateStr }); 
-                console.log('executeUnifiedSignupQuery: Backend response received:', response); // Debug: Log raw backend response
-                renderMySignupsTable(response.data); 
-            } catch(e) { Swal.fire('查詢失敗', e.message, 'error'); } finally { hideLoading(); } }
+        function renderMySignupsTable(signups) { const resultDiv = document.getElementById('my-signups-result'); const actionsContainer = document.getElementById('query-actions-container'); resultDiv.innerHTML = ''; actionsContainer.style.display = 'none'; if (!signups || signups.length === 0) { Swal.fire({ icon: 'info', title: '查無資料', text: '在您指定的條件下，找不到相關的報名紀錄。' }); lastQuery.data = []; return; } lastQuery.data = signups; let tableHtml = `<table class="all-signups-table"><thead><tr><th>活動日期</th><th>星期</th><th>活動名稱</th><th>開始時間</th><th>結束時間</th><th>崗位</th><th>姓名</th><th>報名時間</th><th>操作</th></tr></thead><tbody>`; signups.forEach(s => { tableHtml += `<tr><td>${s.eventDate || ''}</td><td>${s.eventDayOfWeek || ''}</td><td>${s.eventTitle || ''}</td><td>${s.startTime || ''}</td><td>${s.endTime || ''}</td><td>${s.position || ''}</td><td>${s.user || ''}</td><td>${s.timestamp || ''}</td><td style="display: flex; gap: 8px; white-space: nowrap;"><button class="btn btn-sm" style="background-color: #ffc107; color: #212529;" onclick='promptToModifySignup(${JSON.stringify(s).replace(/'/g, "\\'")})'>修改</button><button class="btn btn-danger btn-sm" onclick='promptToDeleteSignup(${JSON.stringify(s).replace(/'/g, "\\'")})'>刪除</button></td></tr>`; }); resultDiv.innerHTML = tableHtml + '</tbody></table>'; actionsContainer.style.display = 'flex'; }
+        async function promptToModifySignup(signup) { const eventDetails = allCalendarEvents.find(e => e.id === signup.eventId); if (!eventDetails) { return Swal.fire('錯誤', '找不到此報名的相關活動資訊，無法修改。', 'error'); } const allPositions = eventDetails.extendedProps.positions; if (!allPositions || allPositions.length === 0) { return Swal.fire('錯誤', '此活動沒有可用的崗位列表。', 'error'); } let optionsHtml = allPositions.map(pos => `<option value="${pos}" ${pos === signup.position ? 'selected' : ''}>${pos}</option>`).join(''); const { value: newPosition } = await Swal.fire({ title: '修改報名崗位', html: ` <div style="text-align: left; margin: 1em 0; line-height: 1.8;"><p><strong>活動:</strong> ${signup.eventTitle}</p><p><strong>日期:</strong> ${signup.eventDate}</p><p><strong>時間:</strong> ${eventDetails.extendedProps.startTime || ''}${eventDetails.extendedProps.endTime ? ' - ' + eventDetails.extendedProps.endTime : ''}</p><p><strong>姓名:</strong> ${signup.user}</p><hr style="margin: 1rem 0; height: 1px; background: #ddd; border: none;"><p style="margin-top: 1em;"><strong>修改崗位為:</strong></p><select id="swal-position-select" class="swal2-select" style="width: 100%; max-width: 300px; margin-top: 0.5em;">${optionsHtml}</select></div>`, width: isMobile ? '90vw' : '500px', focusConfirm: false, showCancelButton: true, confirmButtonText: '確認修改', cancelButtonText: '取消', preConfirm: () => document.getElementById('swal-position-select').value }); if (newPosition && newPosition !== signup.position) { showLoading(); try { const response = await callAppsScript('modifySignup', { signupId: signup.signupId, newPosition: newPosition }); await Swal.fire('修改成功', response.data.message, 'success'); executeUnifiedSignupQuery(lastQuery.params.searchText, lastQuery.params.startDateStr, lastQuery.params.endDateStr); setupCalendarTab(true); } catch (e) { Swal.fire('修改失敗', e.message, 'error'); } finally { hideLoading(); } } }
+        async function executeUnifiedSignupQuery(searchText, startDateStr, endDateStr) { showLoading(); try { const response = await callAppsScript('getUnifiedSignups', { searchText, startDateStr, endDateStr }); renderMySignupsTable(response.data); } catch(e) { Swal.fire('查詢失敗', e.message, 'error'); } finally { hideLoading(); } }
         async function promptToDeleteSignup(signup) { const { value: password } = await Swal.fire({ title: '確定要刪除此筆報名嗎？', html: `<div style="text-align: left; margin: 1em auto; background: #f8f9fa; border-left: 4px solid #e74c3c; padding: 1em; border-radius: 4px; width: 90%;"><p><strong>活動日期:</strong> ${signup.eventDate || 'N/A'}</p><p><strong>活動名稱:</strong> ${signup.eventTitle || 'N/A'}</p><p><strong>報名人員:</strong> ${signup.user || 'N/A'}</p><p><strong>報名崗位:</strong> ${signup.position || 'N/A'}</p><p><strong>報名時間:</strong> ${signup.timestamp || 'N/A'}</p></div><div style="text-align: center; margin-top: 1.5em;"><p style="margin-bottom: 0.5em;">請輸入密碼以確認刪除：</p><input type="password" id="password-input" class="swal2-input" placeholder="請輸入密碼" style="width: 90%; margin: 0 auto;"></div>`, icon: 'warning', showCancelButton: true, confirmButtonText: '確認刪除', cancelButtonText: '取消', preConfirm: () => { const pw = document.getElementById('password-input').value; if (pw !== '0425') { Swal.showValidationMessage('密碼錯誤！'); return false; } return pw; } }); if (password) { showLoading(); try { const response = await callAppsScript('removeSignup', { eventId: signup.eventId, userName: signup.user }); await Swal.fire('刪除成功', response.data.message, 'success'); if (lastQuery.type === 'unified') { await executeUnifiedSignupQuery(lastQuery.params.searchText, lastQuery.params.startDateStr, lastQuery.params.endDateStr); } setupCalendarTab(true); } catch(e) { Swal.fire('刪除失敗', e.message, 'error'); } finally { hideLoading(); } } }
         async function generateStatsReport() { showLoading(); const detailsContainer = document.getElementById('stats-details-container'); detailsContainer.innerHTML = ''; try { const response = await callAppsScript('getStatsData', { startDateStr: document.getElementById('stats-start-date').value, endDateStr: document.getElementById('stats-end-date').value }); const data = response.data; lastStatsData = data; const ctx = document.getElementById('stats-chart').getContext('2d'); if (statsChart) statsChart.destroy(); if (!data || data.labels.length === 0) { document.getElementById('stats-chart').style.display = 'none'; detailsContainer.innerHTML = '<p style="text-align:center; padding: 20px;">在選定的日期範圍内沒有任何報名記錄可供統計。</p>'; Swal.fire('提示', '在選定的日期範圍内沒有任何報名記錄可供統計。', 'info'); return; } document.getElementById('stats-chart').style.display = 'block'; const backgroundColors = data.labels.map(() => `rgba(${Math.floor(Math.random()*200)+50},${Math.floor(Math.random()*200)+50},${Math.floor(Math.random()*200)+50},0.8)`); const chartLabels = data.labels.map(label => { const parts = label.match(/(.*?)\s*\((.*?)\)/); return (parts && parts.length === 3) ? (isMobile ? parts[1].trim() : [parts[1].trim(), `(${parts[2]})`]) : label; }); const chartOptions = { responsive: true, maintainAspectRatio: false, backgroundColor: 'white', plugins: { datalabels: { anchor: 'end', align: 'top', offset: 4, color: '#444', font: { weight: 'bold', size: 14 } }, tooltip: { callbacks: { title: (items) => data.fullDetails[items[0].dataIndex].eventInfo.title, label: (item) => { const d = data.fullDetails[item.dataIndex]; let l = [`日期: ${d.eventInfo.date}`, `時間: ${d.eventInfo.startTime}${d.eventInfo.endTime ? ' - ' + d.eventInfo.endTime : ''}`, `已報名: ${item.raw} / ${d.eventInfo.maxAttendees} 人`, '--- 崗位人員 ---']; d.signups.forEach(s => l.push(`${s.position}: ${s.user}`)); return l; } } } }, scales: { x: { ticks: { autoSkip: false } }, y: { grace: '10%' } }, layout: { padding: { top: 30, bottom: isMobile ? 80 : 40 } } }; if (isMobile) { chartOptions.scales.x.ticks.maxRotation = 45; chartOptions.scales.x.ticks.minRotation = 45; } statsChart = new Chart(ctx, { type: 'bar', data: { labels: chartLabels, datasets: [{ label: '報名人數', data: data.data, backgroundColor: backgroundColors, borderColor: backgroundColors.map(c => c.replace('0.8', '1')), borderWidth: 1 }] }, options: chartOptions }); let detailsHtml = '<h2>詳細活動報名資訊</h2>'; data.fullDetails.forEach((eventData, index) => { const dayOfWeekText = eventData.eventInfo.dayOfWeek ? `(${eventData.eventInfo.dayOfWeek})` : ''; detailsHtml += `<div class="stats-event-block"><h3>${index + 1}. ${eventData.eventInfo.title}</h3><p><strong>日期:</strong> ${eventData.eventInfo.date} ${dayOfWeekText}</p><p><strong>時間:</strong> ${eventData.eventInfo.startTime}${eventData.eventInfo.endTime ? ' - ' + eventData.eventInfo.endTime : ''}</p><p><strong>報名狀況:</strong> ${eventData.signups.length} / ${eventData.eventInfo.maxAttendees}</p>`; if (eventData.signups && eventData.signups.length > 0) { detailsHtml += '<ul>'; eventData.signups.forEach(signup => { detailsHtml += `<li><strong>${signup.position}:</strong> ${signup.user}</li>`; }); detailsHtml += '</ul>'; } else { detailsHtml += '<p>無人報名</p>'; } detailsHtml += '</div>'; }); detailsContainer.innerHTML = detailsHtml; setTimeout(() => { const canvas = document.getElementById('stats-chart'); if (canvas) canvas.style.backgroundColor = 'white'; }, 100); } catch(e) { Swal.fire('產生失敗', e.message, 'error'); } finally { hideLoading(); } }
-        async function exportCurrentQueryResultToExcel() { if (!lastQuery.type || !lastQuery.params) { return Swal.fire('錯誤', '沒有可匯出的查詢條件。', 'error'); } showLoading(); try { const { searchText, startDateStr, endDateStr } = lastQuery.params; const response = await callAppsScript('getUnifiedSignups', { searchText, startDateStr, endDateStr }); const dataToExport = response.data; if (!dataToExport || dataToExport.length === 0) { hideLoading(); return Swal.fire('無資料', '在選定的條件下沒有任何報名記錄可供匯出。', 'info'); } const dateRangeText = (startDateStr && endDateStr) ? `${startDateStr} - ${endDateStr}` : '所有日期'; const titleSuffix = searchText ? ` (關鍵字: "${searchText}")` : ''; const title = `AV放送立願報名記錄 (${dateRangeText})${titleSuffix}`; const generateTime = new Date().toLocaleString('zh-TW'); let htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>table{border-collapse:collapse;width:100%;font-family:'Microsoft JhengHei',sans-serif}td,th{border:1px solid #ddd;text-align:left;padding:8px}th{background-color:#f2f2f2}.title-row{background-color:#FF8C42;color:white;font-weight:bold;font-size:16px;text-align:center}</style></head><body><table><tr><td colspan="5" class="title-row">${title}</td></tr><tr><td colspan="5">報表生成時間：${generateTime}</td></tr><tr><th>活動日期</th><th>活動名稱</th><th>崗位</th><th>報名者</th><th>報名時間</th></tr>`; dataToExport.forEach(row => { htmlContent += `<tr><td>${row.eventDate||''}</td><td>${row.eventTitle||''}</td><td>${row.position||''}</td><td>${row.user||''}</td><td>'${row.timestamp||''}'</td></tr>`; }); htmlContent += '</table></body></html>'; const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' }); const fileName = `AV立願報名記錄_${new Date().toISOString().slice(0,10)}.xls`; const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = fileName; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(link.href); } catch (e) { Swal.fire('匯出失败', e.message, 'error'); } finally { hideLoading(); } }
+        async function generatePerformanceReport() {
+            showLoading();
+            const detailsContainer = document.getElementById('performance-details-container');
+            const canvas = document.getElementById('performance-chart');
+            const ctx = canvas.getContext('2d');
+
+            try {
+                const startDateStr = document.getElementById('performance-start-date').value;
+                const endDateStr = document.getElementById('performance-end-date').value;
+                const response = await callAppsScript('getUnifiedSignups', { searchText: '', startDateStr, endDateStr });
+                const signups = response.data;
+                
+                if (performanceChart) performanceChart.destroy();
+                detailsContainer.innerHTML = '';
+
+                if (!signups || signups.length === 0) {
+                    canvas.style.display = 'none';
+                    Swal.fire('無資料', '在選定的日期範圍內沒有任何報名記錄可供統計。', 'info');
+                    return;
+                }
+                canvas.style.display = 'block';
+
+                const signupCounts = {};
+                const signupsByUser = {};
+                signups.forEach(signup => {
+                    if (!signup.user) return;
+                    signupCounts[signup.user] = (signupCounts[signup.user] || 0) + 1;
+                    if (!signupsByUser[signup.user]) {
+                        signupsByUser[signup.user] = [];
+                    }
+                    signupsByUser[signup.user].push({
+                        eventDate: signup.eventDate,
+                        eventTitle: signup.eventTitle,
+                        position: signup.position
+                    });
+                });
+
+                const sortedData = Object.entries(signupCounts).sort(([, a], [, b]) => b - a);
+                const labels = sortedData.map(([user]) => user);
+                const data = sortedData.map(([, count]) => count);
+                const backgroundColors = data.map(() => `rgba(${Math.floor(Math.random()*155)+100},${Math.floor(Math.random()*155)+100},${Math.floor(Math.random()*155)+100},0.8)`);
+                
+                performanceChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: '立願次數',
+                            data: data,
+                            backgroundColor: backgroundColors,
+                            borderColor: backgroundColors.map(c => c.replace('0.8', '1')),
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            datalabels: { anchor: 'end', align: 'right', offset: 8, color: '#333', font: { weight: 'bold', size: 14 } }
+                        },
+                        scales: {
+                            x: { beginAtZero: true, ticks: { stepSize: 1 } },
+                            y: { ticks: { autoSkip: false } }
+                        },
+                        layout: { padding: { left: 10, right: 40, top: 10, bottom: 10 } }
+                    }
+                });
+
+                let detailsHtml = '<h2>個人立願詳細記錄</h2>';
+                sortedData.forEach(([user, count]) => {
+                    detailsHtml += `<div class="stats-event-block"><h3>${user} - 共 ${count} 次</h3>`;
+                    const userSignups = signupsByUser[user] || [];
+                    userSignups.sort((a, b) => new Date(a.eventDate) - new Date(b.eventDate));
+                    if (userSignups.length > 0) {
+                        detailsHtml += '<ul>';
+                        userSignups.forEach(s => {
+                            detailsHtml += `<li><strong>${s.eventDate}:</strong> ${s.eventTitle} (${s.position})</li>`;
+                        });
+                        detailsHtml += '</ul>';
+                    }
+                    detailsHtml += `</div>`;
+                });
+                detailsContainer.innerHTML = detailsHtml;
+
+            } catch(e) {
+                Swal.fire('產生失敗', e.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        async function exportCurrentQueryResultToExcel() { if (!lastQuery.type || !lastQuery.params) { return Swal.fire('錯誤', '沒有可匯出的查詢條件。', 'error'); } showLoading(); try { const { searchText, startDateStr, endDateStr } = lastQuery.params; const response = await callAppsScript('getUnifiedSignups', { searchText, startDateStr, endDateStr }); const dataToExport = response.data; if (!dataToExport || dataToExport.length === 0) { hideLoading(); return Swal.fire('無資料', '在選定的條件下沒有任何報名記錄可供匯出。', 'info'); } const dateRangeText = (startDateStr && endDateStr) ? `${startDateStr} - ${endDateStr}` : '所有日期'; const titleSuffix = searchText ? ` (關鍵字: "${searchText}")` : ''; const title = `AV放送立願報名記錄 (${dateRangeText})${titleSuffix}`; const generateTime = new Date().toLocaleString('zh-TW'); let htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>table{border-collapse:collapse;width:100%;font-family:'Microsoft JhengHei',sans-serif}td,th{border:1px solid #ddd;text-align:left;padding:8px}th{background-color:#f2f2f2}.title-row{background-color:#FF8C42;color:white;font-weight:bold;font-size:16px;text-align:center}
+/* --- MOBILE DATE INPUT FIX (追加) --- */
+@media (max-width: 768px) {
+  .inline-form {
+    flex-direction: column;
+    align-items: center;
+  }
+  .inline-form > .form-group,
+  .inline-form > .btn {
+    width: 92vw;
+    max-width: 480px;
+  }
+  .inline-form .form-group > input,
+  .inline-form .form-group > select {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .inline-form input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+
+/* --- HOTFIX: 修正手機超出容器（覆寫前一版 92vw 設定） --- */
+@media (max-width: 768px) {
+  .inline-form { 
+    align-items: stretch !important; 
+    width: 100% !important;
+  }
+  .inline-form > .form-group,
+  .inline-form > .btn {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  .inline-form .form-group > input,
+  .inline-form .form-group > select {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+  .inline-form input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+</style></head><body><table><tr><td colspan="5" class="title-row">${title}</td></tr><tr><td colspan="5">報表生成時間：${generateTime}</td></tr><tr><th>活動日期</th><th>活動名稱</th><th>崗位</th><th>報名者</th><th>報名時間</th></tr>`; dataToExport.forEach(row => { htmlContent += `<tr><td>${row.eventDate||''}</td><td>${row.eventTitle||''}</td><td>${row.position||''}</td><td>${row.user||''}</td><td>'${row.timestamp||''}'</td></tr>`; }); htmlContent += '</table></body></html>'; const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' }); const fileName = `AV立願報名記錄_${new Date().toISOString().slice(0,10)}.xls`; const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = fileName; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(link.href); } catch (e) { Swal.fire('匯出失败', e.message, 'error'); } finally { hideLoading(); } }
+
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('frontend-version').textContent = FRONTEND_VERSION;
-            window.scrollTo(0, 0); Chart.register(ChartDataLabels); const marqueeUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTRBfLLti6pcfbynd6kjfZT6Gp5trB8PdXvikHoTNMgLsDzDYsGYmexOqEw6ZkrIedyeAd6DE0bHpso/pub?gid=0&single=true&output=csv'; let marqueeMessages = [], marqueeIndex = 0; const marqueeTextEl = document.getElementById('marquee-text'); function parseCsvToRows(csvString) { const lines = csvString.split(/\r?\n/); return lines.map(line => { const values = []; let inQuote = false; let currentField = ''; for (let i = 0; i < line.length; i++) { const char = line[i]; if (char === '"' && (i + 1 < line.length && line[i+1] === '"')) { currentField += '"'; i++; } else if (char === '"') { inQuote = !inQuote; } else if (char === ',' && !inQuote) { values.push(currentField.trim()); currentField = ''; } else { currentField += char; } } values.push(currentField.trim()); return values; }); } async function setupMarquee() { if (!marqueeTextEl) return; try { const response = await fetch(marqueeUrl); if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`); const csvText = await response.text(); const parsedData = parseCsvToRows(csvText); parsedData.shift(); const today = new Date(); today.setHours(0, 0, 0, 0); marqueeMessages = parsedData.map(row => { const dateStr = row[0], messageTitle = row[1], messageContent = row[2]; if (dateStr && messageTitle && messageContent) { const messageDate = new Date(dateStr.replace(/-/g, '/')); messageDate.setHours(0, 0, 0, 0); if (!isNaN(messageDate.getTime()) && messageDate >= today) { return `${dateStr}：${messageTitle} - ${messageContent}`; } } return null; }).filter(Boolean); if (marqueeMessages.length > 0) { cycleMarquee(); setInterval(cycleMarquee, 5000); } else { marqueeTextEl.textContent = '目前沒有最新公告'; marqueeTextEl.style.animation = 'none'; } } catch (error) { console.error('Failed to load marquee data:', error); if (marqueeTextEl) marqueeTextEl.textContent = '無法載入最新公告'; marqueeTextEl.style.animation = 'none'; } } function cycleMarquee() { if (marqueeMessages.length === 0 || !marqueeTextEl) return; const nextMessage = marqueeMessages[marqueeIndex]; if (isMobile) { marqueeTextEl.style.opacity = 0; setTimeout(() => { marqueeTextEl.textContent = nextMessage; marqueeTextEl.style.opacity = 1; }, 400); } else { marqueeTextEl.style.animation = 'none'; void marqueeTextEl.offsetWidth; marqueeTextEl.textContent = nextMessage; marqueeTextEl.style.animation = 'marquee-scroll 5s ease-in-out'; } marqueeIndex = (marqueeIndex + 1) % marqueeMessages.length; } setupMarquee(); function setupMarqueeToggle() { const toggleBtn = document.getElementById('toggle-marquee-btn'), marqueeContainer = document.getElementById('marquee-container'); if (!toggleBtn || !marqueeContainer || !isMobile) { if (toggleBtn) toggleBtn.style.display = 'none'; return; } let isVisible = localStorage.getItem('av_marquee_visible') !== 'false'; const applyVisibility = () => { if (isVisible) { marqueeContainer.style.display = 'flex'; marqueeContainer.style.maxHeight = '200px'; marqueeContainer.style.opacity = '1'; marqueeContainer.style.marginBottom = '20px'; } else { marqueeContainer.style.maxHeight = '0'; marqueeContainer.style.opacity = '0'; marqueeContainer.style.marginBottom = '0'; setTimeout(() => { if (!isVisible) marqueeContainer.style.display = 'none'; }, 400); } }; applyVisibility(); toggleBtn.addEventListener('click', (e) => { e.stopPropagation(); isVisible = !isVisible; localStorage.setItem('av_marquee_visible', isVisible); applyVisibility(); }); } setupMarqueeToggle(); 
+            window.scrollTo(0, 0); 
+            Chart.register(ChartDataLabels); 
+            
+            let marqueeMessages = [], marqueeIndex = 0;
+            const marqueeTextEl = document.getElementById('marquee-text');
+
+            async function setupMarquee() {
+                if (!marqueeTextEl) return;
+                try {
+                    const response = await callAppsScript('getNewsAnnouncements');
+                    marqueeMessages = response.data;
+                    if (marqueeMessages && marqueeMessages.length > 0) {
+                        cycleMarquee();
+                        setInterval(cycleMarquee, 5000);
+                    } else {
+                        marqueeTextEl.textContent = '目前沒有最新公告';
+                        marqueeTextEl.style.animation = 'none';
+                    }
+                } catch (error) {
+                    console.error('從後端載入公告失敗:', error);
+                    if (marqueeTextEl) {
+                        marqueeTextEl.textContent = '無法載入最新公告';
+                        marqueeTextEl.style.animation = 'none';
+                    }
+                }
+            }
+
+            function cycleMarquee() {
+                if (marqueeMessages.length === 0 || !marqueeTextEl) return;
+                const nextMessage = marqueeMessages[marqueeIndex];
+                if (isMobile) {
+                    marqueeTextEl.style.opacity = 0;
+                    setTimeout(() => {
+                        marqueeTextEl.textContent = nextMessage;
+                        marqueeTextEl.style.opacity = 1;
+                    }, 400);
+                } else {
+                    marqueeTextEl.style.animation = 'none';
+                    void marqueeTextEl.offsetWidth;
+                    marqueeTextEl.textContent = nextMessage;
+                    marqueeTextEl.style.animation = 'marquee-scroll 5s ease-in-out';
+                }
+                marqueeIndex = (marqueeIndex + 1) % marqueeMessages.length;
+            }
+            
+            setupMarquee();
+
+            function setupMarqueeToggle() {
+                const toggleBtn = document.getElementById('toggle-marquee-btn');
+                const marqueeContainer = document.getElementById('marquee-container');
+                if (!toggleBtn || !marqueeContainer || !isMobile) {
+                    if (toggleBtn) toggleBtn.style.display = 'none';
+                    return;
+                }
+                let isVisible = localStorage.getItem('av_marquee_visible') !== 'false';
+                const applyVisibility = () => {
+                    if (isVisible) {
+                        marqueeContainer.style.display = 'flex';
+                        marqueeContainer.style.maxHeight = '200px';
+                        marqueeContainer.style.opacity = '1';
+                        marqueeContainer.style.marginBottom = '20px';
+                    } else {
+                        marqueeContainer.style.maxHeight = '0';
+                        marqueeContainer.style.opacity = '0';
+                        marqueeContainer.style.marginBottom = '0';
+                        setTimeout(() => {
+                            if (!isVisible) marqueeContainer.style.display = 'none';
+                        }, 400);
+                    }
+                };
+                applyVisibility();
+                toggleBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    isVisible = !isVisible;
+                    localStorage.setItem('av_marquee_visible', isVisible);
+                    applyVisibility();
+                });
+            }
+            setupMarqueeToggle();
+
             const getMonthDateRange = () => { const today = new Date(); const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1); const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0); return { firstDayStr: firstDayOfMonth.toLocaleDateString('en-CA'), lastDayStr: lastDayOfMonth.toLocaleDateString('en-CA') }; };
             const { firstDayStr, lastDayStr } = getMonthDateRange();
-            ['search-start-date', 'stats-start-date', 'export-start-date'].forEach(id => { const el = document.getElementById(id); if(el) el.value = firstDayStr; });
-            ['search-end-date', 'stats-end-date', 'export-end-date'].forEach(id => { const el = document.getElementById(id); if(el) el.value = lastDayStr; });
+            ['search-start-date', 'stats-start-date', 'export-start-date', 'performance-start-date'].forEach(id => { const el = document.getElementById(id); if(el) el.value = firstDayStr; });
+            ['search-end-date', 'stats-end-date', 'export-end-date', 'performance-end-date'].forEach(id => { const el = document.getElementById(id); if(el) el.value = lastDayStr; });
+            
             setupCalendarTab(true); 
+
             document.getElementById('unified-search-btn').addEventListener('click', () => { const searchText = document.getElementById('universal-search-input').value.trim(); const startDateStr = document.getElementById('search-start-date').value; const endDateStr = document.getElementById('search-end-date').value; if (!startDateStr || !endDateStr) { return Swal.fire('提示', '請選擇查詢的開始及結束日期。', 'info'); } lastQuery = { type: 'unified', params: { searchText, startDateStr, endDateStr }, data: [] }; executeUnifiedSignupQuery(searchText, startDateStr, endDateStr); }); 
             document.getElementById('clear-search-btn').addEventListener('click', () => { document.getElementById('universal-search-input').value = ''; const { firstDayStr, lastDayStr } = getMonthDateRange(); document.getElementById('search-start-date').value = firstDayStr; document.getElementById('search-end-date').value = lastDayStr; document.getElementById('my-signups-result').innerHTML = ''; document.getElementById('query-actions-container').style.display = 'none'; lastQuery.data = []; }); 
             document.getElementById('generate-stats').addEventListener('click', generateStatsReport); 
-            document.getElementById('export-excel-btn').addEventListener('click', async () => { const startDateStr = document.getElementById('export-start-date').value, endDateStr = document.getElementById('export-end-date').value; if (!startDateStr || !endDateStr) { return Swal.fire('提示', '請選擇匯出的開始及結束日期。', 'info'); } showLoading(); try { const response = await callAppsScript('getUnifiedSignups', { searchText: '', startDateStr, endDateStr }); const dataToExport = response.data; if (!dataToExport || dataToExport.length === 0) { hideLoading(); return Swal.fire('無資料', '在選定的條件下沒有任何報名記錄可供匯出。', 'info'); } const dateRangeText = (startDateStr && endDateStr) ? `${startDateStr} - ${endDateStr}` : '所有日期'; const title = `AV放送立願報名記錄 (${dateRangeText})`; const generateTime = new Date().toLocaleString('zh-TW'); let htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>table{border-collapse:collapse;width:100%;font-family:'Microsoft JhengHei',sans-serif}td,th{border:1px solid #ddd;text-align:left;padding:8px}th{background-color:#f2f2f2}.title-row{background-color:#FF8C42;color:white;font-weight:bold;font-size:16px;text-align:center}</style></head><body><table><tr><td colspan="5" class="title-row">${title}</td></tr><tr><td colspan="5">報表生成時間：${generateTime}</td></tr><tr><th>活動日期</th><th>活動名稱</th><th>崗位</th><th>報名者</th><th>報名時間</th></tr>`; dataToExport.forEach(row => { htmlContent += `<tr><td>${row.eventDate||''}</td><td>${row.eventTitle||''}</td><td>${row.position||''}</td><td>${row.user||''}</td><td>'${row.timestamp||''}'</td></tr>`; }); htmlContent += '</table></body></html>'; const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' }); const fileName = `AV立願報名記錄_${new Date().toISOString().slice(0,10)}.xls`; const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = fileName; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(link.href); } catch (e) { Swal.fire('匯出失敗', e.message, 'error'); } finally { hideLoading(); } }); 
+            document.getElementById('generate-performance-report').addEventListener('click', generatePerformanceReport);
+
+            document.getElementById('export-excel-btn').addEventListener('click', async () => { const startDateStr = document.getElementById('export-start-date').value, endDateStr = document.getElementById('export-end-date').value; if (!startDateStr || !endDateStr) { return Swal.fire('提示', '請選擇匯出的開始及結束日期。', 'info'); } showLoading(); try { const response = await callAppsScript('getUnifiedSignups', { searchText: '', startDateStr, endDateStr }); const dataToExport = response.data; if (!dataToExport || dataToExport.length === 0) { hideLoading(); return Swal.fire('無資料', '在選定的條件下沒有任何報名記錄可供匯出。', 'info'); } const dateRangeText = (startDateStr && endDateStr) ? `${startDateStr} - ${endDateStr}` : '所有日期'; const title = `AV放送立願報名記錄 (${dateRangeText})`; const generateTime = new Date().toLocaleString('zh-TW'); let htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>table{border-collapse:collapse;width:100%;font-family:'Microsoft JhengHei',sans-serif}td,th{border:1px solid #ddd;text-align:left;padding:8px}th{background-color:#f2f2f2}.title-row{background-color:#FF8C42;color:white;font-weight:bold;font-size:16px;text-align:center}
+/* --- MOBILE DATE INPUT FIX (追加) --- */
+@media (max-width: 768px) {
+  .inline-form {
+    flex-direction: column;
+    align-items: center;
+  }
+  .inline-form > .form-group,
+  .inline-form > .btn {
+    width: 92vw;
+    max-width: 480px;
+  }
+  .inline-form .form-group > input,
+  .inline-form .form-group > select {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .inline-form input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+
+/* --- HOTFIX: 修正手機超出容器（覆寫前一版 92vw 設定） --- */
+@media (max-width: 768px) {
+  .inline-form { 
+    align-items: stretch !important; 
+    width: 100% !important;
+  }
+  .inline-form > .form-group,
+  .inline-form > .btn {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  .inline-form .form-group > input,
+  .inline-form .form-group > select {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+  .inline-form input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+</style></head><body><table><tr><td colspan="5" class="title-row">${title}</td></tr><tr><td colspan="5">報表生成時間：${generateTime}</td></tr><tr><th>活動日期</th><th>活動名稱</th><th>崗位</th><th>報名者</th><th>報名時間</th></tr>`; dataToExport.forEach(row => { htmlContent += `<tr><td>${row.eventDate||''}</td><td>${row.eventTitle||''}</td><td>${row.position||''}</td><td>${row.user||''}</td><td>'${row.timestamp||''}'</td></tr>`; }); htmlContent += '</table></body></html>'; const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' }); const fileName = `AV立願報名記錄_${new Date().toISOString().slice(0,10)}.xls`; const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = fileName; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(link.href); } catch (e) { Swal.fire('匯出失敗', e.message, 'error'); } finally { hideLoading(); } }); 
             document.getElementById('export-from-query-btn').addEventListener('click', exportCurrentQueryResultToExcel); 
             const shareToLine = async (type) => { showLoading(); try { const response = await callAppsScript(type); const data = response.data; if (data.status === 'nodata') { Swal.fire('無資料', `${type === 'getSignupsAsTextForToday' ? '今天' : '明天'}沒有任何報名記錄可供分享。`, 'info'); } else if (data.text) { const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(data.text)}`; window.open(lineUrl, '_blank'); } else { throw new Error("後端未回傳有效的文字資料。"); } } catch (e) { Swal.fire('分享失敗', e.message, 'error'); } finally { hideLoading(); } }; document.getElementById('share-today-line-btn').addEventListener('click', () => shareToLine('getSignupsAsTextForToday')); document.getElementById('share-tomorrow-line-btn').addEventListener('click', () => shareToLine('getSignupsAsTextForTomorrow')); 
-            
-            // Refactored shareToClipboard function to be more generic
             const shareToClipboardContent = async (functionToCall, params = {}) => {
                 showLoading();
                 try {
@@ -443,178 +757,111 @@
                     Swal.fire('操作失敗', e.message, 'error');
                 }
             };
-
-            // MODIFIED: Click listener for '分享至剪貼簿' button
             document.getElementById('share-to-clipboard-btn').addEventListener('click', async () => {
-                const today = new Date();
-                const todayStr = today.toLocaleDateString('en-CA'); // YYYY-MM-DD
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                const tomorrowStr = tomorrow.toLocaleDateString('en-CA'); // YYYY-MM-DD
-
                 const { isConfirmed, isDenied, dismiss } = await Swal.fire({
                     title: '選擇要分享的日期',
                     text: '您要分享今天、明天還是指定日期區間的報名資料？',
-                    showDenyButton: true, // Used for "明天"
-                    showCancelButton: true, // Used for "按日期"
-                    showCloseButton: true, // Added: Displays an 'X' button in the top right corner
-                    confirmButtonText: '今天',
-                    denyButtonText: '明天',
-                    cancelButtonText: '按日期', // This will be the "按日期" button
-                    icon: 'question',
-                    // Added custom button styling for "按日期" to make it look like an action button
-                    customClass: {
-                        cancelButton: 'swal2-styled swal2-default-outline' // Mimic default Swal styling but can be customized further
-                    },
-                    buttonsStyling: true // Ensure default styling is applied
+                    showDenyButton: true, showCancelButton: true, showCloseButton: true,
+                    confirmButtonText: '今天', denyButtonText: '明天', cancelButtonText: '按日期',
+                    icon: 'question', customClass: { cancelButton: 'swal2-styled swal2-default-outline' }, buttonsStyling: true
                 });
 
-                if (isConfirmed) { // "今天" button clicked
-                    shareToClipboardContent('getSignupsAsTextForToday'); // No params needed for today/tomorrow as backend calculates them
-                } else if (isDenied) { // "明天" button clicked
-                    shareToClipboardContent('getSignupsAsTextForTomorrow'); // No params needed
-                } else if (dismiss === Swal.DismissReason.cancel) { // "按日期" button clicked
+                if (isConfirmed) { shareToClipboardContent('getSignupsAsTextForToday'); } 
+                else if (isDenied) { shareToClipboardContent('getSignupsAsTextForTomorrow'); } 
+                else if (dismiss === Swal.DismissReason.cancel) {
                     const startDateAdmin = document.getElementById('export-start-date').value;
                     const endDateAdmin = document.getElementById('export-end-date').value;
-
-                    if (!startDateAdmin || !endDateAdmin) {
-                        Swal.fire('提示', '請在上方「開始日期」和「結束日期」輸入框中選擇日期區間。', 'info');
-                        return;
-                    }
-                    if (new Date(startDateAdmin) > new Date(endDateAdmin)) {
-                        Swal.fire('提示', '開始日期不能晚於結束日期。', 'info');
-                        return;
-                    }
-
+                    if (!startDateAdmin || !endDateAdmin) { return Swal.fire('提示', '請在上方「開始日期」和「結束日期」輸入框中選擇日期區間。', 'info'); }
+                    if (new Date(startDateAdmin) > new Date(endDateAdmin)) { return Swal.fire('提示', '開始日期不能晚於結束日期。', 'info'); }
                     shareToClipboardContent('getSignupsAsTextForDateRange', { startDateStr: startDateAdmin, endDateStr: endDateAdmin });
                 }
-                // If user dismisses the dialog by clicking outside or pressing Esc, no action is taken.
             });
-            
-            // MODIFIED: share-query-to-clipboard-btn to add URL at the end
-            document.getElementById('share-query-to-clipboard-btn').addEventListener('click', () => { 
-                if (!lastQuery || !lastQuery.data || lastQuery.data.length === 0) { return Swal.fire('無資料', '沒有可分享的查詢結果。', 'info'); } 
-                const { searchText, startDateStr, endDateStr } = lastQuery.params; 
-                const titleKeyword = searchText ? `，關鍵字：「${searchText}」` : ''; 
-                const title = `【AV放送立願報名查詢結果】\n日期：${startDateStr} ~ ${endDateStr}${titleKeyword}\n----------\n`; 
-                const eventsGroup = {}; 
-                lastQuery.data.forEach(signup => { 
-                    const key = `${signup.eventDate} ${signup.eventTitle}`; 
-                    if (!eventsGroup[key]) { eventsGroup[key] = []; } 
-                    eventsGroup[key].push(`- ${signup.position}: ${signup.user}`); 
-                }); 
-                let shareText = title; 
-                Object.keys(eventsGroup).sort().forEach(eventKey => { 
-                    shareText += `\n【${eventKey}】\n`; 
-                    shareText += eventsGroup[eventKey].join('\n'); 
-                    shareText += '\n'; 
-                }); 
-                shareText += '\n查看最新報名資訊：\nhttps://angewoo.github.io/AVschedule/';
-                Swal.fire({ 
-                    title: '準備分享的內容', 
-                    width: isMobile ? '90vw' : '600px', 
-                    html: `<textarea id="clipboard-textarea" readonly>${shareText}</textarea>`, 
-                    confirmButtonText: '📋 複製內容', 
-                    showCancelButton: true, 
-                    cancelButtonText: '關閉', 
-                    didOpen: () => { 
-                        const textarea = document.getElementById('clipboard-textarea'); 
-                        if (textarea) { 
-                            textarea.style.height = 'auto'; 
-                            textarea.style.height = (textarea.scrollHeight + 5) + 'px'; 
-                            textarea.select(); 
-                        } 
-                    }, 
-                    preConfirm: () => { 
-                        const textToCopy = document.getElementById('clipboard-textarea').value; 
-                        return navigator.clipboard ? navigator.clipboard.writeText(textToCopy).then(() => true).catch(err => { Swal.showValidationMessage(`複製失敗: ${err.message}`); return false; }) : (document.execCommand('copy'), true); 
-                    } 
-                }).then((result) => { 
-                    if (result.isConfirmed) { 
-                        Swal.fire({ icon: 'success', title: '已複製成功！', text: '請手動切換到 LINE 或其他應用程式並貼上內容。', timer: 2500, showConfirmButton: false }); 
-                    } 
-                }); 
-            });
-            
-            document.getElementById('export-stats-pdf-btn').addEventListener('click', async () => { if (!statsChart || !lastStatsData || lastStatsData.labels.length === 0) { return Swal.fire('提示', '請先點擊「產生報表」以生成統計圖表和數據。', 'info'); } const sourceElement = document.getElementById('stats-details-container'); if (!sourceElement || sourceElement.children.length <= 1) { return Swal.fire('提示', '沒有詳細資料可供匯出。', 'info'); } showLoading(); try { const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }); const startDateStr = document.getElementById('stats-start-date').value, endDateStr = document.getElementById('stats-end-date').value; const dateRangeText = `${startDateStr || '所有'} - ${endDateStr || '所有'}`; const docTitle = `AV放送立願統計報表 (${dateRangeText})`; const generateTime = new Date().toLocaleString('zh-TW'); const pdfContentEl = document.createElement('div'); pdfContentEl.style.cssText = "position:absolute;left:-9999px;width:210mm;padding:15mm;background-color:white;font-family:'Microsoft JhengHei','PingFang TC',sans-serif;color:#333;";                 const pdfStyles = `<style>.details-grid{display:flex;flex-wrap:wrap;justify-content:space-between;}.details-grid .stats-event-block{width:48%;border:1px solid #ccc;padding:8px;margin-bottom:10px;page-break-inside:avoid;box-sizing:border-box;}.details-grid h3{font-size:8px;margin:0 0 4px 0;color:#FF8C42;font-weight:bold;}.details-grid p{font-size:6px;margin:1px 0;line-height:1.3;}.details-grid ul{list-style-type:none;padding-left:0;margin:4px 0 0 0;}.details-grid li{background:#f9f9f9;padding:1px 3px;border-radius:2px;margin-bottom:1px;font-size:6px;}</style>`; const titleHtml = `<div style="text-align:center;border-bottom:2px solid #333;padding-bottom:10px;margin-bottom:15px;"><h1 style="font-size:20px;margin:0;color:#FF8C42;">${docTitle}</h1><p style="font-size:10px;margin:5px 0 0 0;">報表生成時間：${generateTime}</p></div>`; const chartImageData = statsChart.canvas.toDataURL('image/png', 1.0); const chartHtml = `<div style="text-align:center;margin-bottom:15px;page-break-inside:avoid;"><img src="${chartImageData}" style="width:100%;max-width:180mm;"/></div>`; const detailsTitle = sourceElement.querySelector('h2') ? sourceElement.querySelector('h2').outerHTML : ''; let eventBlocksHtml = ''; sourceElement.querySelectorAll('.stats-event-block').forEach(block => { eventBlocksHtml += block.outerHTML; }); const detailsGridHtml = `<div class="details-grid">${eventBlocksHtml}</div>`; pdfContentEl.innerHTML = pdfStyles + titleHtml + chartHtml + detailsTitle + detailsGridHtml; document.body.appendChild(pdfContentEl); const canvas = await html2canvas(pdfContentEl, { scale: 2, useCORS: true }); const imgData = canvas.toDataURL('image/png'); const pdfWidth = pdf.internal.pageSize.getWidth(), pdfHeight = pdf.internal.pageSize.getHeight(); const imgProps = pdf.getImageProperties(imgData); const imgWidth = pdfWidth, imgHeight = (imgProps.height * imgWidth) / imgProps.width; let heightLeft = imgHeight, position = 0; pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight); heightLeft -= pdfHeight; while (heightLeft > 0) { position -= pdfHeight; pdf.addPage(); pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight); heightLeft -= pdfHeight; } pdf.save(`AV立願統計報表_${startDateStr}_${endDateStr}.pdf`); document.body.removeChild(pdfContentEl); } catch (e) { console.error("PDF generation failed:", e); Swal.fire('PDF 匯出失敗', `前端生成PDF時發生錯誤: ${e.message}`, 'error'); } finally { hideLoading(); } });
-            
-            // --- UPDATED: Document Download Logic with flexible actions ---
+            document.getElementById('share-query-to-clipboard-btn').addEventListener('click', () => { if (!lastQuery || !lastQuery.data || lastQuery.data.length === 0) { return Swal.fire('無資料', '沒有可分享的查詢結果。', 'info'); } const { searchText, startDateStr, endDateStr } = lastQuery.params; const titleKeyword = searchText ? `，關鍵字：「${searchText}」` : ''; const title = `【AV放送立願報名查詢結果】\n日期：${startDateStr} ~ ${endDateStr}${titleKeyword}\n----------\n`; const eventsGroup = {}; lastQuery.data.forEach(signup => { const key = `${signup.eventDate} ${signup.eventTitle}`; if (!eventsGroup[key]) { eventsGroup[key] = []; } eventsGroup[key].push(`- ${signup.position}: ${signup.user}`); }); let shareText = title; Object.keys(eventsGroup).sort().forEach(eventKey => { shareText += `\n【${eventKey}】\n`; shareText += eventsGroup[eventKey].join('\n'); shareText += '\n'; }); shareText += '\n查看最新報名資訊：\nhttps://angewoo.github.io/AVschedule/'; Swal.fire({ title: '準備分享的內容', width: isMobile ? '90vw' : '600px', html: `<textarea id="clipboard-textarea" readonly>${shareText}</textarea>`, confirmButtonText: '📋 複製內容', showCancelButton: true, cancelButtonText: '關閉', didOpen: () => { const textarea = document.getElementById('clipboard-textarea'); if (textarea) { textarea.style.height = 'auto'; textarea.style.height = (textarea.scrollHeight + 5) + 'px'; textarea.select(); } }, preConfirm: () => { const textToCopy = document.getElementById('clipboard-textarea').value; return navigator.clipboard ? navigator.clipboard.writeText(textToCopy).then(() => true).catch(err => { Swal.showValidationMessage(`複製失敗: ${err.message}`); return false; }) : (document.execCommand('copy'), true); } }).then((result) => { if (result.isConfirmed) { Swal.fire({ icon: 'success', title: '已複製成功！', text: '請手動切換到 LINE 或其他應用程式並貼上內容。', timer: 2500, showConfirmButton: false }); } }); });
+            document.getElementById('export-stats-pdf-btn').addEventListener('click', async () => { if (!statsChart || !lastStatsData || lastStatsData.labels.length === 0) { return Swal.fire('提示', '請先點擊「產生報表」以生成統計圖表和數據。', 'info'); } const sourceElement = document.getElementById('stats-details-container'); if (!sourceElement || sourceElement.children.length <= 1) { return Swal.fire('提示', '沒有詳細資料可供匯出。', 'info'); } showLoading(); try { const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }); const startDateStr = document.getElementById('stats-start-date').value, endDateStr = document.getElementById('stats-end-date').value; const dateRangeText = `${startDateStr || '所有'} - ${endDateStr || '所有'}`; const docTitle = `AV放送立願統計報表 (${dateRangeText})`; const generateTime = new Date().toLocaleString('zh-TW'); const pdfContentEl = document.createElement('div'); pdfContentEl.style.cssText = "position:absolute;left:-9999px;width:210mm;padding:15mm;background-color:white;font-family:'Microsoft JhengHei','PingFang TC',sans-serif;color:#333;"; const pdfStyles = `<style>.details-grid{display:flex;flex-wrap:wrap;justify-content:space-between;}.details-grid .stats-event-block{width:48%;border:1px solid #ccc;padding:8px;margin-bottom:10px;page-break-inside:avoid;box-sizing:border-box;}.details-grid h3{font-size:8px;margin:0 0 4px 0;color:#FF8C42;font-weight:bold;}.details-grid p{font-size:6px;margin:1px 0;line-height:1.3;}.details-grid ul{list-style-type:none;padding-left:0;margin:4px 0 0 0;}.details-grid li{background:#f9f9f9;padding:1px 3px;border-radius:2px;margin-bottom:1px;font-size:6px;}
+/* --- MOBILE DATE INPUT FIX (追加) --- */
+@media (max-width: 768px) {
+  .inline-form {
+    flex-direction: column;
+    align-items: center;
+  }
+  .inline-form > .form-group,
+  .inline-form > .btn {
+    width: 92vw;
+    max-width: 480px;
+  }
+  .inline-form .form-group > input,
+  .inline-form .form-group > select {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .inline-form input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+
+/* --- HOTFIX: 修正手機超出容器（覆寫前一版 92vw 設定） --- */
+@media (max-width: 768px) {
+  .inline-form { 
+    align-items: stretch !important; 
+    width: 100% !important;
+  }
+  .inline-form > .form-group,
+  .inline-form > .btn {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  .inline-form .form-group > input,
+  .inline-form .form-group > select {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+  .inline-form input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+</style>`; const titleHtml = `<div style="text-align:center;border-bottom:2px solid #333;padding-bottom:10px;margin-bottom:15px;"><h1 style="font-size:20px;margin:0;color:#FF8C42;">${docTitle}</h1><p style="font-size:10px;margin:5px 0 0 0;">報表生成時間：${generateTime}</p></div>`; const chartImageData = statsChart.canvas.toDataURL('image/png', 1.0); const chartHtml = `<div style="text-align:center;margin-bottom:15px;page-break-inside:avoid;"><img src="${chartImageData}" style="width:100%;max-width:180mm;"/></div>`; const detailsTitle = sourceElement.querySelector('h2') ? sourceElement.querySelector('h2').outerHTML : ''; let eventBlocksHtml = ''; sourceElement.querySelectorAll('.stats-event-block').forEach(block => { eventBlocksHtml += block.outerHTML; }); const detailsGridHtml = `<div class="details-grid">${eventBlocksHtml}</div>`; pdfContentEl.innerHTML = pdfStyles + titleHtml + chartHtml + detailsTitle + detailsGridHtml; document.body.appendChild(pdfContentEl); const canvas = await html2canvas(pdfContentEl, { scale: 2, useCORS: true }); const imgData = canvas.toDataURL('image/png'); const pdfWidth = pdf.internal.pageSize.getWidth(), pdfHeight = pdf.internal.pageSize.getHeight(); const imgProps = pdf.getImageProperties(imgData); const imgWidth = pdfWidth, imgHeight = (imgProps.height * imgWidth) / imgProps.width; let heightLeft = imgHeight, position = 0; pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight); heightLeft -= pdfHeight; while (heightLeft > 0) { position -= pdfHeight; pdf.addPage(); pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight); heightLeft -= pdfHeight; } pdf.save(`AV立願統計報表_${startDateStr}_${endDateStr}.pdf`); document.body.removeChild(pdfContentEl); } catch (e) { console.error("PDF generation failed:", e); Swal.fire('PDF 匯出失敗', `前端生成PDF時發生錯誤: ${e.message}`, 'error'); } finally { hideLoading(); } });
             const handleDocDownload = (docType) => {
                 const docMap = {
-                    computer: { 
-                        action: 'open',
-                        url: 'https://docs.google.com/presentation/d/1dtRM_tI9JlBvQxQTzfaYWuUNh206BC88/edit?usp=sharing&ouid=116073418031278322428&rtpof=true&sd=true', 
-                        filename: '電腦操作手冊.pptx' 
-                    },
-                    lighting: { 
-                        action: 'open',
-                        url: 'https://docs.google.com/presentation/d/16NICJPmTTz-UyrxN44hpAvV0yI2WEFYb/edit?usp=drive_link&ouid=116073418031278322428&rtpof=true&sd=true', 
-                        filename: '燈光操作手冊.pptx' 
-                    },
-                    audio: { 
-                        action: 'open',
-                        url: 'https://docs.google.com/presentation/d/1rCb7AVwQWWtkwaq0pfo87YcgcCwbEpua/edit?usp=sharing&ouid=116073418031278322428&rtpof=true&sd=true', 
-                        filename: '音控操作手冊.pptx' 
-                    },
-                    camera: { 
-                        action: 'open',
-                        url: 'https://docs.google.com/presentation/d/1zZ-9Z7QvP-I-R4NtLSFNFOHArsRsjhyZ/edit?usp=sharing&ouid=116073418031278322428&rtpof=true&sd=true', 
-                        filename: '攝影操作手冊.pptx' 
-                    },
-                    // New video SOP entries
-                    videoSignupSOP: {
-                        action: 'open',
-                        url: 'https://www.youtube.com/shorts/hBQ18yN0PKs',
-                        filename: '立願報名SOP.mp4'
-                    },
-                    videoDeleteSOP: {
-                        action: 'open',
-                        url: 'https://www.youtube.com/shorts/SUrClrkf6e0',
-                        filename: '立願刪除SOP.mp4'
-                    },
-                    videoQuerySOP: {
-                        action: 'open',
-                        url: 'https://www.youtube.com/shorts/1oE9SEIzeX4',
-                        filename: '立願查詢SOP.mp4'
-                    }
+                    poster: { action: 'open', url: '01.pdf', filename: 'AV招生海報.pdf' },
+                    manual: { action: 'open', url: '02.pdf', filename: '一如祈念次第.pdf' },
+                    bulletin: { action: 'open', url: '放送奉侍佈告.pdf', filename: '放送奉侍佈告.pdf' },
+                    computer: { action: 'open', url: 'https://docs.google.com/presentation/d/1dtRM_tI9JlBvQxQTzfaYWuUNh206BC88/edit?usp=sharing&ouid=116073418031278322428&rtpof=true&sd=true', filename: '電腦操作手冊.pptx' },
+                    lighting: { action: 'open', url: 'https://docs.google.com/presentation/d/16NICJPmTTz-UyrxN44hpAvV0yI2WEFYb/edit?usp=drive_link&ouid=116073418031278322428&rtpof=true&sd=true', filename: '燈光操作手冊.pptx' },
+                    audio: { action: 'open', url: 'https://docs.google.com/presentation/d/1rCb7AVwQWWtkwaq0pfo87YcgcCwbEpua/edit?usp=sharing&ouid=116073418031278322428&rtpof=true&sd=true', filename: '音控操作手冊.pptx' },
+                    camera: { action: 'open', url: 'https://docs.google.com/presentation/d/1zZ-9Z7QvP-I-R4NtLSFNFOHArsRsjhyZ/edit?usp=sharing&ouid=116073418031278322428&rtpof=true&sd=true', filename: '攝影操作手冊.pptx' },
+                    videoSignupSOP: { action: 'open', url: 'https://www.youtube.com/shorts/hBQ18yN0PKs', filename: '立願報名SOP.mp4' },
+                    videoDeleteSOP: { action: 'open', url: 'https://www.youtube.com/shorts/SUrClrkf6e0', filename: '立願刪除SOP.mp4' },
+                    videoQuerySOP: { action: 'open', url: 'https://www.youtube.com/shorts/1oE9SEIzeX4', filename: '立願查詢SOP.mp4' },
+                    videoCableWrap: { action: 'open', url: 'https://v.pinimg.com/videos/mc/720p/1b/37/10/1b37107c72f5d947f6d8376e1074e0d9.mp4', filename: '攝影師收線示範.mp4' }
                 };
-                
                 const doc = docMap[docType];
-
-                if (!doc.url || doc.url === '#') {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: '功能尚未啟用',
-                        text: `此文件 (${doc.filename}) 的連結尚未設定。`,
-                        confirmButtonColor: 'var(--primary-color)'
-                    });
-                    return;
-                }
-                
-                // Check the action type and perform accordingly
-                if (doc.action === 'open') {
-                    // Open the link in a new browser tab
-                    window.open(doc.url, '_blank');
-                } else {
-                    // Default to download behavior
-                    const link = document.createElement('a');
-                    link.href = doc.url;
-                    link.download = doc.filename;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                }
+                if (!doc || !doc.url || doc.url === '#') { return Swal.fire({ icon: 'warning', title: '功能尚未啟用', text: `此文件 (${doc ? doc.filename : '未知'}) 的連結尚未設定。`, confirmButtonColor: 'var(--primary-color)' }); }
+                if (doc.action === 'open') { window.open(doc.url, '_blank'); } 
+                else { const link = document.createElement('a'); link.href = doc.url; link.download = doc.filename; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
             };
-
+            document.getElementById('download-poster').addEventListener('click', () => handleDocDownload('poster'));
+            document.getElementById('download-manual').addEventListener('click', () => handleDocDownload('manual'));
+            document.getElementById('download-bulletin').addEventListener('click', () => handleDocDownload('bulletin'));
             document.getElementById('download-doc-computer').addEventListener('click', () => handleDocDownload('computer'));
             document.getElementById('download-doc-lighting').addEventListener('click', () => handleDocDownload('lighting'));
             document.getElementById('download-doc-audio').addEventListener('click', () => handleDocDownload('audio'));
             document.getElementById('download-doc-camera').addEventListener('click', () => handleDocDownload('camera'));
-
-            // New event listeners for video SOPs
             document.getElementById('download-video-signup-sop').addEventListener('click', () => handleDocDownload('videoSignupSOP'));
             document.getElementById('download-video-delete-sop').addEventListener('click', () => handleDocDownload('videoDeleteSOP'));
             document.getElementById('download-video-query-sop').addEventListener('click', () => handleDocDownload('videoQuerySOP'));
+            document.getElementById('download-video-cable-wrap').addEventListener('click', () => handleDocDownload('videoCableWrap'));
         });
     </script>
 </body>

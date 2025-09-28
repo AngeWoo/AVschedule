@@ -303,6 +303,7 @@
                 <button id="download-poster" class="btn btn-primary">AV招生海報</button>
                 <button id="download-manual" class="btn btn-primary">一如祈念次第</button>
                 <button id="download-bulletin" class="btn btn-primary">放送奉侍佈告</button>
+                <button id="download-live-stream-guide" class="btn btn-primary">直播開啟及關閉方式</button>
             </div>
             <hr>
             <h4>📄 SOP文件下載</h4>
@@ -837,6 +838,7 @@
                     poster: { action: 'open', url: '01.pdf', filename: 'AV招生海報.pdf' },
                     manual: { action: 'open', url: '02.pdf', filename: '一如祈念次第.pdf' },
                     bulletin: { action: 'open', url: '放送奉侍佈告.pdf', filename: '放送奉侍佈告.pdf' },
+                    liveStreamGuide: { action: 'open', url: '直播開啟及關閉方式.pdf', filename: '直播開啟及關閉方式.pdf' },
                     computer: { action: 'open', url: 'https://docs.google.com/presentation/d/1dtRM_tI9JlBvQxQTzfaYWuUNh206BC88/edit?usp=sharing&ouid=116073418031278322428&rtpof=true&sd=true', filename: '電腦操作手冊.pptx' },
                     lighting: { action: 'open', url: 'https://docs.google.com/presentation/d/16NICJPmTTz-UyrxN44hpAvV0yI2WEFYb/edit?usp=drive_link&ouid=116073418031278322428&rtpof=true&sd=true', filename: '燈光操作手冊.pptx' },
                     audio: { action: 'open', url: 'https://docs.google.com/presentation/d/1rCb7AVwQWWtkwaq0pfo87YcgcCwbEpua/edit?usp=sharing&ouid=116073418031278322428&rtpof=true&sd=true', filename: '音控操作手冊.pptx' },
@@ -854,6 +856,7 @@
             document.getElementById('download-poster').addEventListener('click', () => handleDocDownload('poster'));
             document.getElementById('download-manual').addEventListener('click', () => handleDocDownload('manual'));
             document.getElementById('download-bulletin').addEventListener('click', () => handleDocDownload('bulletin'));
+            document.getElementById('download-live-stream-guide').addEventListener('click', () => handleDocDownload('liveStreamGuide'));
             document.getElementById('download-doc-computer').addEventListener('click', () => handleDocDownload('computer'));
             document.getElementById('download-doc-lighting').addEventListener('click', () => handleDocDownload('lighting'));
             document.getElementById('download-doc-audio').addEventListener('click', () => handleDocDownload('audio'));

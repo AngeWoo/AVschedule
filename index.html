@@ -121,8 +121,8 @@
             #stats-details-container .stats-event-block, #performance-details-container .stats-event-block { width: 48.5%; margin-bottom: 0; }
             .stats-event-block h3 { font-size: 1.1rem; } .stats-event-block p { font-size: 0.85rem; } .stats-event-block ul { font-size: 0.8rem; }
         }
-        #marquee-container { min-height: 44px; background: linear-gradient(135deg, rgba(31,122,236,0.08), rgba(31,122,236,0.02)); color: var(--primary-dark); border-radius: var(--border-radius-sm); margin-bottom: 20px; padding: 0 20px; position: relative; overflow: hidden; display: flex; align-items: center; box-shadow: inset 0 1px 2px rgba(0,0,0,0.03), 0 8px 16px rgba(0,0,0,0.03); border: 1px solid var(--card-border); transition: max-height 0.4s ease-out, opacity 0.3s ease-out, margin-bottom 0.4s ease-out; }
-        #marquee-text { position: absolute; width: calc(100% - 40px); text-align: center; font-weight: 700; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.2px; }
+        #marquee-container { min-height: 44px; background: linear-gradient(135deg, rgba(31,122,236,0.08), rgba(31,122,236,0.02)); color: #d32f2f; border-radius: var(--border-radius-sm); margin-bottom: 20px; padding: 0 20px; position: relative; overflow: hidden; display: flex; align-items: center; box-shadow: inset 0 1px 2px rgba(0,0,0,0.03), 0 8px 16px rgba(0,0,0,0.03); border: 1px solid var(--card-border); transition: max-height 0.4s ease-out, opacity 0.3s ease-out, margin-bottom 0.4s ease-out; }
+        #marquee-text { position: absolute; width: calc(100% - 40px); text-align: center; font-weight: 700; font-size: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.2px; color: #d32f2f; }
         @keyframes marquee-scroll { 0% { transform: translateY(120%); opacity: 0; } 15% { transform: translateY(0); opacity: 1; } 85% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-120%); opacity: 0; } }
         #admin-tab .button-grid, #download-tab .button-grid { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-top: 10px; }
         #admin-tab .button-grid .btn, #download-tab .button-grid .btn { flex-grow: 1; }
@@ -178,6 +178,8 @@
         .page-fab:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.22); }
         .page-fab:active { transform: translateY(0); box-shadow: inset 0 3px 8px rgba(0,0,0,0.15); }
         .page-fab.hidden { opacity: 0; pointer-events: none; transform: translateY(4px); box-shadow: none; }
+        @keyframes bark-pulse { 0% { transform: scale(1); } 20% { transform: scale(1.08); } 50% { transform: scale(1.18); } 80% { transform: scale(1.08); } 100% { transform: scale(1); } }
+        .marquee-bark { animation: bark-pulse 0.6s ease-in-out 3; }
     
         /* Admin tab specific style overrides */
         #admin-tab h4::before { display: none; }
@@ -673,10 +675,20 @@
                 const playDogSound = () => {
                     const audioEl = document.getElementById('dog-audio');
                     if (!audioEl) return;
+                    marqueeContainer.classList.remove('marquee-bark');
+                    void marqueeContainer.offsetWidth; // restart animation
+                    marqueeContainer.classList.add('marquee-bark');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                     try {
                         audioEl.currentTime = 0;
-                        audioEl.play().catch(() => {});
+                        const p = audioEl.play();
+                        const duration = audioEl.duration && isFinite(audioEl.duration) ? audioEl.duration * 1000 : 1800;
+                        if (p && typeof p.then === 'function') {
+                            p.catch(() => {});
+                        }
+                        return duration;
                     } catch (e) {}
+                    return 1800;
                 };
                 const applyVisibility = () => {
                     if (isVisible) {
@@ -696,10 +708,18 @@
                 applyVisibility();
                 toggleBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
+                    const wasVisible = isVisible;
                     isVisible = !isVisible;
                     localStorage.setItem('av_marquee_visible', isVisible);
-                    applyVisibility();
-                    playDogSound();
+                    const animDuration = playDogSound();
+                    if (!isVisible && wasVisible) {
+                        marqueeContainer.classList.remove('marquee-bark');
+                        void marqueeContainer.offsetWidth;
+                        marqueeContainer.classList.add('marquee-bark');
+                        setTimeout(() => { applyVisibility(); }, animDuration || 1800);
+                    } else {
+                        applyVisibility();
+                    }
                 });
             }
             setupMarqueeToggle();

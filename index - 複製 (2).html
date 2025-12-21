@@ -32,11 +32,11 @@
         body::before { content: ''; position: fixed; inset: 0; background: linear-gradient(135deg, rgba(31,122,236,0.08), transparent 45%), linear-gradient(315deg, rgba(15,76,163,0.06), transparent 55%); z-index: 0; pointer-events: none; }
         .page-header { text-align: center; margin-bottom: 32px; position: relative; z-index: 1; }
         .page-header h1 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; color: #fff; letter-spacing: 0.5px; display: inline-flex; justify-content: center; align-items: center; gap: 12px; padding: 14px 26px; background: linear-gradient(120deg, #ff7a7a, #ffb347, #ffe66d, #7ae582, #5ad1e5, #8e7dff, #ff7ac7, #ff7a7a); background-size: 200% 200%; animation: rainbow-shift 12s ease infinite; border: 1px solid rgba(255,255,255,0.35); border-radius: 999px; box-shadow: 0 14px 36px rgba(0,0,0,0.12), 0 8px 18px rgba(0,0,0,0.08); position: relative; overflow: hidden; text-shadow: 0 2px 8px rgba(0,0,0,0.18); }
-        .brand-icon { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(255,255,255,0.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; color: #fff; }
+        .brand-icon { width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 12px; background: rgba(255,255,255,0.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .brand-icon:hover { transform: translateY(-1px) scale(1.02); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.28), 0 6px 12px rgba(0,0,0,0.15); }
-        .brand-icon img { width: 18px; height: 18px; object-fit: contain; }
+        .brand-icon svg { width: 20px; height: 20px; stroke: #fff; }
         @keyframes rainbow-shift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        #toggle-marquee-btn { display: inline-flex; align-items: center; justify-content: center; font-size: 0.9em; cursor: pointer; transition: transform 0.2s ease, color 0.2s ease; user-select: none; padding: 6px 10px; border-radius: 12px; background: rgba(0,0,0,0.1); color: #fff; }
+        #toggle-marquee-btn { display: none; font-size: 0.7em; cursor: pointer; transition: transform 0.2s ease, color 0.2s ease; user-select: none; padding: 4px 8px; border-radius: 10px; background: rgba(0,0,0,0.1); }
         #toggle-marquee-btn:hover { transform: scale(1.08); }
         #toggle-marquee-btn.active { color: #fff; background: rgba(0,0,0,0.2); }
         .page-footer { text-align: center; margin-top: auto; padding: 18px 12px; color: var(--text-light); font-size: 0.9em; position: relative; z-index: 1; }
@@ -80,7 +80,6 @@
         .btn-success:active { transform: translateY(0); box-shadow: inset 0 3px 8px rgba(0,0,0,0.18); }
         .btn-icon-left { display: inline-flex; align-items: center; gap: 6px; }
         .btn-icon-left .icon { font-size: 1.1em; line-height: 1; }
-        #download-tab h4::before { display: none; }
         .toolbar-chunk .btn, .view-switcher-btn { background: var(--card-bg-start); color: var(--text-color); border: 1px solid var(--card-border); box-shadow: 0 2px 6px var(--card-shadow-light); font-weight: 500; }
         .toolbar-chunk .btn:hover, .view-switcher-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 10px var(--card-shadow-light); }
         .toolbar-chunk .btn:active, .view-switcher-btn:active { transform: translateY(0); box-shadow: inset 0 2px 5px rgba(0,0,0,0.15); }
@@ -132,14 +131,13 @@
             body { padding: 12px; margin: 0; min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
             .page-header { margin-bottom: 12px; flex-shrink: 0; }
             .page-header h1 { font-size: 1.7rem; }
-            #toggle-marquee-btn { display: inline-flex; }
+            #toggle-marquee-btn { display: inline-block; }
             .container { padding: 18px 14px; border-radius: var(--border-radius); box-shadow: 0 8px 20px var(--card-shadow-dark); display: flex; flex-direction: column; overflow-x: hidden; }
             .page-footer { margin-top: 12px; padding: 10px; flex-shrink: 0; background: var(--bg-color); }
             .tabs { gap: 6px; padding: 6px; border: 1px solid var(--card-border); border-radius: 14px; box-shadow: 0 6px 14px rgba(0,0,0,0.06); margin-bottom: 14px; justify-content: center; flex-wrap: wrap; overflow: visible; }
             .tab-button { flex: 0 1 calc(33.33% - 12px); max-width: calc(33.33% - 12px); min-width: 0; height: 70px; font-size: 0.88rem; font-weight: 800; padding: 8px 6px; border-radius: 12px; box-shadow: 0 3px 8px rgba(0,0,0,0.05); display: inline-flex; flex-direction: column; gap: 5px; align-items: center; justify-content: center; white-space: normal; text-align: center; line-height: 1.2; }
             .tab-button .tab-icon { display: block; font-size: 1.4rem; line-height: 1; }
             .tab-button .tab-label { display: block; font-size: 0.95rem; line-height: 1.15; }
-            #download-tab h4 { justify-content: center; text-align: center; }
             .tab-button:nth-child(1) { background: linear-gradient(145deg, #2563eb, #1d4ed8); color: #fff; }
             .tab-button:nth-child(2) { background: linear-gradient(145deg, #16a34a, #15803d); color: #fff; }
             .tab-button:nth-child(3) { background: linear-gradient(145deg, #f59e0b, #d97706); color: #fff; }
@@ -147,10 +145,8 @@
             .tab-button:nth-child(5) { background: linear-gradient(145deg, #ec4899, #db2777); color: #fff; }
             .tab-button:nth-child(6) { background: linear-gradient(145deg, #06b6d4, #0891b2); color: #fff; }
             .tab-button.active { box-shadow: 0 10px 20px rgba(0,0,0,0.18), 0 0 0 3px rgba(255,255,255,0.7), 0 0 0 6px rgba(31,122,236,0.35); transform: translateY(-2px); }
-            #custom-calendar-toolbar { display: flex; flex-wrap: nowrap; justify-content: space-between; align-items: center; gap: 8px; }
-            #custom-calendar-title { order: 0; flex: 0 1 auto; font-size: 1.05rem; text-align: center; white-space: nowrap; }
-            .toolbar-chunk { order: 0; flex: 0 1 auto; justify-content: center; gap: 6px; }
-            .toolbar-chunk .btn { padding: 8px 10px; font-size: 0.9rem; }
+            #custom-calendar-toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; }
+            #custom-calendar-title { order: 1; flex-basis: 100%; font-size: 1.25rem; text-align: center; } .toolbar-chunk { flex-grow: 1; justify-content: center; } .toolbar-chunk:nth-of-type(1) { order: 2; } .toolbar-chunk:nth-of-type(2) { order: 3; }
             .inline-form { flex-direction: column; align-items: stretch; width: 100%; padding: 12px; gap: 10px; }
             .inline-form > .form-group, .inline-form > .btn { width: 100%; max-width: 100%; margin: 0; }
             .form-group input[type="date"] { -webkit-appearance: none; appearance: none; min-width: 0; width: 100%; }
@@ -166,7 +162,7 @@
         #simple-list-view .table-responsive, #my-signups-result .table-responsive { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
         #simple-list-view .table-responsive table, #my-signups-result .table-responsive table { width: max-content !important; min-width: 100%; }
         #simple-list-view .table-responsive th, #simple-list-view .table-responsive td, #my-signups-result .table-responsive th, #my-signups-result .table-responsive td { white-space: nowrap !important; vertical-align: middle !important; }
-        .scroll-hint { text-align: center; font-size: 0.9rem; color: #d32f2f; margin: 5px 0; display: none; font-weight: 600; animation: pulse 2s infinite; }
+        .scroll-hint { text-align: center; font-size: 0.9rem; color: var(--primary-dark); margin: 5px 0; display: none; font-weight: 600; animation: pulse 2s infinite; }
         @keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
         .floating-scroll-btn { position: fixed; top: 48%; transform: translateY(-50%); width: 40px; height: 40px; border-radius: 50%; background-color: rgba(31, 122, 236, 0.85); color: white; border: none; font-size: 1.5rem; display: none; align-items: center; justify-content: center; cursor: pointer; z-index: 999; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: opacity 0.3s; }
         .floating-scroll-btn:active { background-color: rgba(15, 76, 163, 0.9); }
@@ -181,9 +177,7 @@
     
         /* Admin tab specific style overrides */
         #admin-tab h4::before { display: none; }
-        #performance-tab h4::before { display: none; }
-        #admin-tab h4, #performance-tab h4 { gap: 0; justify-content: center; }
-        #my-signups-tab h4::before { display: none; }
+        #admin-tab h4 { gap: 0; justify-content: center; }
 /* --- MOBILE DATE INPUT FIX (追加) --- */
 @media (max-width: 768px) {
   .inline-form {
@@ -274,10 +268,14 @@
                     <header class="page-header">
         <h1>
             <span class="brand-icon" onclick="reloadSystem()" title="重新整理">
-                <img src="cam.png" alt="攝影機">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h6A2.5 2.5 0 0 1 15 6.5v11a0.5 0.5 0 0 1-.78.41L9.5 15.5H6.5A2.5 2.5 0 0 1 4 13v-6.5Z" stroke-width="1.6" stroke-linejoin="round"/>
+                    <path d="m15 9 4-2.5v8L15 12" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="m7.5 7.75 1 .9 1.6-1.9" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
             </span>
             AV放送立願表
-            <span id="toggle-marquee-btn" title="切換公告欄顯示">&#128276;</span>
+            <span id="toggle-marquee-btn" title="切換公告欄顯示">📰</span>
         </h1>
     </header>
 
@@ -287,20 +285,20 @@
         </div>
 
         <div class="tabs">
-            <button class="tab-button active" onclick="openTab(event, 'calendar-tab')"><span class="tab-icon">&#x1F4C5;</span><span class="tab-label">立願</span></button>
-            <button class="tab-button" onclick="openTab(event, 'my-signups-tab')"><span class="tab-icon">&#x1F50D;</span><span class="tab-label">查詢</span></button>
-            <button class="tab-button" onclick="openTab(event, 'stats-tab')"><span class="tab-icon">&#x1F4CA;</span><span class="tab-label">統計</span></button>
-            <button class="tab-button" onclick="openTab(event, 'performance-tab')"><span class="tab-icon">&#x1F4C8;</span><span class="tab-label">績效</span></button>
-            <button class="tab-button" onclick="openTab(event, 'download-tab')"><span class="tab-icon">&#x1F4E5;</span><span class="tab-label">下載</span></button>
-            <button class="tab-button" onclick="openTab(event, 'admin-tab')"><span class="tab-icon">&#9881;</span><span class="tab-label">管理</span></button>
+            <button class="tab-button active" onclick="openTab(event, 'calendar-tab')"><span class="tab-icon">📅</span><span class="tab-label">立願</span></button>
+            <button class="tab-button" onclick="openTab(event, 'my-signups-tab')"><span class="tab-icon">🔍</span><span class="tab-label">查詢</span></button>
+            <button class="tab-button" onclick="openTab(event, 'stats-tab')"><span class="tab-icon">📊</span><span class="tab-label">統計</span></button>
+            <button class="tab-button" onclick="openTab(event, 'performance-tab')"><span class="tab-icon">🏆</span><span class="tab-label">績效</span></button>
+            <button class="tab-button" onclick="openTab(event, 'download-tab')"><span class="tab-icon">📄</span><span class="tab-label">下載</span></button>
+            <button class="tab-button" onclick="openTab(event, 'admin-tab')"><span class="tab-icon">🛠️</span><span class="tab-label">管理</span></button>
         </div>
 
         <div id="calendar-tab" class="tab-content active">
              <div id="custom-calendar-toolbar">
                 <div class="toolbar-chunk">
-                    <button id="custom-prev-btn" class="btn">&#8592;</button>
+                    <button id="custom-prev-btn" class="btn">‹</button>
                     <button id="custom-today-btn" class="btn">今天</button>
-                    <button id="custom-next-btn" class="btn">&#8594;</button>
+                    <button id="custom-next-btn" class="btn">›</button>
                 </div>
                 <h3 id="custom-calendar-title"></h3>
                 <div class="toolbar-chunk">
@@ -313,13 +311,13 @@
         </div>
 
         <div id="my-signups-tab" class="tab-content">
-            <h4 style="justify-content:center;text-align:center;"><span class="title-icon">&#x1F50D;</span>綜合報名查詢</h4>
+            <h4>📄 綜合報名查詢</h4>
             <div class="inline-form">
                 <div class="form-group"><label for="universal-search-input">關鍵字</label><input type="text" id="universal-search-input" placeholder="姓名/活動/崗位/描述"></div>
                 <div class="form-group form-group-date"><label for="search-start-date">開始日期</label><input type="date" id="search-start-date"></div>
                 <div class="form-group form-group-date"><label for="search-end-date">結束日期</label><input type="date" id="search-end-date"></div>
-                <button id="unified-search-btn" class="btn btn-primary btn-icon-left"><span class="icon">&#x1F50D;</span><span>查詢</span></button>
-                <button id="clear-search-btn" class="btn btn-icon-left" style="background-color: #6c757d; color: white;"><span class="icon">&#x1F504;</span><span>清除</span></button>
+                <button id="unified-search-btn" class="btn btn-primary">🔍 查詢</button>
+                <button id="clear-search-btn" class="btn" style="background-color: #6c757d; color: white;">🧹 清除</button>
             </div>
             <div id="my-signups-result"></div>
             <div id="query-actions-container" style="text-align: center; margin-top: 25px; display: none; flex-wrap: wrap; gap: 15px; justify-content: center;">
@@ -332,59 +330,62 @@
             <div class="inline-form">
                 <div class="form-group form-group-date"><label for="stats-start-date">開始日期</label><input type="date" id="stats-start-date"></div>
                 <div class="form-group form-group-date"><label for="stats-end-date">結束日期</label><input type="date" id="stats-end-date"></div>
-                <button id="generate-stats" class="btn btn-primary btn-icon-left"><span class="icon">&#x1F50D;</span><span>產生報表</span></button>
-                <button id="reset-stats-btn" class="btn btn-icon-left" style="background-color: #6c757d; color: white;"><span class="icon">&#x1F504;</span><span>清除</span></button> </div>
+                <button id="generate-stats" class="btn btn-primary">📈 產生報表</button>
+                <button id="export-stats-pdf-btn" class="btn btn-primary">輸出 PDF 報表</button> </div>
             <div class="chart-container" style="position: relative; height:40vh; margin-bottom: 20px;"><canvas id="stats-chart"></canvas></div>
             <div id="stats-details-container"></div>
         </div>
 
         <div id="performance-tab" class="tab-content">
-            <h4>&#x1F4C8; 立願績效圖表 (依個人統計)</h4>
+            <h4>🏆 立願績效圖表 (依個人統計)</h4>
             <div class="inline-form">
                 <div class="form-group form-group-date"><label for="performance-start-date">開始日期</label><input type="date" id="performance-start-date"></div>
                 <div class="form-group form-group-date"><label for="performance-end-date">結束日期</label><input type="date" id="performance-end-date"></div>
-                <button id="generate-performance-report" class="btn btn-primary btn-icon-left"><span class="icon">&#x1F4C8;</span><span>產生績效圖表</span></button>
-                <button id="reset-performance-btn" class="btn btn-icon-left" style="background-color: #6c757d; color: white;"><span class="icon">&#x1F504;</span><span>清除</span></button>
+                <button id="generate-performance-report" class="btn btn-primary">🚀 產生績效圖表</button>
             </div>
             <div class="chart-container" style="position: relative; height:60vh; margin-bottom: 20px;"><canvas id="performance-chart"></canvas></div>
             <div id="performance-details-container"></div>
         </div>
+        
         <div id="download-tab" class="tab-content">
-            <h4 style="justify-content:center;text-align:center;"><span class="title-icon">&#x1F4C2;</span>相關文件下載</h4>
+            <h4>📄 相關文件下載</h4>
             <div class="button-grid">
-                <button id="download-jobhtml" class="btn btn-primary btn-icon-left" onclick="window.open('job.html', '_blank')"><span class="icon">&#x1F4D1;</span><span>奉仕崗位職掌（網頁版）</span></button>
-                <button id="download-poster" class="btn btn-primary btn-icon-left"><span class="icon">&#x1F5BC;</span><span>AV招生海報</span></button>
-                <button id="download-manual" class="btn btn-primary btn-icon-left"><span class="icon">&#x1F4D8;</span><span>一如祈念次第</span></button>
-                <button id="download-bulletin" class="btn btn-primary btn-icon-left"><span class="icon">&#x1F4C4;</span><span>放送奉侍佈告</span></button>
-                <button id="download-live-stream-guide" class="btn btn-primary btn-icon-left"><span class="icon">&#x1F3A5;</span><span>直播開啟及關閉方式</span></button>
+
+<button id="download-jobhtml" class="btn btn-primary" onclick="window.open('job.html', '_blank')">奉仕崗位職掌（網頁版）</button>
+
+                <button id="download-poster" class="btn btn-primary">AV招生海報</button>
+                <button id="download-manual" class="btn btn-primary">一如祈念次第</button>
+                <button id="download-bulletin" class="btn btn-primary">放送奉侍佈告</button>
+                <button id="download-live-stream-guide" class="btn btn-primary">直播開啟及關閉方式</button>
             </div>
-            <hr style="margin-bottom: 8px;">
-            <h4 style="justify-content:center;text-align:center; margin-top: 0.35rem;"><span class="title-icon">&#x1F9ED;</span>SOP文件下載</h4>
+            <hr>
+            <h4>📄 SOP文件下載</h4>
             <div class="button-grid">
-                <button id="download-doc-computer" class="btn btn-primary btn-icon-left"><span class="icon">&#x1F4BB;</span><span>電腦</span></button>
-                <button id="download-doc-lighting" class="btn btn-primary btn-icon-left"><span class="icon">&#x1F4A1;</span><span>燈光</span></button>
-                <button id="download-doc-audio" class="btn btn-primary btn-icon-left"><span class="icon">&#x1F39A;</span><span>音控</span></button>
-                <button id="download-doc-camera" class="btn btn-primary btn-icon-left"><span class="icon">&#x1F4F7;</span><span>攝影</span></button>
+                <button id="download-doc-computer" class="btn btn-primary">電腦</button>
+                <button id="download-doc-lighting" class="btn btn-primary">燈光</button>
+                <button id="download-doc-audio" class="btn btn-primary">音控</button>
+                <button id="download-doc-camera" class="btn btn-primary">攝影</button>
             </div>
-            <hr style="margin-bottom: 8px;">
-            <h4 style="justify-content:center;text-align:center; margin-top: 0.35rem;"><span class="title-icon">&#x1F3AC;</span>影音檔案下載</h4>
+            <hr>
+            <h4>🎬 影音檔案下載</h4>
             <div class="button-grid">
-                <button id="download-video-signup-sop" class="btn btn-primary btn-icon-left"><span class="icon">&#x2705;</span><span>立願報名SOP</span></button>
-                <button id="download-video-delete-sop" class="btn btn-primary btn-icon-left"><span class="icon">&#x1F5D1;</span><span>立願刪除SOP</span></button>
-                <button id="download-video-query-sop" class="btn btn-primary btn-icon-left"><span class="icon">&#x1F50E;</span><span>立願查詢SOP</span></button>
-                <button id="download-video-cable-wrap" class="btn btn-primary btn-icon-left"><span class="icon">&#x1FAA2;</span><span>攝影師收線示範</span></button>
+                <button id="download-video-signup-sop" class="btn btn-primary">立願報名SOP</button>
+                <button id="download-video-delete-sop" class="btn btn-primary">立願刪除SOP</button>
+                <button id="download-video-query-sop" class="btn btn-primary">立願查詢SOP</button>
+                <button id="download-video-cable-wrap" class="btn btn-primary">攝影師收線示範</button>
             </div>
         </div>
+        
         <div id="admin-tab" class="tab-content">
             <hr style="margin-top:0; margin-bottom: 12px;">
-            <h4 style="margin-top: 0.25rem;"><span class="title-icon">&#9881;</span>分享奉侍名單</h4>
+            <h4 style="margin-top: 0.25rem;"><span class="title-icon">🗂️</span>分享奉侍名單</h4>
             <div class="inline-form" style="justify-content: center;">
                 <div class="form-group form-group-date"><label for="export-start-date">開始日期</label><input type="date" id="export-start-date"></div>
                 <div class="form-group form-group-date"><label for="export-end-date">結束日期</label><input type="date" id="export-end-date"></div>
-                <button id="share-to-clipboard-btn" class="btn btn-primary btn-icon-left">
-                    <span class="icon">&#x1F4CB;</span><span>分享至剪貼簿</span>
+                <button id="share-to-clipboard-btn" class="btn btn-success btn-icon-left" style="background-color: #17a2b8;">
+                    <span class="icon">📋</span><span>分享至剪貼簿</span>
                 </button>
-                <button id="admin-reset-btn" class="btn btn-icon-left" style="background-color: #6c757d; color: white;"><span class="icon">&#x1F504;</span><span>清除</span></button>
+                <button id="admin-reset-btn" class="btn" style="background-color: #6c757d; color: white;">重新選擇</button>
             </div>
         </div>
     </div>
@@ -395,9 +396,8 @@
     </div>
 
     <div id="event-popover" class="event-popover"></div>
-    <audio id="dog-audio" src="dog.wav" preload="auto" playsinline></audio>
     <footer class="page-footer">
-        <p>c 2026 AV 放送立願系統. All Rights Reserved.</p>
+        <p>© 2026 AV 放送立願系統. All Rights Reserved.</p>
         <span id="frontend-version" style="display:none;"></span>
         <span id="backend-version" style="display:none;"></span>
     </footer>
@@ -456,15 +456,15 @@
         }
         function showEventPopover(info) { const { event, el } = info; const props = event.extendedProps; const popoverEl = document.getElementById('event-popover'); let content = `<h5>${props.full_title}</h5><p><b>日期:</b> ${new Date(event.start).toLocaleDateString('en-CA')}</p><p><b>時間:</b> ${props.startTime}${props.endTime ? ' - ' + props.endTime : ''}</p><p><b>額滿人數:</b> ${props.maxAttendees} 人</p>`; if (props.description) { content += `<p><b>說明:</b> ${props.description}</p>`; } if (props.signups && props.signups.length > 0) { content += '<hr style="margin: 8px 0; border-top: 1px dashed var(--card-border);"><ul>'; props.signups.forEach(s => { content += `<li><strong>${s.position}:</strong> ${s.user}</li>`; }); content += '</ul>'; } else { content += '<p style="margin-top: 8px;">目前尚無人報名</p>'; } popoverEl.innerHTML = content; popoverEl.style.visibility = 'hidden'; popoverEl.style.display = 'block'; const rect = el.getBoundingClientRect(); const popoverHeight = popoverEl.offsetHeight; const popoverWidth = popoverEl.offsetWidth; const margin = 10; let left = rect.left + window.scrollX; if (left + popoverWidth > window.innerWidth - margin) { left = window.innerWidth - popoverWidth - margin; } if (left < margin) { left = margin; } let top; if (rect.bottom + popoverHeight + margin > window.innerHeight) { top = rect.top + window.scrollY - popoverHeight - 5; } else { top = rect.bottom + window.scrollY + 5; } if (top < window.scrollY + margin) { top = window.scrollY + margin; } popoverEl.style.left = `${left}px`; popoverEl.style.top = `${top}px`; popoverEl.style.visibility = 'visible'; }
         function hideEventPopover() { document.getElementById('event-popover').style.display = 'none'; }
-        function renderSimpleListView() { const container = document.getElementById('simple-list-view'); document.getElementById('custom-calendar-title').textContent = `${currentDisplayDate.getFullYear()}年 ${currentDisplayDate.getMonth() + 1}月`; const viewStart = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth(), 1); const viewEnd = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth() + 1, 0); viewEnd.setHours(23, 59, 59, 999); const currentMonthEvents = allCalendarEvents.filter(e => new Date(e.start) >= viewStart && new Date(e.start) <= viewEnd).sort((a, b) => new Date(a.start) - new Date(b.start)); if (currentMonthEvents.length === 0) { container.innerHTML = '<div class="table-responsive" style="margin-top:0;"><p style="text-align:center; padding: 20px;">本月尚無活動。</p></div>'; return; } let tableHtml = `<div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><div class="table-responsive" id="simple-list-table-container" style="margin-top:0;"><table><thead><tr><th>日期</th><th>星期</th><th>標題</th><th>開始</th><th>結束</th><th>上限 (已報)</th><th>報名詳情</th></tr></thead><tbody>`; currentMonthEvents.forEach(event => { const props = event.extendedProps; const startDate = new Date(event.start); const dateString = startDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Taipei' }); const dayOfWeek = startDate.toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', weekday: 'short' }); const signupCount = props.signups ? props.signups.length : 0; let signupsDetail = props.signups && props.signups.length > 0 ? props.signups.map(s => `${s.position}：${s.user}`).join('，') : ''; tableHtml += `<tr data-event-id="${event.id}"><td><span class="status-dot" style="background-color: ${event.backgroundColor};"></span>${dateString.substring(5)}</td><td>${dayOfWeek.replace('週', '')}</td><td class="event-title-cell">${event.title}</td><td>${props.startTime || ''}</td><td>${props.endTime || ''}</td><td>${props.maxAttendees} (${signupCount})</td><td>${signupsDetail}</td></tr>`; }); tableHtml += `</tbody></table></div><div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><button class="floating-scroll-btn left" onclick="document.getElementById('simple-list-table-container').scrollBy({left: -200, behavior: 'smooth'})">&#8592;</button><button class="floating-scroll-btn right" onclick="document.getElementById('simple-list-table-container').scrollBy({left: 200, behavior: 'smooth'})">&#8594;</button>`; container.innerHTML = tableHtml; container.querySelectorAll('tbody tr').forEach(row => { const eventId = row.dataset.eventId; const eventObject = allCalendarEvents.find(e => e.id === eventId); if (!eventObject) return; row.addEventListener('click', (e) => { if (e.target.tagName !== 'BUTTON') { handleEventClick({ event: { id: eventId, ...eventObject }, jsEvent: e }) } }); const titleCell = row.querySelector('.event-title-cell'); if (titleCell) { titleCell.addEventListener('mouseenter', (e) => showEventPopover({ event: { extendedProps: eventObject.extendedProps, start: eventObject.start }, el: e.currentTarget })); titleCell.addEventListener('mouseleave', hideEventPopover); } }); const tableContainer = document.getElementById('simple-list-table-container'); const floatBtns = container.querySelectorAll('.floating-scroll-btn'); if (tableContainer && floatBtns.length > 0) { const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { floatBtns.forEach(btn => { if (entry.intersectionRatio >= 0.55) { btn.classList.add('visible'); } else { btn.classList.remove('visible'); } }); }); }, { threshold: 0.55 }); observer.observe(tableContainer); } }
+        function renderSimpleListView() { const container = document.getElementById('simple-list-view'); document.getElementById('custom-calendar-title').textContent = `${currentDisplayDate.getFullYear()}年 ${currentDisplayDate.getMonth() + 1}月`; const viewStart = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth(), 1); const viewEnd = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth() + 1, 0); viewEnd.setHours(23, 59, 59, 999); const currentMonthEvents = allCalendarEvents.filter(e => new Date(e.start) >= viewStart && new Date(e.start) <= viewEnd).sort((a, b) => new Date(a.start) - new Date(b.start)); if (currentMonthEvents.length === 0) { container.innerHTML = '<div class="table-responsive" style="margin-top:0;"><p style="text-align:center; padding: 20px;">本月尚無活動。</p></div>'; return; } let tableHtml = `<div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><div class="table-responsive" id="simple-list-table-container" style="margin-top:0;"><table><thead><tr><th>日期</th><th>星期</th><th>標題</th><th>開始</th><th>結束</th><th>上限 (已報)</th><th>報名詳情</th></tr></thead><tbody>`; currentMonthEvents.forEach(event => { const props = event.extendedProps; const startDate = new Date(event.start); const dateString = startDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Taipei' }); const dayOfWeek = startDate.toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', weekday: 'short' }); const signupCount = props.signups ? props.signups.length : 0; let signupsDetail = props.signups && props.signups.length > 0 ? props.signups.map(s => `${s.position}：${s.user}`).join('，') : ''; tableHtml += `<tr data-event-id="${event.id}"><td><span class="status-dot" style="background-color: ${event.backgroundColor};"></span>${dateString.substring(5)}</td><td>${dayOfWeek.replace('週', '')}</td><td class="event-title-cell">${event.title}</td><td>${props.startTime || ''}</td><td>${props.endTime || ''}</td><td>${props.maxAttendees} (${signupCount})</td><td>${signupsDetail}</td></tr>`; }); tableHtml += `</tbody></table></div><div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><button class="floating-scroll-btn left" onclick="document.getElementById('simple-list-table-container').scrollBy({left: -200, behavior: 'smooth'})">‹</button><button class="floating-scroll-btn right" onclick="document.getElementById('simple-list-table-container').scrollBy({left: 200, behavior: 'smooth'})">›</button>`; container.innerHTML = tableHtml; container.querySelectorAll('tbody tr').forEach(row => { const eventId = row.dataset.eventId; const eventObject = allCalendarEvents.find(e => e.id === eventId); if (!eventObject) return; row.addEventListener('click', (e) => { if (e.target.tagName !== 'BUTTON') { handleEventClick({ event: { id: eventId, ...eventObject }, jsEvent: e }) } }); const titleCell = row.querySelector('.event-title-cell'); if (titleCell) { titleCell.addEventListener('mouseenter', (e) => showEventPopover({ event: { extendedProps: eventObject.extendedProps, start: eventObject.start }, el: e.currentTarget })); titleCell.addEventListener('mouseleave', hideEventPopover); } }); const tableContainer = document.getElementById('simple-list-table-container'); const floatBtns = container.querySelectorAll('.floating-scroll-btn'); if (tableContainer && floatBtns.length > 0) { const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { floatBtns.forEach(btn => { if (entry.intersectionRatio >= 0.55) { btn.classList.add('visible'); } else { btn.classList.remove('visible'); } }); }); }, { threshold: 0.55 }); observer.observe(tableContainer); } }
         function initializeFullCalendar() { const calendarEl = document.getElementById('calendar'); if (calendar) calendar.destroy(); let options = { headerToolbar: false, initialDate: currentDisplayDate, locale: 'zh-tw', events: allCalendarEvents, datesSet: (dateInfo) => { currentDisplayDate = dateInfo.view.currentStart; document.getElementById('custom-calendar-title').textContent = dateInfo.view.title; if (document.getElementById('simple-list-view').style.display === 'block') { renderSimpleListView(); } }, eventClick: handleEventClick, eventMouseEnter: showEventPopover, eventMouseLeave: hideEventPopover, ...currentCalendarOptions }; calendar = new FullCalendar.Calendar(calendarEl, options); calendar.render(); }
         async function setupCalendarTab(forceRefresh = false) { if (!forceRefresh && allCalendarEvents.length > 0) { if (calendar) { calendar.refetchEvents(); } else { initializeFullCalendar(); } return; } showLoading(); try { const response = await callAppsScript('getEventsAndSignups'); allCalendarEvents = response.data; if (!document.getElementById('custom-prev-btn')._isInitialized) { document.getElementById('custom-prev-btn').addEventListener('click', () => calendar.prev()); document.getElementById('custom-next-btn').addEventListener('click', () => calendar.next()); document.getElementById('custom-today-btn').addEventListener('click', () => calendar.today()); const fullViewBtn = document.getElementById('show-full-view-btn'); const simpleViewBtn = document.getElementById('show-simple-view-btn'); fullViewBtn.addEventListener('click', () => { document.getElementById('simple-list-view').style.display = 'none'; document.getElementById('full-calendar-view').style.display = 'block'; fullViewBtn.classList.add('active'); simpleViewBtn.classList.remove('active'); currentCalendarOptions = { height: isMobile ? 'auto' : undefined, aspectRatio: isMobile ? 0.8 : 1.35 }; initializeFullCalendar(); calendar.updateSize(); }); simpleViewBtn.addEventListener('click', () => { document.getElementById('full-calendar-view').style.display = 'none'; document.getElementById('simple-list-view').style.display = 'block'; simpleViewBtn.classList.add('active'); fullViewBtn.classList.remove('active'); renderSimpleListView(); }); document.getElementById('custom-prev-btn')._isInitialized = true; } initializeFullCalendar(); if (document.getElementById('simple-list-view').style.display === 'block') { renderSimpleListView(); } else { if (isMobile) { document.getElementById('show-simple-view-btn').click(); } else { document.getElementById('show-full-view-btn').click(); } } } catch (error) { Swal.fire('載入失敗', error.message, 'error'); } finally { hideLoading(); } }
         
-        function renderMySignupsTable(signups) { const resultDiv = document.getElementById('my-signups-result'); const actionsContainer = document.getElementById('query-actions-container'); resultDiv.innerHTML = ''; actionsContainer.style.display = 'none'; if (!signups || signups.length === 0) { Swal.fire({ icon: 'info', title: '查無資料', text: '在您指定的條件下，找不到相關的報名紀錄。' }); lastQuery.data = []; return; } lastQuery.data = signups; let tableHtml = `<div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><div class="table-responsive" id="my-signups-table-container"><table class="all-signups-table"><thead><tr><th>活動日期</th><th>星期</th><th>活動名稱</th><th>開始時間</th><th>結束時間</th><th>崗位</th><th>姓名</th><th>報名時間</th><th>操作</th></tr></thead><tbody>`; signups.forEach(s => { tableHtml += `<tr><td>${s.eventDate || ''}</td><td>${s.eventDayOfWeek || ''}</td><td>${s.eventTitle || ''}</td><td>${s.startTime || ''}</td><td>${s.endTime || ''}</td><td>${s.position || ''}</td><td>${s.user || ''}</td><td>${s.timestamp || ''}</td><td style="display: flex; gap: 8px; white-space: nowrap;"><button class="btn btn-sm" style="background-color: #ffc107; color: #212529;" onclick='promptToModifySignup(${JSON.stringify(s).replace(/'/g, "\\'")})'>修改</button><button class="btn btn-danger btn-sm" onclick='promptToDeleteSignup(${JSON.stringify(s).replace(/'/g, "\\'")})'>刪除</button></td></tr>`; }); tableHtml += '</tbody></table></div><div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><button class="floating-scroll-btn left" onclick="document.getElementById(\'my-signups-table-container\').scrollBy({left: -200, behavior: \'smooth\'})">&#8592;</button><button class="floating-scroll-btn right" onclick="document.getElementById(\'my-signups-table-container\').scrollBy({left: 200, behavior: \'smooth\'})">&#8594;</button>'; resultDiv.innerHTML = tableHtml; actionsContainer.style.display = 'flex'; const tableContainer = document.getElementById('my-signups-table-container'); const floatBtns = resultDiv.querySelectorAll('.floating-scroll-btn'); if (tableContainer && floatBtns.length > 0) { const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { floatBtns.forEach(btn => { if (entry.isIntersecting) { btn.classList.add('visible'); } else { btn.classList.remove('visible'); } }); }); }, { threshold: 0.1 }); observer.observe(tableContainer); } }
+        function renderMySignupsTable(signups) { const resultDiv = document.getElementById('my-signups-result'); const actionsContainer = document.getElementById('query-actions-container'); resultDiv.innerHTML = ''; actionsContainer.style.display = 'none'; if (!signups || signups.length === 0) { Swal.fire({ icon: 'info', title: '查無資料', text: '在您指定的條件下，找不到相關的報名紀錄。' }); lastQuery.data = []; return; } lastQuery.data = signups; let tableHtml = `<div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><div class="table-responsive" id="my-signups-table-container"><table class="all-signups-table"><thead><tr><th>活動日期</th><th>星期</th><th>活動名稱</th><th>開始時間</th><th>結束時間</th><th>崗位</th><th>姓名</th><th>報名時間</th><th>操作</th></tr></thead><tbody>`; signups.forEach(s => { tableHtml += `<tr><td>${s.eventDate || ''}</td><td>${s.eventDayOfWeek || ''}</td><td>${s.eventTitle || ''}</td><td>${s.startTime || ''}</td><td>${s.endTime || ''}</td><td>${s.position || ''}</td><td>${s.user || ''}</td><td>${s.timestamp || ''}</td><td style="display: flex; gap: 8px; white-space: nowrap;"><button class="btn btn-sm" style="background-color: #ffc107; color: #212529;" onclick='promptToModifySignup(${JSON.stringify(s).replace(/'/g, "\\'")})'>修改</button><button class="btn btn-danger btn-sm" onclick='promptToDeleteSignup(${JSON.stringify(s).replace(/'/g, "\\'")})'>刪除</button></td></tr>`; }); tableHtml += '</tbody></table></div><div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><button class="floating-scroll-btn left" onclick="document.getElementById(\'my-signups-table-container\').scrollBy({left: -200, behavior: \'smooth\'})">‹</button><button class="floating-scroll-btn right" onclick="document.getElementById(\'my-signups-table-container\').scrollBy({left: 200, behavior: \'smooth\'})">›</button>'; resultDiv.innerHTML = tableHtml; actionsContainer.style.display = 'flex'; const tableContainer = document.getElementById('my-signups-table-container'); const floatBtns = resultDiv.querySelectorAll('.floating-scroll-btn'); if (tableContainer && floatBtns.length > 0) { const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { floatBtns.forEach(btn => { if (entry.isIntersecting) { btn.classList.add('visible'); } else { btn.classList.remove('visible'); } }); }); }, { threshold: 0.1 }); observer.observe(tableContainer); } }
         async function promptToModifySignup(signup) { const eventDetails = allCalendarEvents.find(e => e.id === signup.eventId); if (!eventDetails) { return Swal.fire('錯誤', '找不到此報名的相關活動資訊，無法修改。', 'error'); } const allPositions = eventDetails.extendedProps.positions; if (!allPositions || allPositions.length === 0) { return Swal.fire('錯誤', '此活動沒有可用的崗位列表。', 'error'); } let optionsHtml = allPositions.map(pos => `<option value="${pos}" ${pos === signup.position ? 'selected' : ''}>${pos}</option>`).join(''); const { value: newPosition } = await Swal.fire({ title: '修改報名崗位', html: ` <div style="text-align: left; margin: 1em 0; line-height: 1.8;"><p><strong>活動:</strong> ${signup.eventTitle}</p><p><strong>日期:</strong> ${signup.eventDate}</p><p><strong>時間:</strong> ${eventDetails.extendedProps.startTime || ''}${eventDetails.extendedProps.endTime ? ' - ' + eventDetails.extendedProps.endTime : ''}</p><p><strong>姓名:</strong> ${signup.user}</p><hr style="margin: 1rem 0; height: 1px; background: #ddd; border: none;"><p style="margin-top: 1em;"><strong>修改崗位為:</strong></p><select id="swal-position-select" class="swal2-select" style="width: 100%; max-width: 300px; margin-top: 0.5em;">${optionsHtml}</select></div>`, width: isMobile ? '90vw' : '500px', focusConfirm: false, showCancelButton: true, confirmButtonText: '確認修改', cancelButtonText: '取消', preConfirm: () => document.getElementById('swal-position-select').value }); if (newPosition && newPosition !== signup.position) { showLoading(); try { const response = await callAppsScript('modifySignup', { signupId: signup.signupId, newPosition: newPosition }); await Swal.fire('修改成功', response.data.message, 'success'); executeUnifiedSignupQuery(lastQuery.params.searchText, lastQuery.params.startDateStr, lastQuery.params.endDateStr); setupCalendarTab(true); } catch (e) { Swal.fire('修改失敗', e.message, 'error'); } finally { hideLoading(); } } }
         async function executeUnifiedSignupQuery(searchText, startDateStr, endDateStr) { showLoading(); try { const response = await callAppsScript('getUnifiedSignups', { searchText, startDateStr, endDateStr }); renderMySignupsTable(response.data); } catch(e) { Swal.fire('查詢失敗', e.message, 'error'); } finally { hideLoading(); } }
         async function promptToDeleteSignup(signup) { const { value: password } = await Swal.fire({ title: '確定要刪除此筆報名嗎？', html: `<div style="text-align: left; margin: 1em auto; background: #f8f9fa; border-left: 4px solid #e74c3c; padding: 1em; border-radius: 4px; width: 90%;"><p><strong>活動日期:</strong> ${signup.eventDate || 'N/A'}</p><p><strong>活動名稱:</strong> ${signup.eventTitle || 'N/A'}</p><p><strong>報名人員:</strong> ${signup.user || 'N/A'}</p><p><strong>報名崗位:</strong> ${signup.position || 'N/A'}</p><p><strong>報名時間:</strong> ${signup.timestamp || 'N/A'}</p></div><div style="text-align: center; margin-top: 1.5em;"><p style="margin-bottom: 0.5em;">請輸入密碼以確認刪除：</p><input type="password" id="password-input" class="swal2-input" placeholder="請輸入密碼" style="width: 90%; margin: 0 auto;"></div>`, icon: 'warning', showCancelButton: true, confirmButtonText: '確認刪除', cancelButtonText: '取消', preConfirm: () => { const pw = document.getElementById('password-input').value; if (pw !== '0425') { Swal.showValidationMessage('密碼錯誤！'); return false; } return pw; } }); if (password) { showLoading(); try { const response = await callAppsScript('removeSignup', { eventId: signup.eventId, userName: signup.user }); await Swal.fire('刪除成功', response.data.message, 'success'); if (lastQuery.type === 'unified') { await executeUnifiedSignupQuery(lastQuery.params.searchText, lastQuery.params.startDateStr, lastQuery.params.endDateStr); } setupCalendarTab(true); } catch(e) { Swal.fire('刪除失敗', e.message, 'error'); } finally { hideLoading(); } } }
-        async function generateStatsReport() { showLoading(); const detailsContainer = document.getElementById('stats-details-container'); detailsContainer.innerHTML = ''; try { const response = await callAppsScript('getStatsData', { startDateStr: document.getElementById('stats-start-date').value, endDateStr: document.getElementById('stats-end-date').value }); const data = response.data; lastStatsData = data; const ctx = document.getElementById('stats-chart').getContext('2d'); if (statsChart) statsChart.destroy(); if (!data || data.labels.length === 0) { document.getElementById('stats-chart').style.display = 'none'; detailsContainer.innerHTML = '<p style="text-align:center; padding: 20px;">在選定的日期範圍?沒有任何報名記錄可供統計。</p>'; Swal.fire('提示', '在選定的日期範圍?沒有任何報名記錄可供統計。', 'info'); return; } document.getElementById('stats-chart').style.display = 'block'; const backgroundColors = data.labels.map(() => `rgba(${Math.floor(Math.random()*200)+50},${Math.floor(Math.random()*200)+50},${Math.floor(Math.random()*200)+50},0.8)`); const chartLabels = data.labels.map(label => { const parts = label.match(/(.*?)\s*\((.*?)\)/); return (parts && parts.length === 3) ? (isMobile ? parts[1].trim() : [parts[1].trim(), `(${parts[2]})`]) : label; }); const chartOptions = { responsive: true, maintainAspectRatio: false, backgroundColor: 'white', plugins: { datalabels: { anchor: 'end', align: 'top', offset: 4, color: '#444', font: { weight: 'bold', size: 14 } }, tooltip: { callbacks: { title: (items) => data.fullDetails[items[0].dataIndex].eventInfo.title, label: (item) => { const d = data.fullDetails[item.dataIndex]; let l = [`日期: ${d.eventInfo.date}`, `時間: ${d.eventInfo.startTime}${d.eventInfo.endTime ? ' - ' + d.eventInfo.endTime : ''}`, `已報名: ${item.raw} / ${d.eventInfo.maxAttendees} 人`, '--- 崗位人員 ---']; d.signups.forEach(s => l.push(`${s.position}: ${s.user}`)); return l; } } } }, scales: { x: { ticks: { autoSkip: false } }, y: { grace: '10%' } }, layout: { padding: { top: 30, bottom: isMobile ? 80 : 40 } } }; if (isMobile) { chartOptions.scales.x.ticks.maxRotation = 45; chartOptions.scales.x.ticks.minRotation = 45; } statsChart = new Chart(ctx, { type: 'bar', data: { labels: chartLabels, datasets: [{ label: '報名人數', data: data.data, backgroundColor: backgroundColors, borderColor: backgroundColors.map(c => c.replace('0.8', '1')), borderWidth: 1 }] }, options: chartOptions }); let detailsHtml = '<h2>詳細活動報名資訊</h2>'; data.fullDetails.forEach((eventData, index) => { const dayOfWeekText = eventData.eventInfo.dayOfWeek ? `(${eventData.eventInfo.dayOfWeek})` : ''; detailsHtml += `<div class="stats-event-block"><h3>${index + 1}. ${eventData.eventInfo.title}</h3><p><strong>日期:</strong> ${eventData.eventInfo.date} ${dayOfWeekText}</p><p><strong>時間:</strong> ${eventData.eventInfo.startTime}${eventData.eventInfo.endTime ? ' - ' + eventData.eventInfo.endTime : ''}</p><p><strong>報名狀況:</strong> ${eventData.signups.length} / ${eventData.eventInfo.maxAttendees}</p>`; if (eventData.signups && eventData.signups.length > 0) { detailsHtml += '<ul>'; eventData.signups.forEach(signup => { detailsHtml += `<li><strong>${signup.position}:</strong> ${signup.user}</li>`; }); detailsHtml += '</ul>'; } else { detailsHtml += '<p>無人報名</p>'; } detailsHtml += '</div>'; }); detailsContainer.innerHTML = detailsHtml; setTimeout(() => { const canvas = document.getElementById('stats-chart'); if (canvas) canvas.style.backgroundColor = 'white'; }, 100); } catch(e) { Swal.fire('產生失敗', e.message, 'error'); } finally { hideLoading(); } }
+        async function generateStatsReport() { showLoading(); const detailsContainer = document.getElementById('stats-details-container'); detailsContainer.innerHTML = ''; try { const response = await callAppsScript('getStatsData', { startDateStr: document.getElementById('stats-start-date').value, endDateStr: document.getElementById('stats-end-date').value }); const data = response.data; lastStatsData = data; const ctx = document.getElementById('stats-chart').getContext('2d'); if (statsChart) statsChart.destroy(); if (!data || data.labels.length === 0) { document.getElementById('stats-chart').style.display = 'none'; detailsContainer.innerHTML = '<p style="text-align:center; padding: 20px;">在選定的日期範圍内沒有任何報名記錄可供統計。</p>'; Swal.fire('提示', '在選定的日期範圍内沒有任何報名記錄可供統計。', 'info'); return; } document.getElementById('stats-chart').style.display = 'block'; const backgroundColors = data.labels.map(() => `rgba(${Math.floor(Math.random()*200)+50},${Math.floor(Math.random()*200)+50},${Math.floor(Math.random()*200)+50},0.8)`); const chartLabels = data.labels.map(label => { const parts = label.match(/(.*?)\s*\((.*?)\)/); return (parts && parts.length === 3) ? (isMobile ? parts[1].trim() : [parts[1].trim(), `(${parts[2]})`]) : label; }); const chartOptions = { responsive: true, maintainAspectRatio: false, backgroundColor: 'white', plugins: { datalabels: { anchor: 'end', align: 'top', offset: 4, color: '#444', font: { weight: 'bold', size: 14 } }, tooltip: { callbacks: { title: (items) => data.fullDetails[items[0].dataIndex].eventInfo.title, label: (item) => { const d = data.fullDetails[item.dataIndex]; let l = [`日期: ${d.eventInfo.date}`, `時間: ${d.eventInfo.startTime}${d.eventInfo.endTime ? ' - ' + d.eventInfo.endTime : ''}`, `已報名: ${item.raw} / ${d.eventInfo.maxAttendees} 人`, '--- 崗位人員 ---']; d.signups.forEach(s => l.push(`${s.position}: ${s.user}`)); return l; } } } }, scales: { x: { ticks: { autoSkip: false } }, y: { grace: '10%' } }, layout: { padding: { top: 30, bottom: isMobile ? 80 : 40 } } }; if (isMobile) { chartOptions.scales.x.ticks.maxRotation = 45; chartOptions.scales.x.ticks.minRotation = 45; } statsChart = new Chart(ctx, { type: 'bar', data: { labels: chartLabels, datasets: [{ label: '報名人數', data: data.data, backgroundColor: backgroundColors, borderColor: backgroundColors.map(c => c.replace('0.8', '1')), borderWidth: 1 }] }, options: chartOptions }); let detailsHtml = '<h2>詳細活動報名資訊</h2>'; data.fullDetails.forEach((eventData, index) => { const dayOfWeekText = eventData.eventInfo.dayOfWeek ? `(${eventData.eventInfo.dayOfWeek})` : ''; detailsHtml += `<div class="stats-event-block"><h3>${index + 1}. ${eventData.eventInfo.title}</h3><p><strong>日期:</strong> ${eventData.eventInfo.date} ${dayOfWeekText}</p><p><strong>時間:</strong> ${eventData.eventInfo.startTime}${eventData.eventInfo.endTime ? ' - ' + eventData.eventInfo.endTime : ''}</p><p><strong>報名狀況:</strong> ${eventData.signups.length} / ${eventData.eventInfo.maxAttendees}</p>`; if (eventData.signups && eventData.signups.length > 0) { detailsHtml += '<ul>'; eventData.signups.forEach(signup => { detailsHtml += `<li><strong>${signup.position}:</strong> ${signup.user}</li>`; }); detailsHtml += '</ul>'; } else { detailsHtml += '<p>無人報名</p>'; } detailsHtml += '</div>'; }); detailsContainer.innerHTML = detailsHtml; setTimeout(() => { const canvas = document.getElementById('stats-chart'); if (canvas) canvas.style.backgroundColor = 'white'; }, 100); } catch(e) { Swal.fire('產生失敗', e.message, 'error'); } finally { hideLoading(); } }
         async function generatePerformanceReport() {
             showLoading();
             const detailsContainer = document.getElementById('performance-details-container');
@@ -611,7 +611,7 @@
   }
 }
 
-</style></head><body><table><tr><td colspan="5" class="title-row">${title}</td></tr><tr><td colspan="5">報表生成時間：${generateTime}</td></tr><tr><th>活動日期</th><th>活動名稱</th><th>崗位</th><th>報名者</th><th>報名時間</th></tr>`; dataToExport.forEach(row => { htmlContent += `<tr><td>${row.eventDate||''}</td><td>${row.eventTitle||''}</td><td>${row.position||''}</td><td>${row.user||''}</td><td>'${row.timestamp||''}'</td></tr>`; }); htmlContent += '</table></body></html>'; const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' }); const fileName = `AV立願報名記錄_${new Date().toISOString().slice(0,10)}.xls`; const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = fileName; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(link.href); } catch (e) { Swal.fire('匯出失?', e.message, 'error'); } finally { hideLoading(); } }
+</style></head><body><table><tr><td colspan="5" class="title-row">${title}</td></tr><tr><td colspan="5">報表生成時間：${generateTime}</td></tr><tr><th>活動日期</th><th>活動名稱</th><th>崗位</th><th>報名者</th><th>報名時間</th></tr>`; dataToExport.forEach(row => { htmlContent += `<tr><td>${row.eventDate||''}</td><td>${row.eventTitle||''}</td><td>${row.position||''}</td><td>${row.user||''}</td><td>'${row.timestamp||''}'</td></tr>`; }); htmlContent += '</table></body></html>'; const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' }); const fileName = `AV立願報名記錄_${new Date().toISOString().slice(0,10)}.xls`; const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = fileName; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(link.href); } catch (e) { Swal.fire('匯出失败', e.message, 'error'); } finally { hideLoading(); } }
 
         document.addEventListener('DOMContentLoaded', function() {
             const feVerEl = document.getElementById('frontend-version');
@@ -666,18 +666,11 @@
             function setupMarqueeToggle() {
                 const toggleBtn = document.getElementById('toggle-marquee-btn');
                 const marqueeContainer = document.getElementById('marquee-container');
-                if (!toggleBtn || !marqueeContainer) {
+                if (!toggleBtn || !marqueeContainer || !isMobile) {
+                    if (toggleBtn) toggleBtn.style.display = 'none';
                     return;
                 }
                 let isVisible = localStorage.getItem('av_marquee_visible') !== 'false';
-                const playDogSound = () => {
-                    const audioEl = document.getElementById('dog-audio');
-                    if (!audioEl) return;
-                    try {
-                        audioEl.currentTime = 0;
-                        audioEl.play().catch(() => {});
-                    } catch (e) {}
-                };
                 const applyVisibility = () => {
                     if (isVisible) {
                         marqueeContainer.style.display = 'flex';
@@ -699,7 +692,6 @@
                     isVisible = !isVisible;
                     localStorage.setItem('av_marquee_visible', isVisible);
                     applyVisibility();
-                    playDogSound();
                 });
             }
             setupMarqueeToggle();
@@ -715,33 +707,6 @@
             document.getElementById('clear-search-btn').addEventListener('click', () => { document.getElementById('universal-search-input').value = ''; const { firstDayStr, lastDayStr } = getMonthDateRange(); document.getElementById('search-start-date').value = firstDayStr; document.getElementById('search-end-date').value = lastDayStr; document.getElementById('my-signups-result').innerHTML = ''; document.getElementById('query-actions-container').style.display = 'none'; lastQuery.data = []; }); 
             document.getElementById('generate-stats').addEventListener('click', generateStatsReport); 
             document.getElementById('generate-performance-report').addEventListener('click', generatePerformanceReport);
-            const resetStatsBtn = document.getElementById('reset-stats-btn');
-            if (resetStatsBtn) {
-                resetStatsBtn.addEventListener('click', () => {
-                    const { firstDayStr, lastDayStr } = getMonthDateRange();
-                    document.getElementById('stats-start-date').value = firstDayStr;
-                    document.getElementById('stats-end-date').value = lastDayStr;
-                    if (statsChart) { statsChart.destroy(); statsChart = null; }
-                    const statsCanvas = document.getElementById('stats-chart');
-                    if (statsCanvas) statsCanvas.style.display = 'none';
-                    lastStatsData = null;
-                    const statsDetails = document.getElementById('stats-details-container');
-                    if (statsDetails) statsDetails.innerHTML = '';
-                });
-            }
-            const resetPerformanceBtn = document.getElementById('reset-performance-btn');
-            if (resetPerformanceBtn) {
-                resetPerformanceBtn.addEventListener('click', () => {
-                    const { firstDayStr, lastDayStr } = getMonthDateRange();
-                    document.getElementById('performance-start-date').value = firstDayStr;
-                    document.getElementById('performance-end-date').value = lastDayStr;
-                    if (performanceChart) { performanceChart.destroy(); performanceChart = null; }
-                    const perfCanvas = document.getElementById('performance-chart');
-                    if (perfCanvas) perfCanvas.style.display = 'none';
-                    const perfDetails = document.getElementById('performance-details-container');
-                    if (perfDetails) perfDetails.innerHTML = '';
-                });
-            }
 
             document.getElementById('export-from-query-btn').addEventListener('click', exportCurrentQueryResultToExcel); 
             const shareToClipboardContent = async (functionToCall, params = {}) => {
@@ -756,10 +721,10 @@
                     }
                     if (data.text) {
                         Swal.fire({
-                            title: '&#128203; 準備分享的內容',
-                            width: isMobile ? '92vw' : '680px',
-                            html: `<div style="width:100%;"><textarea id="clipboard-textarea" readonly style="width:100%;max-width:100%;min-height:220px;padding:12px 14px;border-radius:10px;border:1px solid #d8dee9;box-sizing:border-box;font-size:15px;line-height:1.5;white-space:pre-wrap;">${data.text}</textarea></div>`,
-                            confirmButtonText: '&#128203; 複製內容',
+                            title: '準備分享的內容',
+                            width: isMobile ? '90vw' : '600px',
+                            html: `<textarea id="clipboard-textarea" readonly>${data.text}</textarea>`,
+                            confirmButtonText: '📋 複製內容',
                             showCancelButton: true,
                             cancelButtonText: '關閉',
                             didOpen: () => {
@@ -810,13 +775,9 @@
                 }
             });
             document.getElementById('admin-reset-btn').addEventListener('click', () => {
-                const { firstDayStr, lastDayStr } = getMonthDateRange();
-                const startEl = document.getElementById('export-start-date');
-                const endEl = document.getElementById('export-end-date');
-                if (startEl) startEl.value = firstDayStr;
-                if (endEl) endEl.value = lastDayStr;
+                reloadSystem();
             });
-            document.getElementById('share-query-to-clipboard-btn').addEventListener('click', () => { if (!lastQuery || !lastQuery.data || lastQuery.data.length === 0) { return Swal.fire('無資料', '沒有可分享的查詢結果。', 'info'); } const { searchText, startDateStr, endDateStr } = lastQuery.params; const titleKeyword = searchText ? `，關鍵字：「${searchText}」` : ''; const title = `【AV放送立願報名查詢結果】\n日期：${startDateStr} ~ ${endDateStr}${titleKeyword}\n----------\n`; const eventsGroup = {}; lastQuery.data.forEach(signup => { const key = `${signup.eventDate} ${signup.eventTitle}`; if (!eventsGroup[key]) { eventsGroup[key] = []; } eventsGroup[key].push(`- ${signup.position}: ${signup.user}`); }); let shareText = title; Object.keys(eventsGroup).sort().forEach(eventKey => { shareText += `\n【${eventKey}】\n`; shareText += eventsGroup[eventKey].join('\n'); shareText += '\n'; }); shareText += '\n查看最新報名資訊：\nhttps://angewoo.github.io/AVschedule/'; Swal.fire({ title: '&#128203; 準備分享的內容', width: isMobile ? '92vw' : '680px', html: `<div style="width:100%;"><textarea id="clipboard-textarea" readonly style="width:100%;max-width:100%;min-height:220px;padding:12px 14px;border-radius:10px;border:1px solid #d8dee9;box-sizing:border-box;font-size:15px;line-height:1.5;white-space:pre-wrap;">${shareText}</textarea></div>`, confirmButtonText: '&#128203; 複製內容', showCancelButton: true, cancelButtonText: '關閉', didOpen: () => { const textarea = document.getElementById('clipboard-textarea'); if (textarea) { textarea.style.height = 'auto'; textarea.style.height = (textarea.scrollHeight + 5) + 'px'; textarea.select(); } }, preConfirm: () => { const textToCopy = document.getElementById('clipboard-textarea').value; return navigator.clipboard ? navigator.clipboard.writeText(textToCopy).then(() => true).catch(err => { Swal.showValidationMessage(`複製失敗: ${err.message}`); return false; }) : (document.execCommand('copy'), true); } }).then((result) => { if (result.isConfirmed) { Swal.fire({ icon: 'success', title: '已複製成功！', text: '請手動切換到 LINE 或其他應用程式並貼上內容。', timer: 2500, showConfirmButton: false }); } }); });
+            document.getElementById('share-query-to-clipboard-btn').addEventListener('click', () => { if (!lastQuery || !lastQuery.data || lastQuery.data.length === 0) { return Swal.fire('無資料', '沒有可分享的查詢結果。', 'info'); } const { searchText, startDateStr, endDateStr } = lastQuery.params; const titleKeyword = searchText ? `，關鍵字：「${searchText}」` : ''; const title = `【AV放送立願報名查詢結果】\n日期：${startDateStr} ~ ${endDateStr}${titleKeyword}\n----------\n`; const eventsGroup = {}; lastQuery.data.forEach(signup => { const key = `${signup.eventDate} ${signup.eventTitle}`; if (!eventsGroup[key]) { eventsGroup[key] = []; } eventsGroup[key].push(`- ${signup.position}: ${signup.user}`); }); let shareText = title; Object.keys(eventsGroup).sort().forEach(eventKey => { shareText += `\n【${eventKey}】\n`; shareText += eventsGroup[eventKey].join('\n'); shareText += '\n'; }); shareText += '\n查看最新報名資訊：\nhttps://angewoo.github.io/AVschedule/'; Swal.fire({ title: '準備分享的內容', width: isMobile ? '90vw' : '600px', html: `<textarea id="clipboard-textarea" readonly>${shareText}</textarea>`, confirmButtonText: '📋 複製內容', showCancelButton: true, cancelButtonText: '關閉', didOpen: () => { const textarea = document.getElementById('clipboard-textarea'); if (textarea) { textarea.style.height = 'auto'; textarea.style.height = (textarea.scrollHeight + 5) + 'px'; textarea.select(); } }, preConfirm: () => { const textToCopy = document.getElementById('clipboard-textarea').value; return navigator.clipboard ? navigator.clipboard.writeText(textToCopy).then(() => true).catch(err => { Swal.showValidationMessage(`複製失敗: ${err.message}`); return false; }) : (document.execCommand('copy'), true); } }).then((result) => { if (result.isConfirmed) { Swal.fire({ icon: 'success', title: '已複製成功！', text: '請手動切換到 LINE 或其他應用程式並貼上內容。', timer: 2500, showConfirmButton: false }); } }); });
 
             const topFab = document.getElementById('scroll-top-btn');
             const bottomFab = document.getElementById('scroll-bottom-btn');
@@ -838,6 +799,61 @@
                 const tabBtn = document.querySelector(`.tab-button[onclick*="'${savedTab}'"]`);
                 if (tabBtn) tabBtn.click();
             }
+            document.getElementById('export-stats-pdf-btn').addEventListener('click', async () => { if (!statsChart || !lastStatsData || lastStatsData.labels.length === 0) { return Swal.fire('提示', '請先點擊「產生報表」以生成統計圖表和數據。', 'info'); } const sourceElement = document.getElementById('stats-details-container'); if (!sourceElement || sourceElement.children.length <= 1) { return Swal.fire('提示', '沒有詳細資料可供匯出。', 'info'); } showLoading(); try { const { jsPDF } = window.jspdf; const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' }); const startDateStr = document.getElementById('stats-start-date').value, endDateStr = document.getElementById('stats-end-date').value; const dateRangeText = `${startDateStr || '所有'} - ${endDateStr || '所有'}`; const docTitle = `AV放送立願統計報表 (${dateRangeText})`; const generateTime = new Date().toLocaleString('zh-TW'); const pdfContentEl = document.createElement('div'); pdfContentEl.style.cssText = "position:absolute;left:-9999px;width:210mm;padding:15mm;background-color:white;font-family:'Microsoft JhengHei','PingFang TC',sans-serif;color:#333;"; const pdfStyles = `<style>.details-grid{display:flex;flex-wrap:wrap;justify-content:space-between;}.details-grid .stats-event-block{width:48%;border:1px solid #ccc;padding:8px;margin-bottom:10px;page-break-inside:avoid;box-sizing:border-box;}.details-grid h3{font-size:8px;margin:0 0 4px 0;color:#FF8C42;font-weight:bold;}.details-grid p{font-size:6px;margin:1px 0;line-height:1.3;}.details-grid ul{list-style-type:none;padding-left:0;margin:4px 0 0 0;}.details-grid li{background:#f9f9f9;padding:1px 3px;border-radius:2px;margin-bottom:1px;font-size:6px;}
+/* --- MOBILE DATE INPUT FIX (追加) --- */
+@media (max-width: 768px) {
+  .inline-form {
+    flex-direction: column;
+    align-items: center;
+  }
+  .inline-form > .form-group,
+  .inline-form > .btn {
+    width: 92vw;
+    max-width: 480px;
+  }
+  .inline-form .form-group > input,
+  .inline-form .form-group > select {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .inline-form input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+
+/* --- HOTFIX: 修正手機超出容器（覆寫前一版 92vw 設定） --- */
+@media (max-width: 768px) {
+  .inline-form { 
+    align-items: stretch !important; 
+    width: 100% !important;
+  }
+  .inline-form > .form-group,
+  .inline-form > .btn {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+  .inline-form .form-group > input,
+  .inline-form .form-group > select {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+  .inline-form input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+</style>`; const titleHtml = `<div style="text-align:center;border-bottom:2px solid #333;padding-bottom:10px;margin-bottom:15px;"><h1 style="font-size:20px;margin:0;color:#FF8C42;">${docTitle}</h1><p style="font-size:10px;margin:5px 0 0 0;">報表生成時間：${generateTime}</p></div>`; const chartImageData = statsChart.canvas.toDataURL('image/png', 1.0); const chartHtml = `<div style="text-align:center;margin-bottom:15px;page-break-inside:avoid;"><img src="${chartImageData}" style="width:100%;max-width:180mm;"/></div>`; const detailsTitle = sourceElement.querySelector('h2') ? sourceElement.querySelector('h2').outerHTML : ''; let eventBlocksHtml = ''; sourceElement.querySelectorAll('.stats-event-block').forEach(block => { eventBlocksHtml += block.outerHTML; }); const detailsGridHtml = `<div class="details-grid">${eventBlocksHtml}</div>`; pdfContentEl.innerHTML = pdfStyles + titleHtml + chartHtml + detailsTitle + detailsGridHtml; document.body.appendChild(pdfContentEl); const canvas = await html2canvas(pdfContentEl, { scale: 2, useCORS: true }); const imgData = canvas.toDataURL('image/png'); const pdfWidth = pdf.internal.pageSize.getWidth(), pdfHeight = pdf.internal.pageSize.getHeight(); const imgProps = pdf.getImageProperties(imgData); const imgWidth = pdfWidth, imgHeight = (imgProps.height * imgWidth) / imgProps.width; let heightLeft = imgHeight, position = 0; pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight); heightLeft -= pdfHeight; while (heightLeft > 0) { position -= pdfHeight; pdf.addPage(); pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight); heightLeft -= pdfHeight; } pdf.save(`AV立願統計報表_${startDateStr}_${endDateStr}.pdf`); document.body.removeChild(pdfContentEl); } catch (e) { console.error("PDF generation failed:", e); Swal.fire('PDF 匯出失敗', `前端生成PDF時發生錯誤: ${e.message}`, 'error'); } finally { hideLoading(); } });
             const handleDocDownload = (docType) => {
                 const docMap = {
                     poster: { action: 'open', url: '01.pdf', filename: 'AV招生海報.pdf' },
@@ -874,6 +890,4 @@
     </script>
 </body>
 </html>
-
-
 

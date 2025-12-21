@@ -32,13 +32,13 @@
         body::before { content: ''; position: fixed; inset: 0; background: linear-gradient(135deg, rgba(31,122,236,0.08), transparent 45%), linear-gradient(315deg, rgba(15,76,163,0.06), transparent 55%); z-index: 0; pointer-events: none; }
         .page-header { text-align: center; margin-bottom: 32px; position: relative; z-index: 1; }
         .page-header h1 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 800; color: #fff; letter-spacing: 0.5px; display: inline-flex; justify-content: center; align-items: center; gap: 12px; padding: 14px 26px; background: linear-gradient(120deg, #ff7a7a, #ffb347, #ffe66d, #7ae582, #5ad1e5, #8e7dff, #ff7ac7, #ff7a7a); background-size: 200% 200%; animation: rainbow-shift 12s ease infinite; border: 1px solid rgba(255,255,255,0.35); border-radius: 999px; box-shadow: 0 14px 36px rgba(0,0,0,0.12), 0 8px 18px rgba(0,0,0,0.08); position: relative; overflow: hidden; text-shadow: 0 2px 8px rgba(0,0,0,0.18); }
-        .brand-icon { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(255,255,255,0.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; color: #fff; }
+        .brand-icon { width: 64px; height: 64px; display: inline-flex; align-items: center; justify-content: center; border-radius: 16px; background: rgba(255,255,255,0.16); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2); cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; color: #fff; }
         .brand-icon:hover { transform: translateY(-1px) scale(1.02); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.28), 0 6px 12px rgba(0,0,0,0.15); }
-        .brand-icon img { width: 18px; height: 18px; object-fit: contain; }
+        .brand-icon img { width: 36px; height: 36px; object-fit: contain; }
         @keyframes rainbow-shift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        #toggle-marquee-btn { display: inline-flex; align-items: center; justify-content: center; font-size: 0.9em; cursor: pointer; transition: transform 0.2s ease, color 0.2s ease; user-select: none; padding: 6px 10px; border-radius: 12px; background: rgba(0,0,0,0.1); color: #fff; }
-        #toggle-marquee-btn:hover { transform: scale(1.08); }
-        #toggle-marquee-btn.active { color: #fff; background: rgba(0,0,0,0.2); }
+        #toggle-marquee-btn { width: 64px; height: 64px; display: inline-flex; align-items: center; justify-content: center; font-size: 36px; cursor: pointer; transition: transform 0.2s ease, color 0.2s ease; user-select: none; padding: 0; border-radius: 16px; background: rgba(0,0,0,0.12); color: #fff; }
+        #toggle-marquee-btn:hover { transform: scale(1.02); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25), 0 4px 8px rgba(0,0,0,0.15); }
+        #toggle-marquee-btn.active { color: #fff; background: rgba(0,0,0,0.22); }
         .page-footer { text-align: center; margin-top: auto; padding: 18px 12px; color: var(--text-light); font-size: 0.9em; position: relative; z-index: 1; }
         .container { margin: 0 auto; width: 100%; max-width: 1200px; background: linear-gradient(135deg, var(--card-bg-start), var(--card-bg-end)); padding: 32px; border-radius: var(--border-radius-lg); border: 1px solid var(--card-border); box-shadow: 0 18px 40px var(--card-shadow-dark), 0 8px 18px var(--card-shadow-light); position: relative; z-index: 1; flex-grow: 1; backdrop-filter: blur(6px); }
         h4 { font-size: 1.35rem; font-weight: 700; margin-bottom: 1.25rem; color: var(--text-color); display: flex; align-items: center; gap: 10px; }
@@ -131,7 +131,7 @@
             html { height: 100%; }
             body { padding: 12px; margin: 0; min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
             .page-header { margin-bottom: 12px; flex-shrink: 0; }
-            .page-header h1 { font-size: 1.7rem; }
+            .page-header h1 { font-size: 1.4rem; }
             #toggle-marquee-btn { display: inline-flex; }
             .container { padding: 18px 14px; border-radius: var(--border-radius); box-shadow: 0 8px 20px var(--card-shadow-dark); display: flex; flex-direction: column; overflow-x: hidden; }
             .page-footer { margin-top: 12px; padding: 10px; flex-shrink: 0; background: var(--bg-color); }

@@ -409,7 +409,11 @@
         const FRONTEND_VERSION = "0717";
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1dCHAzjMNklN96jXKpWYcTv-NvzKoB8J6CcY30L55dAtaAf0bTRWTJTc20Fk2MZbgeQ/exec"; 
         
-        function reloadSystem() { showLoading(); setTimeout(() => { location.reload(); }, 200); }
+        function reloadSystem() {
+            showLoading();
+            localStorage.setItem('av_active_tab', 'calendar-tab');
+            setTimeout(() => { location.reload(); }, 200);
+        }
         let calendar = null, statsChart, performanceChart, allCalendarEvents = [], currentDisplayDate = new Date(), lastQuery = { type: null, params: {}, data: [] }, lastStatsData = null, eventHandlingInProgress = false;
         const isMobile = window.innerWidth <= 768;
         let currentCalendarOptions = { height: isMobile ? 'auto' : undefined, aspectRatio: isMobile ? 0.8 : 1.35 };
@@ -861,11 +865,9 @@
                 window.addEventListener('scroll', updateFabVisibility, { passive: true });
                 updateFabVisibility();
             }
-            const savedTab = localStorage.getItem('av_active_tab');
-            if (savedTab) {
-                const tabBtn = document.querySelector(`.tab-button[onclick*="'${savedTab}'"]`);
-                if (tabBtn) tabBtn.click();
-            }
+            const savedTab = localStorage.getItem('av_active_tab') || 'calendar-tab';
+            const tabBtn = document.querySelector(`.tab-button[onclick*="'${savedTab}'"]`);
+            if (tabBtn) tabBtn.click();
             const handleDocDownload = (docType) => {
                 const docMap = {
                     poster: { action: 'open', url: '01.pdf', filename: 'AV招生海報.pdf' },

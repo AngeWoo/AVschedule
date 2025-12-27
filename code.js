@@ -51,6 +51,9 @@ function doGet(e) {
       case 'getSignupsAsTextForToday': result = getSignupsAsTextForToday(); break;
       case 'getSignupsAsTextForTomorrow': result = getSignupsAsTextForTomorrow(); break;
       case 'getSignupsAsTextForDateRange': result = getSignupsAsText(params.startDateStr, params.endDateStr); break;
+      // --- LINE Messaging API ---
+      case 'setupDailyTrigger': result = setupDaily20Trigger_MessageAPI(); break;
+      case 'manualTriggerDailyNotify': result = dailyNotifyTomorrow_MessageAPI(); break;
       default: throw new Error(`未知的函式名稱: ${functionName}`);
     }
 
@@ -736,10 +739,98 @@ function scheduleDeletion(fileId) { if (!fileId) return; try { const trigger = S
 function triggeredDeleteHandler(e) { const triggerId = e.triggerUid; const scriptProperties = PropertiesService.getScriptProperties(); const fileId = scriptProperties.getProperty(triggerId); if (fileId) { try { DriveApp.getFileById(fileId).setTrashed(true); } catch (err) { console.error(`刪除檔案 ${fileId} 失敗: ${err.toString()}`); } scriptProperties.deleteProperty(triggerId); } const allTriggers = ScriptApp.getProjectTriggers(); for (let i = 0; i < allTriggers.length; i++) { if (allTriggers[i].getUniqueId() === triggerId) { ScriptApp.deleteTrigger(allTriggers[i]); break; } } }
 
 
-// ===================== [LINE Messaging API 自動推播整合] (維持不變) =====================
-const LINE_CHANNEL_ACCESS_TOKEN = 'MaSV+Q15S2BXNVYW6xroMRfJwIl5Oe8ZsRWRtuo9HpbQRssOXQceAUYPwuGQ9L8wa9pkbZyWudE+DFZ2MwRzHqBEkNUmM+gIen+YQyXncJGz4/MO+QuB4u6niSLPzUAM5wNacDP2uMXHc51laR2/3gdB04t89/1O/w1cDnyilFU=';
-const LINE_RECIPIENT_IDS = [ 'Ufefb59896be6a2030d5c97e25f00d5d7', ];
-function lineSendMessages(toIds, messages, options) { if (!LINE_CHANNEL_ACCESS_TOKEN) { const msg = 'LINE_CHANNEL_ACCESS_TOKEN 未設定。'; console.error(msg); return { status: 'error', error: msg }; } try { const hasTargets = Array.isArray(toIds) && toIds.length > 0; const isMulti = hasTargets && toIds.length > 1; const isSingle = hasTargets && toIds.length === 1; let url = 'https://api.line.me/v2/bot/message/'; let body = {}; if (isMulti) { url += 'multicast'; body = { to: toIds, messages }; } else if (isSingle) { url += 'push'; body = { to: toIds[0], messages }; } else { url += 'broadcast'; body = { messages }; } const req = Object.assign({ method: 'post', contentType: 'application/json; charset=utf-8', payload: JSON.stringify(body), headers: { 'Authorization': 'Bearer ' + LINE_CHANNEL_ACCESS_TOKEN }, muteHttpExceptions: true }, options || {}); const r = UrlFetchApp.fetch(url, req); const code = r.getResponseCode(); const bodyTxt = r.getContentText(); console.log(`[MessagingAPI] ${url} -> ${code} ${bodyTxt}`); return { status: (code >= 200 && code < 300) ? 'success' : 'error', code, body: bodyTxt }; } catch (e) { console.error('[MessagingAPI] 發送例外: ' + e.toString()); return { status: 'error', error: e.toString() }; } }
-function buildTextMessages(text) { const MAX = 4800; if (!text) return [{ type: 'text', text: '' }]; const msgs = []; for (let i = 0; i < text.length; i += MAX) { msgs.push({ type: 'text', text: text.substring(i, i + MAX) }); } return msgs; }
-function dailyNotifyTomorrow_MessageAPI() { try { const res = getSignupsAsTextForTomorrow(); if (!res || res.status === 'nodata') { const msg = '（提醒）明日無報名資料。'; console.log('[dailyNotifyTomorrow_MessageAPI] ' + msg); return lineSendMessages(LINE_RECIPIENT_IDS, buildTextMessages(msg)); } if (res.status !== 'success' || !res.text) { const msg = '取得明日報名文字失敗。'; console.error('[dailyNotifyTomorrow_MessageAPI] ' + msg); return { status: 'error', error: msg }; } return lineSendMessages(LINE_RECIPIENT_IDS, buildTextMessages(res.text)); } catch (e) { console.error('[dailyNotifyTomorrow_MessageAPI] 例外: ' + e.toString()); return { status: 'error', error: e.toString() }; } }
-function setupDaily20Trigger_MessageAPI() { const funcName = 'dailyNotifyTomorrow_MessageAPI'; try { const triggers = ScriptApp.getProjectTriggers() || []; triggers.forEach(t => { if (t.getHandlerFunction && t.getHandlerFunction() === funcName) { ScriptApp.deleteTrigger(t); } }); ScriptApp.newTrigger(funcName) .timeBased() .atHour(20) .everyDays(1) .inTimezone('Asia/Taipei') .create(); console.log('[setupDaily20Trigger_MessageAPI] 已建立每日 20:00 排程（Asia/Taipei）。'); return { status: 'success' }; } catch (e) { console.error('[setupDaily20Trigger_MessageAPI] 失敗: ' + e.toString()); return { status: 'error', error: e.toString() }; } }
+// ===================== [LINE Messaging API (替代 LINE Notify)] =====================
+const LINE_CHANNEL_ACCESS_TOKEN = 'MaSV+Q15S2BXNVYW6xroMRfJwIl5Oe8ZsRWRtuo9HpbQRssOXQceAUYPwuGQ9L8wa9pkbZyWudE+DFZ2MwRzHqBEkNUmM+gIen+YQyXncJGz4/MO+QuB4u6niSLPzUAM5wNacDP2uMXHc51laR2/3gdB04t89/1O/w1cDnyilFU='; // ★請至 LINE Developers Console 申請
+const LINE_USER_ID = 'Ufefb59896be6a2030d5c97e25f00d5d7'; // ★請填入您的 User ID 或 Group ID
+
+function sendLineMessage(message) {
+  if (!LINE_CHANNEL_ACCESS_TOKEN || LINE_CHANNEL_ACCESS_TOKEN.includes('請在此貼上')) {
+    const msg = 'LINE_CHANNEL_ACCESS_TOKEN 未設定。';
+    console.error(msg);
+    return { status: 'error', error: msg };
+  }
+  if (!LINE_USER_ID || LINE_USER_ID.includes('請在此貼上')) {
+    const msg = 'LINE_USER_ID 未設定。';
+    console.error(msg);
+    return { status: 'error', error: msg };
+  }
+
+  try {
+    const url = 'https://api.line.me/v2/bot/message/push';
+    const payload = {
+      to: LINE_USER_ID,
+      messages: [{ type: 'text', text: message }]
+    };
+    
+    const options = {
+      method: 'post',
+      headers: {
+        'Authorization': 'Bearer ' + LINE_CHANNEL_ACCESS_TOKEN,
+        'Content-Type': 'application/json'
+      },
+      payload: JSON.stringify(payload),
+      muteHttpExceptions: true
+    };
+
+    const response = UrlFetchApp.fetch(url, options);
+    const code = response.getResponseCode();
+    const body = response.getContentText();
+    console.log(`[MessagingAPI] ${code} ${body}`);
+    
+    if (code === 200) {
+      return { status: 'success', code, body };
+    } else {
+      // 嘗試解析錯誤訊息
+      let errorMsg = `發送失敗 (${code})`;
+      try {
+        const resJson = JSON.parse(body);
+        if (resJson.message) errorMsg += `: ${resJson.message}`;
+      } catch (e) { errorMsg += `: ${body}`; }
+      return { status: 'error', error: errorMsg, code, body };
+    }
+  } catch (e) {
+    console.error('[MessagingAPI] 例外: ' + e.toString());
+    return { status: 'error', error: e.toString() };
+  }
+}
+
+function dailyNotifyTomorrow_MessageAPI() { // 函式名稱維持不變以相容前端
+  try {
+    const res = getSignupsAsTextForTomorrow();
+    let msg = '';
+    if (!res || res.status === 'nodata') {
+      msg = '\n（提醒）明日無報名資料。';
+    } else if (res.status !== 'success' || !res.text) {
+      msg = '\n取得明日報名文字失敗。';
+    } else {
+      msg = '\n' + res.text;
+    }
+    return sendLineMessage(msg);
+  } catch (e) {
+    console.error('[dailyNotify] 例外: ' + e.toString());
+    return { status: 'error', error: e.toString() };
+  }
+}
+
+function setupDaily20Trigger_MessageAPI() {
+  const funcName = 'dailyNotifyTomorrow_MessageAPI';
+  try {
+    const triggers = ScriptApp.getProjectTriggers() || [];
+    triggers.forEach(t => {
+      if (t.getHandlerFunction && t.getHandlerFunction() === funcName) {
+        ScriptApp.deleteTrigger(t);
+      }
+    });
+    ScriptApp.newTrigger(funcName)
+      .timeBased()
+      .atHour(20)
+      .everyDays(1)
+      .inTimezone('Asia/Taipei')
+      .create();
+    console.log('[setupDailyTrigger] 已建立每日 20:00 排程 (Messaging API)。');
+    return { status: 'success' };
+  } catch (e) {
+    console.error('[setupDailyTrigger] 失敗: ' + e.toString());
+    return { status: 'error', error: e.toString() };
+  }
+}

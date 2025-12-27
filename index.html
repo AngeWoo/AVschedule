@@ -395,6 +395,16 @@
                 </button>
                 <button id="admin-reset-btn" class="btn btn-icon-left" style="background-color: #6c757d; color: white;"><span class="icon">&#x1F504;</span><span>清除</span></button>
             </div>
+            <hr style="margin-bottom: 12px;">
+            <h4 style="margin-top: 0.25rem;"><span class="title-icon">&#x1F4E2;</span>LINE 通知設定 (Messaging API)</h4>
+            <div class="button-grid">
+                <button id="setup-line-trigger-btn" class="btn btn-success btn-icon-left">
+                    <span class="icon">&#x23F0;</span><span>啟動每日 20:00 自動通知</span>
+                </button>
+                <button id="test-line-notify-btn" class="btn btn-primary btn-icon-left" style="background-color: #17a2b8;">
+                    <span class="icon">&#x1F4E9;</span><span>立即測試發送 (明天名單)</span>
+                </button>
+            </div>
         </div>
     </div>
     
@@ -880,6 +890,98 @@
                 if (startEl) startEl.value = firstDayStr;
                 if (endEl) endEl.value = lastDayStr;
             });
+
+            // --- LINE 通知設定按鈕事件 ---
+            document.getElementById('setup-line-trigger-btn').addEventListener('click', async () => {
+                console.log('[DEBUG] "啟動每日通知" 按鈕點擊。');
+                const { value: password, isConfirmed } = await Swal.fire({
+                    title: '啟動每日通知',
+                    html: `
+                        <p>這將會在後端設定一個「每天晚上 8 點」自動執行的排程。</p>
+                        <p style="margin-top: 1em;">請輸入管理密碼以確認：</p>
+                        <input type="password" id="swal-password" class="swal2-input" placeholder="請輸入密碼">
+                    `,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: '確定啟動',
+                    cancelButtonText: '取消',
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const pw = document.getElementById('swal-password').value;
+                        if (pw !== '590314') {
+                            Swal.showValidationMessage('密碼錯誤！');
+                            return false;
+                        }
+                        return pw;
+                    }
+                });
+
+                console.log(`[DEBUG] 密碼彈窗結果: isConfirmed=${isConfirmed}, password=${password ? '***' : null}`);
+                if (!isConfirmed || !password) {
+                    console.log('[DEBUG] 操作取消或密碼錯誤，提前返回。');
+                    return;
+                }
+
+                console.log('[DEBUG] 準備呼叫後端函式: setupDailyTrigger');
+                showLoading();
+                try {
+                    const response = await callAppsScript('setupDailyTrigger');
+                    console.log('[DEBUG] 後端 callAppsScript("setupDailyTrigger") 回應:', response);
+                    if (response.data && response.data.status === 'success') {
+                        Swal.fire('設定成功', '每日 20:00 的自動通知排程已建立。', 'success');
+                    } else {
+                        const errorMessage = (response.data && response.data.error) ? response.data.error : (response.message || '未知錯誤');
+                        console.error('[DEBUG] 後端回傳失敗:', errorMessage, response);
+                        throw new Error(errorMessage);
+                    }
+                } catch (e) { console.error('[DEBUG] callAppsScript("setupDailyTrigger") 捕捉到錯誤:', e); Swal.fire('設定失敗', e.message, 'error'); } finally { hideLoading(); }
+            });
+
+            document.getElementById('test-line-notify-btn').addEventListener('click', async () => {
+                console.log('[DEBUG] "立即測試發送" 按鈕點擊。');
+                const { value: password, isConfirmed } = await Swal.fire({
+                    title: '立即測試發送',
+                    html: `
+                        <p>這將會立即發送明天的立願名單至 LINE。</p>
+                        <p style="margin-top: 1em;">請輸入管理密碼以確認：</p>
+                        <input type="password" id="swal-password" class="swal2-input" placeholder="請輸入密碼">
+                    `,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: '確認發送',
+                    cancelButtonText: '取消',
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const pw = document.getElementById('swal-password').value;
+                        if (pw !== '590314') {
+                            Swal.showValidationMessage('密碼錯誤！');
+                            return false;
+                        }
+                        return pw;
+                    }
+                });
+
+                console.log(`[DEBUG] 密碼彈窗結果: isConfirmed=${isConfirmed}, password=${password ? '***' : null}`);
+                if (!isConfirmed || !password) {
+                    console.log('[DEBUG] 操作取消或密碼錯誤，提前返回。');
+                    return;
+                }
+                
+                console.log('[DEBUG] 準備呼叫後端函式: manualTriggerDailyNotify');
+                showLoading();
+                try {
+                    const response = await callAppsScript('manualTriggerDailyNotify');
+                    console.log('[DEBUG] 後端 callAppsScript("manualTriggerDailyNotify") 回應:', response);
+                    if (response.data && response.data.status === 'success') {
+                        Swal.fire('發送成功', '測試訊息已發送，請檢查 LINE。', 'success');
+                    } else {
+                        const errorMessage = (response.data && response.data.error) ? response.data.error : (response.message || '發送失敗');
+                        console.error('[DEBUG] 後端回傳失敗:', errorMessage, response);
+                        throw new Error(errorMessage);
+                    }
+                } catch (e) { console.error('[DEBUG] callAppsScript("manualTriggerDailyNotify") 捕捉到錯誤:', e); Swal.fire('測試失敗', e.message, 'error'); } finally { hideLoading(); }
+            });
+
             document.getElementById('share-query-to-clipboard-btn').addEventListener('click', () => { if (!lastQuery || !lastQuery.data || lastQuery.data.length === 0) { return Swal.fire('無資料', '沒有可分享的查詢結果。', 'info'); } const { searchText, startDateStr, endDateStr } = lastQuery.params; const titleKeyword = searchText ? `，關鍵字：「${searchText}」` : ''; const title = `【AV放送立願報名查詢結果】\n日期：${startDateStr} ~ ${endDateStr}${titleKeyword}\n----------\n`; const eventsGroup = {}; lastQuery.data.forEach(signup => { const key = `${signup.eventDate} ${signup.eventTitle}`; if (!eventsGroup[key]) { eventsGroup[key] = []; } eventsGroup[key].push(`- ${signup.position}: ${signup.user}`); }); let shareText = title; Object.keys(eventsGroup).sort().forEach(eventKey => { shareText += `\n【${eventKey}】\n`; shareText += eventsGroup[eventKey].join('\n'); shareText += '\n'; }); shareText += '\n查看最新報名資訊：\nhttps://angewoo.github.io/AVschedule/'; Swal.fire({ title: '&#128203; 準備分享的內容', width: isMobile ? '92vw' : '680px', html: `<div style="width:100%;"><textarea id="clipboard-textarea" readonly style="width:100%;max-width:100%;min-height:220px;padding:12px 14px;border-radius:10px;border:1px solid #d8dee9;box-sizing:border-box;font-size:15px;line-height:1.5;white-space:pre-wrap;">${shareText}</textarea></div>`, confirmButtonText: '&#128203; 複製內容', showCancelButton: true, cancelButtonText: '關閉', didOpen: () => { const textarea = document.getElementById('clipboard-textarea'); if (textarea) { textarea.style.height = 'auto'; textarea.style.height = (textarea.scrollHeight + 5) + 'px'; textarea.select(); } }, preConfirm: () => { const textToCopy = document.getElementById('clipboard-textarea').value; return navigator.clipboard ? navigator.clipboard.writeText(textToCopy).then(() => true).catch(err => { Swal.showValidationMessage(`複製失敗: ${err.message}`); return false; }) : (document.execCommand('copy'), true); } }).then((result) => { if (result.isConfirmed) { Swal.fire({ icon: 'success', title: '已複製成功！', text: '請手動切換到 LINE 或其他應用程式並貼上內容。', timer: 2500, showConfirmButton: false }); } }); });
 
             const topFab = document.getElementById('scroll-top-btn');
@@ -936,7 +1038,3 @@
     </script>
 </body>
 </html>
-
-
-
-

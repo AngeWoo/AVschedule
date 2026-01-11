@@ -363,7 +363,8 @@
             <div class="button-grid">
                 <button id="download-jobhtml" class="btn btn-primary btn-icon-left" onclick="window.open('job.html', '_blank')"><span class="icon">&#x1F4D1;</span><span>奉仕崗位職掌（網頁版）</span></button>
                 <button id="download-poster" class="btn btn-primary btn-icon-left"><span class="icon">&#x1F5BC;</span><span>AV招生海報</span></button>
-                <button id="download-manual" class="btn btn-primary btn-icon-left"><span class="icon">&#x1F4D8;</span><span>一如祈念次第</span></button>
+                <button id="download-manual-night" class="btn btn-primary btn-icon-left"><span class="icon">&#x1F4D8;</span><span>一如祈念次第(晚上)</span></button>
+                <button id="download-manual-day" class="btn btn-primary btn-icon-left"><span class="icon">&#x1F4D8;</span><span>一如祈念次第(白天)</span></button>
                 <button id="download-bulletin" class="btn btn-primary btn-icon-left"><span class="icon">&#x1F4C4;</span><span>放送奉侍佈告</span></button>
                 <button id="download-live-stream-guide" class="btn btn-primary btn-icon-left"><span class="icon">&#x1F3A5;</span><span>直播開啟及關閉方式</span></button>
             </div>
@@ -1005,7 +1006,8 @@
             const handleDocDownload = (docType) => {
                 const docMap = {
                     poster: { action: 'open', url: '01.pdf', filename: 'AV招生海報.pdf' },
-                    manual: { action: 'open', url: '02.pdf', filename: '一如祈念次第.pdf' },
+                    manualNight: { action: 'open', url: '02.pdf', filename: '一如祈念次第(晚上).pdf' },
+                    manualDay: { action: 'open', url: '03.pdf', filename: '一如祈念次第(白天).pdf' },
                     bulletin: { action: 'open', url: '放送奉侍佈告.pdf', filename: '放送奉侍佈告.pdf' },
                     liveStreamGuide: { action: 'open', url: '直播開啟及關閉方式.pdf', filename: '直播開啟及關閉方式.pdf' },
                     computer: { action: 'open', url: 'https://docs.google.com/presentation/d/1dtRM_tI9JlBvQxQTzfaYWuUNh206BC88/edit?usp=sharing&ouid=116073418031278322428&rtpof=true&sd=true', filename: '電腦操作手冊.pptx' },
@@ -1023,7 +1025,8 @@
                 else { const link = document.createElement('a'); link.href = doc.url; link.download = doc.filename; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
             };
             document.getElementById('download-poster').addEventListener('click', () => handleDocDownload('poster'));
-            document.getElementById('download-manual').addEventListener('click', () => handleDocDownload('manual'));
+            document.getElementById('download-manual-night').addEventListener('click', () => handleDocDownload('manualNight'));
+            document.getElementById('download-manual-day').addEventListener('click', () => handleDocDownload('manualDay'));
             document.getElementById('download-bulletin').addEventListener('click', () => handleDocDownload('bulletin'));
             document.getElementById('download-live-stream-guide').addEventListener('click', () => handleDocDownload('liveStreamGuide'));
             document.getElementById('download-doc-computer').addEventListener('click', () => handleDocDownload('computer'));

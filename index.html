@@ -375,6 +375,7 @@
                 <button id="download-doc-lighting" class="btn btn-primary btn-icon-left"><span class="icon">&#x1F4A1;</span><span>燈光</span></button>
                 <button id="download-doc-audio" class="btn btn-primary btn-icon-left"><span class="icon">&#x1F39A;</span><span>音控</span></button>
                 <button id="download-doc-camera" class="btn btn-primary btn-icon-left"><span class="icon">&#x1F4F7;</span><span>攝影</span></button>
+                <button id="download-doc-director" class="btn btn-primary btn-icon-left"><span class="icon">&#x1F3AC;</span><span>導播</span></button>
             </div>
             <hr style="margin-bottom: 8px;">
             <h4 style="justify-content:center;text-align:center; margin-top: 0.35rem;"><span class="title-icon">&#x1F3AC;</span>影音檔案下載</h4>
@@ -1014,6 +1015,7 @@
                     lighting: { action: 'open', url: 'https://docs.google.com/presentation/d/16NICJPmTTz-UyrxN44hpAvV0yI2WEFYb/edit?usp=drive_link&ouid=116073418031278322428&rtpof=true&sd=true', filename: '燈光操作手冊.pptx' },
                     audio: { action: 'open', url: 'https://docs.google.com/presentation/d/1rCb7AVwQWWtkwaq0pfo87YcgcCwbEpua/edit?usp=sharing&ouid=116073418031278322428&rtpof=true&sd=true', filename: '音控操作手冊.pptx' },
                     camera: { action: 'open', url: 'https://docs.google.com/presentation/d/1zZ-9Z7QvP-I-R4NtLSFNFOHArsRsjhyZ/edit?usp=sharing&ouid=116073418031278322428&rtpof=true&sd=true', filename: '攝影操作手冊.pptx' },
+                    director: { action: 'open', url: '導播準備.pdf', filename: '導播準備.pdf' },
                     videoSignupSOP: { action: 'open', url: 'https://www.youtube.com/shorts/hBQ18yN0PKs', filename: '立願報名SOP.mp4' },
                     videoDeleteSOP: { action: 'open', url: 'https://www.youtube.com/shorts/SUrClrkf6e0', filename: '立願刪除SOP.mp4' },
                     videoQuerySOP: { action: 'open', url: 'https://www.youtube.com/shorts/1oE9SEIzeX4', filename: '立願查詢SOP.mp4' },
@@ -1033,6 +1035,7 @@
             document.getElementById('download-doc-lighting').addEventListener('click', () => handleDocDownload('lighting'));
             document.getElementById('download-doc-audio').addEventListener('click', () => handleDocDownload('audio'));
             document.getElementById('download-doc-camera').addEventListener('click', () => handleDocDownload('camera'));
+            document.getElementById('download-doc-director').addEventListener('click', () => handleDocDownload('director'));
             document.getElementById('download-video-signup-sop').addEventListener('click', () => handleDocDownload('videoSignupSOP'));
             document.getElementById('download-video-delete-sop').addEventListener('click', () => handleDocDownload('videoDeleteSOP'));
             document.getElementById('download-video-query-sop').addEventListener('click', () => handleDocDownload('videoQuerySOP'));

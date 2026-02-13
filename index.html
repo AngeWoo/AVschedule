@@ -1291,6 +1291,29 @@
             justify-content: center;
         }
 
+        .line-qrcode-card {
+            margin: 8px auto 14px;
+            max-width: 320px;
+            text-align: center;
+            background: #f8fafc;
+            border: 1px solid #d9e2ec;
+            border-radius: 14px;
+            padding: 12px 12px 10px;
+        }
+
+        .line-qrcode-card p {
+            margin: 0 0 8px;
+            font-size: 0.95rem;
+            color: #334155;
+        }
+
+        .line-qrcode-card img {
+            width: min(100%, 220px);
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
         #my-signups-tab h4::before {
             display: none;
         }
@@ -1572,6 +1595,46 @@
             </div>
             <hr style="margin-bottom: 12px;">
             <h4 style="margin-top: 0.25rem;"><span class="title-icon">&#x1F4E2;</span>LINE 通知設定 (Messaging API)</h4>
+            <div class="line-qrcode-card">
+                <p>掃描 QRCode 接收通知</p>
+                <img src="V_Bot_QRcode.png" alt="LINE 通知 QRCode" loading="lazy">
+            </div>
+            <div class="inline-form" style="justify-content: center;">
+                <div class="form-group" style="max-width: 520px; width: 100%;">
+                    <label for="line-token-input">line_channel_access_token</label>
+                    <input type="password" id="line-token-input" placeholder="請輸入 LINE Channel Access Token">
+                </div>
+                <button id="save-line-token-btn" class="btn btn-primary btn-icon-left" style="background-color: #0ea5e9;">
+                    <span class="icon">&#x1F511;</span><span>儲存 Token</span>
+                </button>
+            </div>
+            <div class="inline-form" style="justify-content: center;">
+                <div class="form-group" style="max-width: 520px; width: 100%;">
+                    <label for="lin-to-input">line_to (User ID / Group ID)</label>
+                    <input type="text" id="lin-to-input" placeholder="請輸入 LINE User ID 或 Group ID">
+                </div>
+            </div>
+            <div class="inline-form" style="justify-content: center;">
+                <button id="load-line-targets-btn" class="btn btn-icon-left" style="background-color: #6366f1; color: white;">
+                    <span class="icon">&#x1F4E5;</span><span>載入 LINE 對象清單</span>
+                </button>
+                <div class="form-group" style="max-width: 220px; width: 100%;">
+                    <label for="line-user-only-toggle">清單篩選</label>
+                    <select id="line-user-only-toggle">
+                        <option value="user-only" selected>只顯示 user</option>
+                        <option value="all">顯示全部</option>
+                    </select>
+                </div>
+                <div class="form-group" style="max-width: 520px; width: 100%;">
+                    <label for="line-target-select">已記錄 line_to 清單</label>
+                    <select id="line-target-select">
+                        <option value="">-- 請先載入清單 --</option>
+                    </select>
+                </div>
+                <button id="apply-line-target-btn" class="btn btn-icon-left" style="background-color: #0f766e; color: white;">
+                    <span class="icon">&#x2705;</span><span>套用到 line_to</span>
+                </button>
+            </div>
             <div class="button-grid">
                 <button id="setup-line-trigger-btn" class="btn btn-success btn-icon-left">
                     <span class="icon">&#x23F0;</span><span>啟動每日 20:00 自動通知</span>
@@ -1861,6 +1924,100 @@
             if (feVerEl) feVerEl.textContent = FRONTEND_VERSION;
             window.scrollTo(0, 0);
             Chart.register(ChartDataLabels);
+            const lineTokenInputEl = document.getElementById('line-token-input');
+            const linToInputEl = document.getElementById('lin-to-input');
+            const lineTargetSelectEl = document.getElementById('line-target-select');
+            const lineUserOnlyToggleEl = document.getElementById('line-user-only-toggle');
+            let cachedLineTargets = [];
+            const ADMIN_PASSWORD = '590314';
+            let savedLinTo = '';
+            const commitLinToValue = (value) => {
+                const normalized = String(value || '').trim();
+                if (linToInputEl) linToInputEl.value = normalized;
+                localStorage.setItem('av_lin_to', normalized);
+                savedLinTo = normalized;
+            };
+            const promptAdminPasswordForLineToChange = async (nextValue, sourceLabel) => {
+                const safeValue = String(nextValue || '').trim() || '(空白)';
+                const { value: password, isConfirmed } = await Swal.fire({
+                    title: '變更 line_to',
+                    html: `
+                        <p>來源：${sourceLabel}</p>
+                        <p style="margin-top: 0.6em;">新值：<code>${safeValue}</code></p>
+                        <p style="margin-top: 1em;">請輸入管理密碼以確認：</p>
+                        <input type="password" id="swal-password" class="swal2-input" placeholder="請輸入密碼">
+                    `,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: '確認變更',
+                    cancelButtonText: '取消',
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const pw = document.getElementById('swal-password').value;
+                        if (pw !== ADMIN_PASSWORD) {
+                            Swal.showValidationMessage('密碼錯誤！');
+                            return false;
+                        }
+                        return pw;
+                    }
+                });
+                return Boolean(isConfirmed && password);
+            };
+            if (linToInputEl) {
+                commitLinToValue(localStorage.getItem('av_lin_to') || '');
+                linToInputEl.addEventListener('change', async () => {
+                    const nextValue = String(linToInputEl.value || '').trim();
+                    if (nextValue === savedLinTo) return;
+                    const ok = await promptAdminPasswordForLineToChange(nextValue, '手動輸入');
+                    if (!ok) {
+                        linToInputEl.value = savedLinTo;
+                        return;
+                    }
+                    commitLinToValue(nextValue);
+                    Swal.fire('已更新', 'line_to 已更新。', 'success');
+                });
+            }
+            const renderLineTargetOptions = (targets) => {
+                if (!lineTargetSelectEl) return;
+                lineTargetSelectEl.innerHTML = '<option value="">-- 請選擇對象 --</option>';
+                const mode = lineUserOnlyToggleEl ? String(lineUserOnlyToggleEl.value || 'user-only') : 'user-only';
+                const filteredTargets = (targets || []).filter(item => {
+                    if (mode === 'all') return true;
+                    return String((item && item.source_type) || '').toLowerCase() === 'user';
+                });
+                filteredTargets.forEach(item => {
+                    const targetId = item && item.target_id ? String(item.target_id) : '';
+                    if (!targetId) return;
+                    const sourceType = item.source_type || 'unknown';
+                    const lastSeen = item.last_seen_at ? new Date(item.last_seen_at).toLocaleString('zh-TW') : '';
+                    const option = document.createElement('option');
+                    option.value = targetId;
+                    option.textContent = `${sourceType} | ${targetId}${lastSeen ? ` | ${lastSeen}` : ''}`;
+                    lineTargetSelectEl.appendChild(option);
+                });
+            };
+            const loadLineTargets = async () => {
+                showLoading();
+                try {
+                    const [response, statusResp] = await Promise.all([
+                        callAppsScript('getLineTargets'),
+                        callAppsScript('getLineWebhookStatus')
+                    ]);
+                    const targets = response.data || [];
+                    const webhookStatus = statusResp.data || {};
+                    cachedLineTargets = targets;
+                    renderLineTargetOptions(targets);
+                    return { targets, webhookStatus };
+                } catch (e) {
+                    Swal.fire('載入失敗', e.message, 'error');
+                    return { targets: [], webhookStatus: null };
+                } finally {
+                    hideLoading();
+                }
+            };
+            if (lineUserOnlyToggleEl) {
+                lineUserOnlyToggleEl.addEventListener('change', () => renderLineTargetOptions(cachedLineTargets));
+            }
 
             let marqueeMessages = [], marqueeIndex = 0;
             const marqueeTextEl = document.getElementById('marquee-text');
@@ -2176,12 +2333,85 @@
             });
 
             // --- LINE 通知設定按鈕事件 ---
+            document.getElementById('save-line-token-btn').addEventListener('click', async () => {
+                const token = (lineTokenInputEl?.value || '').trim();
+                if (!token) {
+                    return Swal.fire('提示', '請先輸入 line_channel_access_token。', 'info');
+                }
+
+                const { value: password, isConfirmed } = await Swal.fire({
+                    title: '儲存 LINE Token',
+                    html: `
+                        <p>這會把 token 寫入後端 Script Properties。</p>
+                        <p style="margin-top: 1em;">請輸入管理密碼以確認：</p>
+                        <input type="password" id="swal-password" class="swal2-input" placeholder="請輸入密碼">
+                    `,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: '確認儲存',
+                    cancelButtonText: '取消',
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const pw = document.getElementById('swal-password').value;
+                        if (pw !== ADMIN_PASSWORD) {
+                            Swal.showValidationMessage('密碼錯誤！');
+                            return false;
+                        }
+                        return pw;
+                    }
+                });
+                if (!isConfirmed || !password) return;
+
+                showLoading();
+                try {
+                    const response = await callAppsScript('setLineToken', { line_channel_access_token: token });
+                    if (response.data && response.data.status === 'success') {
+                        if (lineTokenInputEl) lineTokenInputEl.value = '';
+                        Swal.fire('儲存成功', 'LINE token 已寫入 Script Properties。', 'success');
+                    } else {
+                        throw new Error((response.data && response.data.error) ? response.data.error : '儲存失敗');
+                    }
+                } catch (e) {
+                    Swal.fire('儲存失敗', e.message, 'error');
+                } finally {
+                    hideLoading();
+                }
+            });
+            document.getElementById('load-line-targets-btn').addEventListener('click', async () => {
+                const { targets, webhookStatus } = await loadLineTargets();
+                if (!targets || targets.length === 0) {
+                    const lastAt = webhookStatus && webhookStatus.last_at ? new Date(webhookStatus.last_at).toLocaleString('zh-TW') : '無';
+                    const lastEvents = webhookStatus && typeof webhookStatus.last_event_count !== 'undefined' ? webhookStatus.last_event_count : 0;
+                    const lastErr = webhookStatus && webhookStatus.last_error ? webhookStatus.last_error : '無';
+                    Swal.fire('目前無對象', `尚未記錄到 LINE 對象。\n最近Webhook時間：${lastAt}\n最近事件數：${lastEvents}\n最近錯誤：${lastErr}`, 'info');
+                } else {
+                    Swal.fire('載入成功', `已載入 ${targets.length} 筆 LINE 對象。`, 'success');
+                }
+            });
+            document.getElementById('apply-line-target-btn').addEventListener('click', async () => {
+                const selected = lineTargetSelectEl ? String(lineTargetSelectEl.value || '').trim() : '';
+                if (!selected) {
+                    return Swal.fire('提示', '請先從清單選擇一筆對象。', 'info');
+                }
+                if (selected === savedLinTo) {
+                    if (linToInputEl) linToInputEl.value = selected;
+                    return Swal.fire('已套用', `line_to 已是 ${selected}。`, 'success');
+                }
+                const ok = await promptAdminPasswordForLineToChange(selected, '清單套用');
+                if (!ok) return;
+                commitLinToValue(selected);
+                Swal.fire('已套用', `已將 ${selected} 套用到 line_to。`, 'success');
+            });
+
             document.getElementById('setup-line-trigger-btn').addEventListener('click', async () => {
+                const linTo = String(savedLinTo || '').trim();
+                const targetHint = linTo || '全部已記錄 LINE 對象';
                 console.log('[DEBUG] "啟動每日通知" 按鈕點擊。');
                 const { value: password, isConfirmed } = await Swal.fire({
                     title: '啟動每日通知',
                     html: `
                         <p>這將會在後端設定一個「每天晚上 8 點」自動執行的排程。</p>
+                        <p style="margin-top: 0.6em;">發送對象：<code>${targetHint}</code></p>
                         <p style="margin-top: 1em;">請輸入管理密碼以確認：</p>
                         <input type="password" id="swal-password" class="swal2-input" placeholder="請輸入密碼">
                     `,
@@ -2192,7 +2422,7 @@
                     focusConfirm: false,
                     preConfirm: () => {
                         const pw = document.getElementById('swal-password').value;
-                        if (pw !== '590314') {
+                        if (pw !== ADMIN_PASSWORD) {
                             Swal.showValidationMessage('密碼錯誤！');
                             return false;
                         }
@@ -2209,7 +2439,7 @@
                 console.log('[DEBUG] 準備呼叫後端函式: setupDailyTrigger');
                 showLoading();
                 try {
-                    const response = await callAppsScript('setupDailyTrigger');
+                    const response = await callAppsScript('setupDailyTrigger', { lin_to: linTo });
                     console.log('[DEBUG] 後端 callAppsScript("setupDailyTrigger") 回應:', response);
                     if (response.data && response.data.status === 'success') {
                         Swal.fire('設定成功', '每日 20:00 的自動通知排程已建立。', 'success');
@@ -2222,11 +2452,14 @@
             });
 
             document.getElementById('test-line-notify-btn').addEventListener('click', async () => {
+                const linTo = String(savedLinTo || '').trim();
+                const targetHint = linTo || '全部已記錄 LINE 對象';
                 console.log('[DEBUG] "立即測試發送" 按鈕點擊。');
                 const { value: password, isConfirmed } = await Swal.fire({
                     title: '立即測試發送',
                     html: `
                         <p>這將會立即發送明天的立願名單至 LINE。</p>
+                        <p style="margin-top: 0.6em;">發送對象：<code>${targetHint}</code></p>
                         <p style="margin-top: 1em;">請輸入管理密碼以確認：</p>
                         <input type="password" id="swal-password" class="swal2-input" placeholder="請輸入密碼">
                     `,
@@ -2237,7 +2470,7 @@
                     focusConfirm: false,
                     preConfirm: () => {
                         const pw = document.getElementById('swal-password').value;
-                        if (pw !== '590314') {
+                        if (pw !== ADMIN_PASSWORD) {
                             Swal.showValidationMessage('密碼錯誤！');
                             return false;
                         }
@@ -2254,7 +2487,13 @@
                 console.log('[DEBUG] 準備呼叫後端函式: manualTriggerDailyNotify');
                 showLoading();
                 try {
-                    const response = await callAppsScript('manualTriggerDailyNotify');
+                    const debugResp = await callAppsScript('debugLineAuth', { lin_to: linTo });
+                    console.log('[DEBUG] 後端 callAppsScript("debugLineAuth") 回應:', debugResp);
+                    if (!debugResp.data || debugResp.data.status !== 'success') {
+                        const verifyBody = debugResp.data && debugResp.data.verify_body ? `<br><br><code style="word-break: break-all;">${debugResp.data.verify_body}</code>` : '';
+                        throw new Error((debugResp.data && debugResp.data.error ? debugResp.data.error : 'LINE token 驗證失敗') + verifyBody);
+                    }
+                    const response = await callAppsScript('manualTriggerDailyNotify', { lin_to: linTo });
                     console.log('[DEBUG] 後端 callAppsScript("manualTriggerDailyNotify") 回應:', response);
                     if (response.data && response.data.status === 'success') {
                         Swal.fire('發送成功', '測試訊息已發送，請檢查 LINE。', 'success');

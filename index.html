@@ -1277,6 +1277,43 @@
         }
 
         /* Admin tab specific style overrides */
+        #admin-tab {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        #admin-tab .admin-panel {
+            background: linear-gradient(145deg, #ffffff, #f8fbff);
+            border: 1px solid #dbe7ff;
+            border-radius: 16px;
+            padding: 14px 14px 6px;
+            box-shadow: 0 10px 24px rgba(15, 76, 163, 0.08);
+        }
+
+        #admin-tab .admin-panel-note {
+            margin: -6px 0 12px;
+            color: #4b5563;
+            font-size: 0.92rem;
+            text-align: center;
+        }
+
+        #admin-tab .inline-form {
+            margin-bottom: 12px;
+            background: #f7faff;
+            border-color: #d9e5fb;
+        }
+
+        #admin-tab .line-action-grid {
+            margin-top: 6px;
+        }
+
+        #send-line-marquee-btn {
+            background-color: #f97316;
+            border-color: #ea580c;
+            color: #fff;
+        }
+
         #admin-tab h4::before {
             display: none;
         }
@@ -1293,12 +1330,13 @@
 
         .line-qrcode-card {
             margin: 8px auto 14px;
-            max-width: 320px;
+            max-width: 340px;
             text-align: center;
-            background: #f8fafc;
-            border: 1px solid #d9e2ec;
+            background: linear-gradient(180deg, #f8fafc, #eef6ff);
+            border: 1px solid #d6e4f8;
             border-radius: 14px;
             padding: 12px 12px 10px;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
         }
 
         .line-qrcode-card p {
@@ -1320,6 +1358,15 @@
 
         /* --- MOBILE DATE INPUT FIX (追加) --- */
         @media (max-width: 768px) {
+            #admin-tab .admin-panel {
+                padding: 12px 10px 4px;
+            }
+
+            #admin-tab .admin-panel-note {
+                font-size: 0.88rem;
+                margin: -4px 0 10px;
+            }
+
             .inline-form {
                 flex-direction: column;
                 align-items: center;
@@ -1348,6 +1395,10 @@
 
         /* --- HOTFIX: 修正手機超出容器（覆寫前一版 92vw 設定） --- */
         @media (max-width: 768px) {
+            #admin-tab .line-action-grid .btn {
+                width: 100%;
+            }
+
             .inline-form {
                 flex-direction: row !important;
                 flex-wrap: wrap !important;
@@ -1575,74 +1626,81 @@
             </div>
         </div>
         <div id="admin-tab" class="tab-content">
-            <hr style="margin-top:0; margin-bottom: 12px;">
-            <h4 style="margin-top: 0.25rem;"><span class="title-icon">&#9881;</span>分享奉侍名單</h4>
-            <div class="inline-form" style="justify-content: center;">
-                <div class="form-group form-group-date"><label for="export-start-date">開始日期</label><input type="date"
-                        id="export-start-date"></div>
-                <div class="form-group form-group-date"><label for="export-end-date">結束日期</label><input type="date"
-                        id="export-end-date"></div>
-                <button id="share-to-clipboard-btn" class="btn btn-primary btn-icon-left">
-                    <span class="icon">&#x1F4CB;</span><span>分享至剪貼簿</span>
-                </button>
-                <button id="send-to-email-btn" class="btn btn-primary btn-icon-left"
-                    style="background-color: #6f42c1; border-color: #6f42c1;">
-                    <span class="icon">&#x2709;</span><span>發送至 Email</span>
-                </button>
-                <button id="admin-reset-btn" class="btn btn-icon-left"
-                    style="background-color: #6c757d; color: white;"><span
-                        class="icon">&#x1F504;</span><span>清除</span></button>
-            </div>
-            <hr style="margin-bottom: 12px;">
-            <h4 style="margin-top: 0.25rem;"><span class="title-icon">&#x1F4E2;</span>LINE 通知設定 (Messaging API)</h4>
-            <div class="line-qrcode-card">
-                <p>掃描 QRCode 接收通知</p>
-                <img src="V_Bot_QRcode.png" alt="LINE 通知 QRCode" loading="lazy">
-            </div>
-            <div class="inline-form" style="justify-content: center;">
-                <div class="form-group" style="max-width: 520px; width: 100%;">
-                    <label for="line-token-input">line_channel_access_token</label>
-                    <input type="password" id="line-token-input" placeholder="請輸入 LINE Channel Access Token">
-                </div>
-                <button id="save-line-token-btn" class="btn btn-primary btn-icon-left" style="background-color: #0ea5e9;">
-                    <span class="icon">&#x1F511;</span><span>儲存 Token</span>
-                </button>
-            </div>
-            <div class="inline-form" style="justify-content: center;">
-                <div class="form-group" style="max-width: 520px; width: 100%;">
-                    <label for="lin-to-input">line_to (User ID / Group ID)</label>
-                    <input type="text" id="lin-to-input" placeholder="請輸入 LINE User ID 或 Group ID">
+            <div class="admin-panel">
+                <h4 style="margin-top: 0.25rem;"><span class="title-icon">&#9881;</span>分享奉侍名單</h4>
+                <p class="admin-panel-note">設定日期區間後可快速分享到剪貼簿或 Email。</p>
+                <div class="inline-form" style="justify-content: center;">
+                    <div class="form-group form-group-date"><label for="export-start-date">開始日期</label><input type="date"
+                            id="export-start-date"></div>
+                    <div class="form-group form-group-date"><label for="export-end-date">結束日期</label><input type="date"
+                            id="export-end-date"></div>
+                    <button id="share-to-clipboard-btn" class="btn btn-primary btn-icon-left">
+                        <span class="icon">&#x1F4CB;</span><span>分享至剪貼簿</span>
+                    </button>
+                    <button id="send-to-email-btn" class="btn btn-primary btn-icon-left"
+                        style="background-color: #6f42c1; border-color: #6f42c1;">
+                        <span class="icon">&#x2709;</span><span>發送至 Email</span>
+                    </button>
+                    <button id="admin-reset-btn" class="btn btn-icon-left"
+                        style="background-color: #6c757d; color: white;"><span
+                            class="icon">&#x1F504;</span><span>清除</span></button>
                 </div>
             </div>
-            <div class="inline-form" style="justify-content: center;">
-                <button id="load-line-targets-btn" class="btn btn-icon-left" style="background-color: #6366f1; color: white;">
-                    <span class="icon">&#x1F4E5;</span><span>載入 LINE 對象清單</span>
-                </button>
-                <div class="form-group" style="max-width: 220px; width: 100%;">
-                    <label for="line-user-only-toggle">清單篩選</label>
-                    <select id="line-user-only-toggle">
-                        <option value="user-only" selected>只顯示 user</option>
-                        <option value="all">顯示全部</option>
-                    </select>
+            <div class="admin-panel">
+                <h4 style="margin-top: 0.25rem;"><span class="title-icon">&#x1F4E2;</span>LINE 通知設定 (Messaging API)</h4>
+                <p class="admin-panel-note">可指定 line_to、測試發送，並一鍵傳送跑馬燈公告。</p>
+                <div class="line-qrcode-card">
+                    <p>掃描 QRCode 接收通知</p>
+                    <img src="V_Bot_QRcode.png" alt="LINE 通知 QRCode" loading="lazy">
                 </div>
-                <div class="form-group" style="max-width: 520px; width: 100%;">
-                    <label for="line-target-select">已記錄 line_to 清單</label>
-                    <select id="line-target-select">
-                        <option value="">-- 請先載入清單 --</option>
-                    </select>
+                <div class="inline-form" style="justify-content: center;">
+                    <div class="form-group" style="max-width: 520px; width: 100%;">
+                        <label for="line-token-input">line_channel_access_token</label>
+                        <input type="password" id="line-token-input" placeholder="請輸入 LINE Channel Access Token">
+                    </div>
+                    <button id="save-line-token-btn" class="btn btn-primary btn-icon-left" style="background-color: #0ea5e9;">
+                        <span class="icon">&#x1F511;</span><span>儲存 Token</span>
+                    </button>
                 </div>
-                <button id="apply-line-target-btn" class="btn btn-icon-left" style="background-color: #0f766e; color: white;">
-                    <span class="icon">&#x2705;</span><span>套用到 line_to</span>
-                </button>
-            </div>
-            <div class="button-grid">
-                <button id="setup-line-trigger-btn" class="btn btn-success btn-icon-left">
-                    <span class="icon">&#x23F0;</span><span>啟動每日 20:00 自動通知</span>
-                </button>
-                <button id="test-line-notify-btn" class="btn btn-primary btn-icon-left"
-                    style="background-color: #17a2b8;">
-                    <span class="icon">&#x1F4E9;</span><span>立即測試發送 (明天名單)</span>
-                </button>
+                <div class="inline-form" style="justify-content: center;">
+                    <div class="form-group" style="max-width: 520px; width: 100%;">
+                        <label for="lin-to-input">line_to (User ID / Group ID)</label>
+                        <input type="text" id="lin-to-input" placeholder="請輸入 LINE User ID 或 Group ID">
+                    </div>
+                </div>
+                <div class="inline-form" style="justify-content: center;">
+                    <button id="load-line-targets-btn" class="btn btn-icon-left" style="background-color: #6366f1; color: white;">
+                        <span class="icon">&#x1F4E5;</span><span>載入 LINE 對象清單</span>
+                    </button>
+                    <div class="form-group" style="max-width: 220px; width: 100%;">
+                        <label for="line-user-only-toggle">清單篩選</label>
+                        <select id="line-user-only-toggle">
+                            <option value="user-only" selected>只顯示 user</option>
+                            <option value="all">顯示全部</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="max-width: 520px; width: 100%;">
+                        <label for="line-target-select">已記錄 line_to 清單</label>
+                        <select id="line-target-select">
+                            <option value="">-- 請先載入清單 --</option>
+                        </select>
+                    </div>
+                    <button id="apply-line-target-btn" class="btn btn-icon-left" style="background-color: #0f766e; color: white;">
+                        <span class="icon">&#x2705;</span><span>套用到 line_to</span>
+                    </button>
+                </div>
+                <div class="button-grid line-action-grid">
+                    <button id="setup-line-trigger-btn" class="btn btn-success btn-icon-left">
+                        <span class="icon">&#x23F0;</span><span>啟動每日 20:00 自動通知</span>
+                    </button>
+                    <button id="test-line-notify-btn" class="btn btn-primary btn-icon-left"
+                        style="background-color: #17a2b8;">
+                        <span class="icon">&#x1F4E9;</span><span>立即測試發送 (明天名單)</span>
+                    </button>
+                    <button id="send-line-marquee-btn" class="btn btn-icon-left">
+                        <span class="icon">&#x1F4E2;</span><span>傳送跑馬燈資訊到 LINE</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -2503,6 +2561,52 @@
                         throw new Error(errorMessage);
                     }
                 } catch (e) { console.error('[DEBUG] callAppsScript("manualTriggerDailyNotify") 捕捉到錯誤:', e); Swal.fire('測試失敗', e.message, 'error'); } finally { hideLoading(); }
+            });
+
+            document.getElementById('send-line-marquee-btn').addEventListener('click', async () => {
+                const linTo = String(savedLinTo || '').trim();
+                const targetHint = linTo || '全部已記錄 LINE 對象';
+                const { value: password, isConfirmed } = await Swal.fire({
+                    title: '傳送跑馬燈資訊',
+                    html: `
+                        <p>這會把目前跑馬燈公告發送到 LINE。</p>
+                        <p style="margin-top: 0.6em;">發送對象：<code>${targetHint}</code></p>
+                        <p style="margin-top: 1em;">請輸入管理密碼以確認：</p>
+                        <input type="password" id="swal-password" class="swal2-input" placeholder="請輸入密碼">
+                    `,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: '確認發送',
+                    cancelButtonText: '取消',
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const pw = document.getElementById('swal-password').value;
+                        if (pw !== ADMIN_PASSWORD) {
+                            Swal.showValidationMessage('密碼錯誤！');
+                            return false;
+                        }
+                        return pw;
+                    }
+                });
+                if (!isConfirmed || !password) return;
+
+                showLoading();
+                try {
+                    const response = await callAppsScript('sendMarqueeAnnouncementsToLine', { lin_to: linTo });
+                    if (response.data && response.data.status === 'success') {
+                        const successCount = Number(response.data.success_count || 0);
+                        const targetCount = Number(response.data.target_count || 0);
+                        const sentCount = Number(response.data.announcement_count || 0);
+                        Swal.fire('發送成功', `已送出 ${sentCount} 則跑馬燈資訊（${successCount}/${targetCount}）。`, 'success');
+                    } else {
+                        const errorMessage = (response.data && response.data.error) ? response.data.error : (response.message || '發送失敗');
+                        throw new Error(errorMessage);
+                    }
+                } catch (e) {
+                    Swal.fire('發送失敗', e.message, 'error');
+                } finally {
+                    hideLoading();
+                }
             });
 
             document.getElementById('share-query-to-clipboard-btn').addEventListener('click', () => {

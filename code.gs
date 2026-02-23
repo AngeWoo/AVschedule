@@ -60,6 +60,8 @@ function doGet(e) {
       case 'getLineTargets': result = getLineTargets_(); break;
       case 'getLineWebhookStatus': result = getLineWebhookStatus_(); break;
       case 'sendMarqueeAnnouncementsToLine': result = sendMarqueeAnnouncementsToLine_MessageAPI(params.lin_to); break;
+      case 'clearLineTo': result = clearLineTo(); break;
+      case 'removeLineTarget': result = removeLineTarget(params.targetId); break;
       default: throw new Error(`未知的函式名稱: ${functionName}`);
     }
 
@@ -961,6 +963,25 @@ function setLineToken(rawToken) {
     status: 'success',
     token_preview: maskToken_(token),
     token_length: token.length
+  };
+}
+
+function clearLineTo() {
+  PropertiesService.getScriptProperties().deleteProperty(LINE_TO_PROPERTY_KEY);
+  return { status: 'success', message: 'AV_LIN_TO 已清除。' };
+}
+
+function removeLineTarget(targetId) {
+  const id = String(targetId || '').trim();
+  if (!id) return { status: 'error', error: 'targetId 不可為空。' };
+  const current = getLineTargets_();
+  const filtered = current.filter(item => String(item && item.target_id || '').trim() !== id);
+  setLineTargets_(filtered);
+  return {
+    status: 'success',
+    removed: current.length - filtered.length,
+    remaining: filtered.length,
+    message: `已從 LINE_TARGETS 移除 ${id}。`
   };
 }
 

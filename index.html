@@ -1702,6 +1702,29 @@
                     </button>
                 </div>
             </div>
+
+            <div class="admin-panel">
+                <h4 style="margin-top: 0.25rem;"><span class="title-icon">&#x1F5D1;</span>LINE 對象清除管理</h4>
+                <p class="admin-panel-note">可清除 line_to 設定值，或從已記錄清單中移除特定對象。操作均需輸入管理密碼。</p>
+                <div class="button-grid line-action-grid">
+                    <button id="clear-line-to-btn" class="btn btn-icon-left"
+                        style="background-color: #dc3545; color: white;">
+                        <span class="icon">&#x1F5D1;</span><span>清除 line_to 設定值</span>
+                    </button>
+                </div>
+                <div class="inline-form" style="justify-content: center; margin-top: 0.8rem;">
+                    <div class="form-group" style="max-width: 520px; width: 100%;">
+                        <label for="remove-target-select">選擇要移除的 LINE 對象（請先載入清單）</label>
+                        <select id="remove-target-select">
+                            <option value="">-- 請先點「載入 LINE 對象清單」--</option>
+                        </select>
+                    </div>
+                    <button id="remove-line-target-btn" class="btn btn-icon-left"
+                        style="background-color: #dc3545; color: white;">
+                        <span class="icon">&#x274C;</span><span>移除此對象</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -2054,6 +2077,22 @@
                     lineTargetSelectEl.appendChild(option);
                 });
             };
+            const renderRemoveTargetOptions = (targets) => {
+                const removeSelectEl = document.getElementById('remove-target-select');
+                if (!removeSelectEl) return;
+                removeSelectEl.innerHTML = '<option value="">-- 請選擇要移除的對象 --</option>';
+                (targets || []).forEach(item => {
+                    const targetId = item && item.target_id ? String(item.target_id) : '';
+                    if (!targetId) return;
+                    const sourceType = item.source_type || 'unknown';
+                    const lastSeen = item.last_seen_at ? new Date(item.last_seen_at).toLocaleString('zh-TW') : '';
+                    const option = document.createElement('option');
+                    option.value = targetId;
+                    option.textContent = `${sourceType} | ${targetId}${lastSeen ? ` | ${lastSeen}` : ''}`;
+                    removeSelectEl.appendChild(option);
+                });
+            };
+
             const loadLineTargets = async () => {
                 showLoading();
                 try {
@@ -2065,6 +2104,7 @@
                     const webhookStatus = statusResp.data || {};
                     cachedLineTargets = targets;
                     renderLineTargetOptions(targets);
+                    renderRemoveTargetOptions(targets);
                     return { targets, webhookStatus };
                 } catch (e) {
                     Swal.fire('載入失敗', e.message, 'error');
@@ -2459,6 +2499,88 @@
                 if (!ok) return;
                 commitLinToValue(selected);
                 Swal.fire('已套用', `已將 ${selected} 套用到 line_to。`, 'success');
+            });
+
+            document.getElementById('clear-line-to-btn').addEventListener('click', async () => {
+                const { value: password, isConfirmed } = await Swal.fire({
+                    title: '清除 line_to 設定值',
+                    html: `
+                        <p>這將清除後端 <code>AV_LIN_TO</code> 的儲存值，</p>
+                        <p style="margin-top:0.4em;">並同時清除瀏覽器本地的 line_to 記錄。</p>
+                        <p style="margin-top: 1em;">請輸入管理密碼以確認：</p>
+                        <input type="password" id="swal-password" class="swal2-input" placeholder="請輸入密碼">
+                    `,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: '確認清除',
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonText: '取消',
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const pw = document.getElementById('swal-password').value;
+                        if (pw !== ADMIN_PASSWORD) {
+                            Swal.showValidationMessage('密碼錯誤！');
+                            return false;
+                        }
+                        return pw;
+                    }
+                });
+                if (!isConfirmed || !password) return;
+                showLoading();
+                try {
+                    await callAppsScript('clearLineTo');
+                    localStorage.removeItem('av_lin_to');
+                    savedLinTo = '';
+                    const linToInputEl = document.getElementById('lin-to-input');
+                    if (linToInputEl) linToInputEl.value = '';
+                    Swal.fire('已清除', 'line_to 設定值已成功清除。', 'success');
+                } catch (e) {
+                    Swal.fire('清除失敗', e.message, 'error');
+                } finally {
+                    hideLoading();
+                }
+            });
+
+            document.getElementById('remove-line-target-btn').addEventListener('click', async () => {
+                const removeSelectEl = document.getElementById('remove-target-select');
+                const targetId = removeSelectEl ? String(removeSelectEl.value || '').trim() : '';
+                if (!targetId) return Swal.fire('提示', '請先從清單選擇要移除的對象。', 'info');
+                const { value: password, isConfirmed } = await Swal.fire({
+                    title: '移除 LINE 對象',
+                    html: `
+                        <p>確定要從已記錄清單移除以下對象？</p>
+                        <p style="margin-top:0.6em;"><code>${targetId}</code></p>
+                        <p style="margin-top: 1em;">請輸入管理密碼以確認：</p>
+                        <input type="password" id="swal-password" class="swal2-input" placeholder="請輸入密碼">
+                    `,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: '確認移除',
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonText: '取消',
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const pw = document.getElementById('swal-password').value;
+                        if (pw !== ADMIN_PASSWORD) {
+                            Swal.showValidationMessage('密碼錯誤！');
+                            return false;
+                        }
+                        return pw;
+                    }
+                });
+                if (!isConfirmed || !password) return;
+                showLoading();
+                try {
+                    await callAppsScript('removeLineTarget', { targetId });
+                    cachedLineTargets = cachedLineTargets.filter(t => String(t && t.target_id || '') !== targetId);
+                    renderLineTargetOptions(cachedLineTargets);
+                    renderRemoveTargetOptions(cachedLineTargets);
+                    Swal.fire('已移除', `對象 ${targetId} 已從清單移除。`, 'success');
+                } catch (e) {
+                    Swal.fire('移除失敗', e.message, 'error');
+                } finally {
+                    hideLoading();
+                }
             });
 
             document.getElementById('setup-line-trigger-btn').addEventListener('click', async () => {

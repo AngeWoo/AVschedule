@@ -59,6 +59,7 @@ function doGet(e) {
       case 'setLineToken': result = setLineToken(params.line_channel_access_token); break;
       case 'getLineTargets': result = getLineTargets_(); break;
       case 'getLineWebhookStatus': result = getLineWebhookStatus_(); break;
+      case 'sendMarqueeAnnouncementsToLine': result = sendMarqueeAnnouncementsToLine_MessageAPI(params.lin_to); break;
       default: throw new Error(`未知的函式名稱: ${functionName}`);
     }
 
@@ -1085,16 +1086,81 @@ function dailyNotifyTomorrow_MessageAPI(linTo) { // 函式名稱維持不變以�
   }
 }
 
+function dailyNotifyTomorrowAndMarqueeSeparate_MessageAPI(linTo) {
+  try {
+    const tomorrowResult = dailyNotifyTomorrow_MessageAPI(linTo);
+    const marqueeResult = sendMarqueeAnnouncementsToLine_MessageAPI(linTo);
+    const tomorrowOk = tomorrowResult && tomorrowResult.status === 'success';
+    const marqueeOk = marqueeResult && marqueeResult.status === 'success';
+
+    if (tomorrowOk && marqueeOk) {
+      return {
+        status: 'success',
+        message: '已分開發送 2 則通知（明天名單、跑馬燈公告）。',
+        results: {
+          tomorrow: tomorrowResult,
+          marquee: marqueeResult
+        }
+      };
+    }
+
+    return {
+      status: 'error',
+      error: '部分通知發送失敗。',
+      results: {
+        tomorrow: tomorrowResult,
+        marquee: marqueeResult
+      }
+    };
+  } catch (e) {
+    console.error('[dailyNotifySeparate] 例外: ' + e.toString());
+    return { status: 'error', error: e.toString() };
+  }
+}
+
+function sendMarqueeAnnouncementsToLine_MessageAPI(linTo) {
+  try {
+    const announcements = getNewsAnnouncements();
+    const list = Array.isArray(announcements) ? announcements : [];
+    const scriptTimeZone = Session.getScriptTimeZone() || 'Asia/Taipei';
+    const generatedAt = Utilities.formatDate(new Date(), scriptTimeZone, 'yyyy/MM/dd HH:mm');
+    let messageBody = '';
+
+    if (!list.length) {
+      messageBody = '目前沒有最新公告。';
+    } else {
+      messageBody = list.map((item, index) => `${index + 1}. ${item}`).join('\n');
+    }
+
+    let fullMessage = `【跑馬燈公告】\n更新時間：${generatedAt}\n\n${messageBody}`;
+    if (fullMessage.length > 4900) {
+      fullMessage = fullMessage.slice(0, 4868) + '\n...(內容過長已截斷)';
+    }
+
+    const sendResult = sendLineMessage(fullMessage, linTo);
+    sendResult.announcement_count = list.length;
+    return sendResult;
+  } catch (e) {
+    console.error('[sendMarqueeAnnouncementsToLine] 失敗: ' + e.toString());
+    return { status: 'error', error: e.toString(), announcement_count: 0 };
+  }
+}
+
 function setupDaily20Trigger_MessageAPI(linTo) {
-  const funcName = 'dailyNotifyTomorrow_MessageAPI';
+  const funcName = 'dailyNotifyTomorrowAndMarqueeSeparate_MessageAPI';
   try {
     const targets = resolveLineTargetsForSend_(linTo);
     if (!targets.length || targets.some(t => t.includes('請在此貼上'))) {
       return { status: 'error', error: 'lin_to (LINE User ID / Group ID) 未設定。' };
     }
     const triggers = ScriptApp.getProjectTriggers() || [];
+    const managedHandlerNames = [
+      'dailyNotifyTomorrow_MessageAPI',
+      'dailyNotifyTomorrowAndMarqueeSeparate_MessageAPI'
+    ];
     triggers.forEach(t => {
-      if (t.getHandlerFunction && t.getHandlerFunction() === funcName) {
+      const handlerName = t.getHandlerFunction ? t.getHandlerFunction() : '';
+      if (managedHandlerNames.indexOf(handlerName) >= 0) {
         ScriptApp.deleteTrigger(t);
       }
     });

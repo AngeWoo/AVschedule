@@ -202,8 +202,7 @@ function getNewsAnnouncements() {
 
           // 只顯示今天及未來的公告
           if (messageDate >= today) {
-            const dateStr = Utilities.formatDate(messageDate, scriptTimeZone, 'yyyy/MM/dd');
-            return `${dateStr}：${messageTitle} - ${messageContent}`;
+            return `${messageTitle} - ${messageContent}`;
           }
         } catch (e) {
           console.error(`處理公告日期時發生錯誤: ${dateValue}. Error: ${e.message}`);

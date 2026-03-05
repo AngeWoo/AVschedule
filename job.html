@@ -4,6 +4,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20,500,0,0&display=swap" rel="stylesheet">
   <title>奉仕崗位職掌（執掌）</title>
   <style>
     :root {
@@ -21,9 +24,16 @@
          background: radial-gradient(circle at 10% 20%, rgba(31,122,236,.06), transparent 25%), radial-gradient(circle at 90% 0%, rgba(245,158,11,.08), transparent 22%), var(--bg-color);
          color:var(--text-color);line-height:1.7;padding:20px;display:flex;flex-direction:column;min-height:100vh;overflow-x:hidden}
     .page-header{text-align:center;margin-bottom:30px;filter:drop-shadow(0 2px 5px rgba(0,0,0,.1))}
-    .page-header h1{font-size:clamp(2rem,5vw,3rem);font-weight:800;color:var(--primary-color);letter-spacing:1px;display:flex;justify-content:center;align-items:center;gap:12px}
+    .page-header h1{font-size:clamp(2rem,5vw,3rem);font-weight:800;color:#fff;letter-spacing:1px;display:inline-flex;justify-content:center;align-items:center;gap:12px;padding:12px 22px;
+      background:linear-gradient(120deg,#ff7a7a,#ffb347,#ffe66d,#7ae582,#5ad1e5,#8e7dff,#ff7ac7,#ff7a7a);background-size:200% 200%;animation:rainbow-shift 12s ease infinite;
+      border:1px solid rgba(255,255,255,.35);border-radius:999px;box-shadow:0 14px 36px rgba(0,0,0,.12),0 8px 18px rgba(0,0,0,.08);text-shadow:0 2px 8px rgba(0,0,0,.18)}
+    @keyframes rainbow-shift{
+      0%{background-position:0% 50%}
+      50%{background-position:100% 50%}
+      100%{background-position:0% 50%}
+    }
     .container{margin:0 auto;width:100%;max-width:960px;background:linear-gradient(135deg,var(--card-bg-start),var(--card-bg-end));padding:30px;border-radius:var(--border-radius-lg);
-               border:1px solid var(--card-border);box-shadow:0 10px 30px var(--card-shadow-dark),0 5px 15px var(--card-shadow-light);position:relative;z-index:1;flex-grow:1}
+               border:1px solid var(--card-border);box-shadow:0 14px 34px var(--card-shadow-dark),0 7px 18px var(--card-shadow-light);position:relative;z-index:1;flex-grow:1}
     h2{font-size:1.6rem;font-weight:800;margin:1rem 0 .5rem}
     h3{font-size:1.25rem;font-weight:700;margin:1rem 0 .5rem;color:var(--primary-dark)}
     p.lead{color:var(--text-light);margin-top:.25rem}
@@ -34,11 +44,13 @@
          position:relative;overflow:hidden;backface-visibility:hidden;transform:translateZ(0)}
     .btn::before{content:'';position:absolute;inset:0;background:rgba(255,255,255,.1);z-index:1;opacity:0;transform:scale(.5);border-radius:var(--border-radius-sm);transition:var(--transition-fast)}
     .btn:hover::before{opacity:1;transform:scale(1)}
-    .btn-primary{background:linear-gradient(45deg,var(--primary-gradient-start),var(--primary-gradient-end));color:#fff;box-shadow:0 5px 15px rgba(255,140,66,.4),0 2px 5px rgba(0,0,0,.1)}
-    .btn-secondary{background:var(--card-bg-start);color:var(--text-color);border:1px solid var(--card-border);box-shadow:0 2px 6px var(--card-shadow-light);font-weight:600}
+    .btn-primary{background:linear-gradient(45deg,var(--primary-gradient-start),var(--primary-gradient-end));color:#fff;box-shadow:0 8px 18px rgba(31,122,236,.32),0 2px 5px rgba(0,0,0,.1)}
+    .btn-secondary{background:var(--card-bg-start);color:var(--text-color);border:1px solid var(--card-border);box-shadow:0 4px 10px var(--card-shadow-light);font-weight:600}
     .btn-link{background:transparent;border:1px dashed var(--card-border);color:var(--text-light)}
+    .mini-icon{font-family:'Material Symbols Rounded';font-style:normal;font-weight:500;font-size:1.2em;line-height:1;display:inline-flex;align-items:center;justify-content:center;
+               font-variation-settings:'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 20;margin-right:6px;vertical-align:-2px}
     .badge{display:inline-block;background:#fff2ea;color:var(--primary-dark);padding:2px 8px;border:1px solid #ffd7bd;border-radius:999px;font-size:.85rem;margin-left:6px}
-    .section{background:#fff;border:1px solid var(--card-border);border-radius:14px;padding:16px 18px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+    .section{background:#fff;border:1px solid var(--card-border);border-radius:14px;padding:16px 18px;margin-bottom:16px;box-shadow:0 8px 20px rgba(15,76,163,.08),0 2px 8px rgba(0,0,0,.04)}
     .section ul li{margin:.35rem 0}
     .footer{text-align:center;margin-top:auto;padding:16px;color:var(--text-light);font-size:.95rem}
     .top-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:12px}
@@ -47,10 +59,12 @@
     .toc .btn{min-width:120px}
     .meta{font-size:.9rem;color:var(--text-light)}
     .page-fab-container{position:fixed;right:14px;bottom:14px;display:flex;flex-direction:column;gap:10px;z-index:1100}
-    .page-fab{width:40px;height:40px;border-radius:50%;border:none;cursor:pointer;background-color:rgba(31,122,236,.85);color:#fff;
-              box-shadow:0 2px 5px rgba(0,0,0,.2);font-size:1.1rem;font-weight:700;letter-spacing:.2px;
-              transition:transform .2s ease, box-shadow .2s ease, opacity .2s ease}
-    .page-fab:hover{transform:translateY(-1px);box-shadow:0 4px 8px rgba(0,0,0,.22)}
+    .page-fab{width:40px;height:40px;border-radius:50%;border:none;cursor:pointer;background:linear-gradient(145deg,rgba(31,122,236,.95),rgba(15,76,163,.95));color:#fff;
+              box-shadow:0 6px 16px rgba(15,76,163,.28);font-size:1.1rem;font-weight:700;letter-spacing:.2px;
+              transition:transform .2s ease, box-shadow .2s ease, opacity .2s ease;
+              font-family:'Material Symbols Rounded';font-style:normal;font-weight:500;line-height:1;
+              font-variation-settings:'FILL' 0,'wght' 500,'GRAD' 0,'opsz' 20}
+    .page-fab:hover{transform:translateY(-1px);box-shadow:0 10px 20px rgba(15,76,163,.35)}
     .page-fab:active{transform:translateY(0);box-shadow:inset 0 3px 8px rgba(0,0,0,.15)}
     .page-fab.hidden{opacity:0;pointer-events:none;transform:translateY(4px);box-shadow:none}
     @media (min-width: 769px){ .container{width:90vw;max-width:1600px} }
@@ -146,8 +160,8 @@
 
   <div class="container">
     <div class="top-actions button-grid">
-      <a class="btn btn-secondary" href="index.html">← 返回首頁</a>
-      <button class="btn btn-primary" onclick="window.print()">🖨️ 列印 / 另存 PDF</button>
+      <a class="btn btn-secondary" href="index.html"><span class="mini-icon" aria-hidden="true">arrow_back</span>返回首頁</a>
+      <button class="btn btn-primary" onclick="window.print()"><span class="mini-icon" aria-hidden="true">print</span>列印 / 另存 PDF</button>
       
     </div>
 
@@ -229,8 +243,8 @@
 
     <hr>
     <div class="button-grid" style="justify-content: center;">
-      <a class="btn btn-secondary" href="#top">回到最上方 ↑</a>
-      <a class="btn btn-primary" href="index.html">返回首頁</a>
+      <a class="btn btn-secondary" href="#top"><span class="mini-icon" aria-hidden="true">arrow_upward</span>回到最上方</a>
+      <a class="btn btn-primary" href="index.html"><span class="mini-icon" aria-hidden="true">home</span>返回首頁</a>
     </div>
   </div>
 
@@ -238,8 +252,8 @@
     © 2025 AV-Broadcasting Team. All Rights Reserved.
   </footer>
   <div class="page-fab-container" aria-label="快速捲動">
-    <button class="page-fab" id="scroll-top-btn" aria-label="最上頁" title="最上頁">↑</button>
-    <button class="page-fab" id="scroll-bottom-btn" aria-label="最下頁" title="最下頁">↓</button>
+    <button class="page-fab" id="scroll-top-btn" aria-label="最上頁" title="最上頁">arrow_upward</button>
+    <button class="page-fab" id="scroll-bottom-btn" aria-label="最下頁" title="最下頁">arrow_downward</button>
   </div>
   <script>
     (() => {

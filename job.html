@@ -7,18 +7,19 @@
   <title>奉仕崗位職掌（執掌）</title>
   <style>
     :root {
-      --primary-color: #FF8C42; --primary-dark: #D47432; --primary-light: #FFDAB3;
-      --primary-gradient-start: #FF9B5D; --primary-gradient-end: #FF7D2B;
-      --bg-color: #F0F4F8; --card-bg-start: #FFFFFF; --card-bg-end: #FDFDFD;
-      --card-border: #E0E6EE; --card-shadow-light: rgba(174,174,192,0.25);
-      --card-shadow-dark: rgba(0,0,0,0.15); --text-color: #334455; --text-light: #7B8D9F;
+      --primary-color: #1F7AEC; --primary-dark: #0F4CA3; --primary-light: #E8F1FF;
+      --primary-gradient-start: #1F7AEC; --primary-gradient-end: #0F4CA3;
+      --bg-color: #F6F7FB; --card-bg-start: #FFFFFF; --card-bg-end: #FBFBFD;
+      --card-border: #E3E7EF; --card-shadow-light: rgba(31,122,236,0.08);
+      --card-shadow-dark: rgba(15,36,94,0.12); --text-color: #1F2A44; --text-light: #6B7280;
       --danger-color: #E74C3C;
       --border-radius-sm: 8px; --border-radius: 16px; --border-radius-lg: 24px;
       --transition-fast: all .2s cubic-bezier(.4,0,.2,1); --transition-medium: all .3s cubic-bezier(.4,0,.2,1);
     }
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif,"Microsoft JhengHei","Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
-         background:var(--bg-color);color:var(--text-color);line-height:1.7;padding:20px;display:flex;flex-direction:column;min-height:100vh;overflow-x:hidden}
+    body{font-family:'Manrope','Noto Sans TC','Segoe UI',system-ui,-apple-system,sans-serif;
+         background: radial-gradient(circle at 10% 20%, rgba(31,122,236,.06), transparent 25%), radial-gradient(circle at 90% 0%, rgba(245,158,11,.08), transparent 22%), var(--bg-color);
+         color:var(--text-color);line-height:1.7;padding:20px;display:flex;flex-direction:column;min-height:100vh;overflow-x:hidden}
     .page-header{text-align:center;margin-bottom:30px;filter:drop-shadow(0 2px 5px rgba(0,0,0,.1))}
     .page-header h1{font-size:clamp(2rem,5vw,3rem);font-weight:800;color:var(--primary-color);letter-spacing:1px;display:flex;justify-content:center;align-items:center;gap:12px}
     .container{margin:0 auto;width:100%;max-width:960px;background:linear-gradient(135deg,var(--card-bg-start),var(--card-bg-end));padding:30px;border-radius:var(--border-radius-lg);
@@ -45,12 +46,21 @@
     .toc a{display:inline-block;text-decoration:none}
     .toc .btn{min-width:120px}
     .meta{font-size:.9rem;color:var(--text-light)}
+    .page-fab-container{position:fixed;right:14px;bottom:14px;display:flex;flex-direction:column;gap:10px;z-index:1100}
+    .page-fab{width:40px;height:40px;border-radius:50%;border:none;cursor:pointer;background-color:rgba(31,122,236,.85);color:#fff;
+              box-shadow:0 2px 5px rgba(0,0,0,.2);font-size:1.1rem;font-weight:700;letter-spacing:.2px;
+              transition:transform .2s ease, box-shadow .2s ease, opacity .2s ease}
+    .page-fab:hover{transform:translateY(-1px);box-shadow:0 4px 8px rgba(0,0,0,.22)}
+    .page-fab:active{transform:translateY(0);box-shadow:inset 0 3px 8px rgba(0,0,0,.15)}
+    .page-fab.hidden{opacity:0;pointer-events:none;transform:translateY(4px);box-shadow:none}
     @media (min-width: 769px){ .container{width:90vw;max-width:1600px} }
     @media (max-width:768px){
       body{padding:10px}
       .container{padding:16px;border-radius:var(--border-radius)}
       .btn{padding:12px 16px;font-size:1rem}
       .toc .btn{flex-basis:calc(50% - 6px);flex-grow:1;min-width:unset}
+      .page-fab-container{right:10px;bottom:10px}
+      .page-fab{width:38px;height:38px}
     }
     /* Anchor offset for smooth in-page nav */
     .anchor{scroll-margin-top:90px}
@@ -99,13 +109,39 @@
       transition: outline-color 160ms ease-in-out;
     }
 
+    /* 快速導覽按鈕 3D 優化 */
+    .toc .btn {
+      position: relative;
+      border: 1px solid #c8d9f6 !important;
+      background: linear-gradient(180deg, #ffffff, #eef4ff) !important;
+      color: #1f3f73 !important;
+      box-shadow: 0 3px 0 #b4c9ef, 0 10px 16px rgba(15, 76, 163, 0.14) !important;
+      transform: translateY(0);
+      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, color 180ms ease;
+      text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+    }
+
+    .toc .btn:hover {
+      color: #fff !important;
+      background: linear-gradient(135deg, #2f8bff, #0f4ca3) !important;
+      border-color: #1e62c8 !important;
+      box-shadow: 0 5px 0 #0b3f87, 0 14px 24px rgba(15, 76, 163, 0.34) !important;
+      transform: translateY(-2px) scale(1.01) !important;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
+    }
+
+    .toc .btn:active {
+      transform: translateY(2px) !important;
+      box-shadow: 0 1px 0 #0b3f87, 0 6px 10px rgba(15, 76, 163, 0.22) !important;
+    }
+
 </style>
 </head>
 
-<body>
+<body id="top">
   <header class="page-header">
     <h1>奉仕崗位職掌（執掌）</h1>
-    <p class="lead">本頁彙整「電腦／燈光／音控／攝影」四組職掌，方便查閱與印製。</p>
+    <p class="lead">本頁彙整「導播／電腦／燈光／音控／攝影／巡場」六組職掌，方便查閱與印製。</p>
   </header>
 
   <div class="container">
@@ -124,6 +160,7 @@
       <a class="btn btn-secondary" href="#sec-lighting">燈光</a>
       <a class="btn btn-secondary" href="#sec-audio">音控</a>
       <a class="btn btn-secondary" href="#sec-camera">攝影</a>
+      <a class="btn btn-secondary" href="#sec-patrol">巡場(皆適用)</a>
     </div>
 
     
@@ -173,13 +210,14 @@
   </ul>
 </section>
 
-<hr>
-<section class="section">
-  <h3>共通流程（皆適用）</h3>
+<section id="sec-patrol" class="section anchor">
+  <h3>巡場(皆適用)</h3>
   <ul>
     <li>法會前 60–30 分：電視設備開啟、影像聲音確認正常、翻譯系統開啟。</li>
     <li>法會前 10 分：影像聲音再度確認正常。</li>
     <li>法會中：以3樓AV主控室指揮為主、突發狀況時、以{不中斷畫面及聲音}為首要來處理。</li>
+    <li>事務局前的三台電視，請立願巡場的人，協助法會前開啟／法會後關閉，聲音也要及時動態調整。</li>
+    <li>護摩堂及修行室窗簾法會時需要拉下來，請聯絡部會奉侍協助或自行動態調整。</li>
     <li>法會結束：所有有序關機→播放錄影帶→翻譯機回收→耳機清潔回收→對講機清潔回收。</li>
     <li>其他支援：現場工作動態支援，接心日時，燈光奉仕請協助至修行室播放{接心修行影片}，音控請協助至修行室播放{會座說明影片}。</li>
   </ul>
@@ -199,5 +237,29 @@
   <footer class="footer">
     © 2025 AV-Broadcasting Team. All Rights Reserved.
   </footer>
+  <div class="page-fab-container" aria-label="快速捲動">
+    <button class="page-fab" id="scroll-top-btn" aria-label="最上頁" title="最上頁">↑</button>
+    <button class="page-fab" id="scroll-bottom-btn" aria-label="最下頁" title="最下頁">↓</button>
+  </div>
+  <script>
+    (() => {
+      const topFab = document.getElementById('scroll-top-btn');
+      const bottomFab = document.getElementById('scroll-bottom-btn');
+      if (!topFab || !bottomFab) return;
+
+      const updateFabVisibility = () => {
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+        const docHeight = document.documentElement.scrollHeight;
+        topFab.classList.toggle('hidden', scrollTop < 120);
+        bottomFab.classList.toggle('hidden', scrollTop + viewportHeight > docHeight - 120);
+      };
+
+      topFab.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+      bottomFab.addEventListener('click', () => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' }));
+      window.addEventListener('scroll', updateFabVisibility, { passive: true });
+      updateFabVisibility();
+    })();
+  </script>
 </body>
 </html>

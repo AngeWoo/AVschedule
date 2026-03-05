@@ -358,11 +358,215 @@
 
         .tab-content {
             display: none;
-            padding-top: 10px;
+            padding: 16px;
+            border-radius: 18px;
+            border: 1px solid #e8edf7;
+            background: linear-gradient(180deg, #ffffff, #fbfcff);
+            box-shadow: 0 12px 28px rgba(15, 76, 163, 0.07);
+            margin-bottom: 12px;
         }
 
         .tab-content.active {
             display: block;
+        }
+
+        #my-signups-result {
+            margin-top: 10px;
+        }
+
+        .query-quick-range {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 6px 0 2px;
+        }
+
+        .btn-ghost {
+            background: #eef4ff;
+            color: #234374;
+            border: 1px solid #cddcf9;
+            box-shadow: none;
+            padding: 8px 14px;
+            font-size: 0.9rem;
+        }
+
+        .btn-ghost:hover {
+            background: #e3eeff;
+            transform: translateY(-1px);
+        }
+
+        .btn-ghost.active {
+            background: linear-gradient(135deg, #2a7cf8, #0f4ca3);
+            color: #fff;
+            border-color: transparent;
+        }
+
+        .event-status-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 999px;
+            letter-spacing: 0.2px;
+        }
+
+        .event-status-badge.is-open {
+            color: #0c5f36;
+            background: #e6f8ef;
+            border: 1px solid #b7e8cc;
+        }
+
+        .event-status-badge.is-full {
+            color: #7c2d12;
+            background: #fef3c7;
+            border: 1px solid #facc15;
+        }
+
+        .event-status-badge.is-closed {
+            color: #4b5563;
+            background: #edf0f5;
+            border: 1px solid #d8dee8;
+        }
+
+        .event-status-badge.is-crowded {
+            color: #b42318;
+            background: #ffe8e6;
+            border: 1px solid #ffb8b1;
+        }
+
+        .event-status-badge.is-soon {
+            color: #166534;
+            background: #dcfce7;
+            border: 1px solid #86efac;
+        }
+
+        .event-status-badge.is-today {
+            color: #fff;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: 1px solid transparent;
+        }
+
+        .event-status-badge.is-backup {
+            color: #6f42c1;
+            background: #f2ebff;
+            border: 1px solid #dcc9ff;
+        }
+
+        .event-status-badges {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 6px;
+        }
+
+        .event-mobile-list,
+        .signup-mobile-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+        }
+
+        .event-mobile-card,
+        .signup-mobile-card {
+            border: 1px solid #dfe6f3;
+            border-radius: 14px;
+            background: #fff;
+            box-shadow: 0 8px 20px rgba(15, 76, 163, 0.08);
+            padding: 12px 12px 10px;
+        }
+
+        .event-mobile-card {
+            display: flex;
+            flex-direction: column;
+            min-height: 320px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .event-mobile-card:hover {
+            transform: translateY(-2px);
+            border-color: #c9d9f5;
+            box-shadow: 0 14px 24px rgba(15, 76, 163, 0.14);
+        }
+
+        .event-mobile-head,
+        .signup-mobile-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .event-mobile-date,
+        .signup-mobile-date {
+            font-size: 0.86rem;
+            color: #42526e;
+            font-weight: 700;
+        }
+
+        .event-mobile-title,
+        .signup-mobile-title {
+            font-weight: 800;
+            color: #1f2a44;
+            line-height: 1.35;
+            margin-bottom: 8px;
+        }
+
+        .event-mobile-meta,
+        .signup-mobile-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px 8px;
+            font-size: 0.86rem;
+            color: #334155;
+            margin-bottom: 10px;
+        }
+
+        .event-mobile-meta div,
+        .signup-mobile-meta div {
+            background: #f7f9fd;
+            border: 1px solid #e4ebf6;
+            border-radius: 8px;
+            padding: 6px 8px;
+            min-height: 34px;
+            display: flex;
+            align-items: center;
+        }
+
+        .event-mobile-signups {
+            margin: 0 0 10px;
+            color: #475569;
+            font-size: 0.82rem;
+            line-height: 1.45;
+            min-height: 48px;
+        }
+
+        .event-mobile-signups strong {
+            color: #1f2a44;
+        }
+
+        .simple-event-signup-btn {
+            margin-top: auto;
+            align-self: center;
+            width: min(220px, 100%);
+            justify-content: center;
+        }
+
+        .signup-mobile-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .signup-mobile-actions .btn {
+            flex: 1;
+            min-height: 38px;
+            padding: 8px 10px;
+        }
+
+        .mobile-query-bar {
+            display: none;
         }
 
         .inline-form {
@@ -872,6 +1076,49 @@
                 width: 90vw;
                 max-width: 1600px;
             }
+
+            #my-signups-tab .inline-form {
+                display: grid;
+                grid-template-columns: minmax(130px, 1fr) minmax(170px, 1.2fr) minmax(140px, 0.9fr) minmax(140px, 0.9fr) auto auto auto;
+                align-items: end;
+                gap: 10px;
+            }
+
+            #my-signups-tab .inline-form>.form-group,
+            #my-signups-tab .inline-form>.form-group-date {
+                min-width: 0;
+            }
+
+            #my-signups-tab .inline-form>.btn {
+                width: auto;
+                flex: 0 0 auto;
+                white-space: nowrap;
+            }
+
+            #my-signups-tab .inline-form>.query-quick-range {
+                margin: 0;
+                flex-wrap: nowrap;
+                align-items: center;
+                grid-column: 5;
+                grid-row: 1;
+            }
+
+            #my-signups-tab .inline-form>.query-quick-range .query-range-btn {
+                flex: 0 0 auto;
+                white-space: nowrap;
+            }
+
+            #my-signups-tab #unified-search-btn {
+                grid-column: 6;
+                grid-row: 1;
+                justify-self: end;
+            }
+
+            #my-signups-tab #clear-search-btn {
+                grid-column: 7;
+                grid-row: 1;
+                justify-self: end;
+            }
         }
 
         @media (max-width: 768px) {
@@ -886,6 +1133,7 @@
                 display: flex;
                 flex-direction: column;
                 overflow-x: hidden;
+                padding-bottom: 84px;
             }
 
             .page-header {
@@ -927,6 +1175,10 @@
                 justify-content: center;
                 flex-wrap: wrap;
                 overflow: visible;
+                position: sticky;
+                top: 8px;
+                z-index: 40;
+                backdrop-filter: blur(6px);
             }
 
             .tab-button {
@@ -1083,6 +1335,66 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
+            }
+
+            #my-signups-tab #unified-search-btn,
+            #my-signups-tab #clear-search-btn {
+                display: none;
+            }
+
+            .tab-content {
+                padding: 12px;
+                border-radius: 14px;
+                margin-bottom: 10px;
+            }
+
+            .query-quick-range {
+                margin-top: 2px;
+            }
+
+            .inline-form>.query-quick-range {
+                flex: 1 1 100%;
+            }
+
+            .query-quick-range .btn {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .event-mobile-list,
+            .signup-mobile-list {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .event-mobile-card,
+            .signup-mobile-card {
+                padding: 11px 10px 10px;
+            }
+
+            .mobile-query-bar {
+                position: fixed;
+                left: 10px;
+                right: 10px;
+                bottom: 10px;
+                display: none;
+                gap: 8px;
+                padding: 8px;
+                border-radius: 12px;
+                background: rgba(255, 255, 255, 0.92);
+                border: 1px solid #dbe5f8;
+                box-shadow: 0 10px 24px rgba(15, 36, 94, 0.2);
+                z-index: 1200;
+                backdrop-filter: blur(6px);
+            }
+
+            body[data-active-tab="my-signups-tab"] .mobile-query-bar {
+                display: flex;
+            }
+
+            .mobile-query-bar .btn {
+                flex: 1;
+                min-height: 42px;
             }
 
             #admin-tab .admin-panel {
@@ -1319,7 +1631,7 @@
         }
 
         /* Admin tab specific style overrides */
-        #admin-tab {
+        #admin-tab.active {
             display: flex;
             flex-direction: column;
             gap: 14px;
@@ -1469,17 +1781,16 @@
                 <button id="clear-search-btn" class="btn btn-icon-left"
                     style="background-color: #6c757d; color: white;"><span
                         class="icon">&#x1F504;</span><span>清除</span></button>
+                <div class="query-quick-range" id="query-quick-range">
+                    <button type="button" class="btn btn-ghost query-range-btn" data-range="today">今天</button>
+                    <button type="button" class="btn btn-ghost query-range-btn" data-range="week">本週</button>
+                    <button type="button" class="btn btn-ghost query-range-btn active" data-range="month">本月</button>
+                </div>
             </div>
             <div id="my-signups-result"></div>
-            <div id="query-actions-container"
-                style="text-align: center; margin-top: 25px; display: none; flex-wrap: wrap; gap: 15px; justify-content: center;">
-                <button id="export-from-query-btn" class="btn btn-primary">產生並下載 Excel</button>
-                <button id="share-query-to-clipboard-btn" class="btn btn-success"
-                    style="background-color: #17a2b8;">分享至剪貼簿</button>
-                <button id="send-query-to-email-btn" class="btn btn-primary btn-icon-left"
-                    style="background-color: #6f42c1; border-color: #6f42c1;">
-                    <span class="icon">&#x2709;</span><span>發送至 Email</span>
-                </button>
+            <div id="mobile-query-bar" class="mobile-query-bar">
+                <button type="button" id="mobile-query-search-btn" class="btn btn-primary">查詢</button>
+                <button type="button" id="mobile-query-clear-btn" class="btn" style="background:#6c757d;color:#fff;">清除</button>
             </div>
         </div>
 
@@ -1521,7 +1832,7 @@
             <h4 style="justify-content:center;text-align:center;"><span class="title-icon">&#x1F4C2;</span>相關文件下載</h4>
             <div class="button-grid">
                 <button id="download-jobhtml" class="btn btn-primary btn-icon-left"><span
-                        class="icon">&#x1F4D1;</span><span>奉仕崗位職掌（網頁版）</span></button>
+                        class="icon">&#x1F4D1;</span><span>奉仕崗位職掌（執掌）</span></button>
                 <button id="download-poster" class="btn btn-primary btn-icon-left"><span
                         class="icon">&#x1F5BC;</span><span>AV招生海報</span></button>
                 <button id="download-manual-night" class="btn btn-primary btn-icon-left"><span
@@ -1563,26 +1874,6 @@
             </div>
         </div>
         <div id="admin-tab" class="tab-content">
-            <div class="admin-panel">
-                <h4 style="margin-top: 0.25rem;"><span class="title-icon">&#9881;</span>分享奉侍名單</h4>
-                <p class="admin-panel-note">設定日期區間後可快速分享到剪貼簿或 Email。</p>
-                <div class="inline-form" style="justify-content: center;">
-                    <div class="form-group form-group-date"><label for="export-start-date">開始日期</label><input type="date"
-                            id="export-start-date"></div>
-                    <div class="form-group form-group-date"><label for="export-end-date">結束日期</label><input type="date"
-                            id="export-end-date"></div>
-                    <button id="share-to-clipboard-btn" class="btn btn-primary btn-icon-left">
-                        <span class="icon">&#x1F4CB;</span><span>分享至剪貼簿</span>
-                    </button>
-                    <button id="send-to-email-btn" class="btn btn-primary btn-icon-left"
-                        style="background-color: #6f42c1; border-color: #6f42c1;">
-                        <span class="icon">&#x2709;</span><span>發送至 Email</span>
-                    </button>
-                    <button id="admin-reset-btn" class="btn btn-icon-left"
-                        style="background-color: #6c757d; color: white;"><span
-                            class="icon">&#x1F504;</span><span>清除</span></button>
-                </div>
-            </div>
             <div class="admin-panel">
                 <h4 style="margin-top: 0.25rem;"><span class="title-icon">&#x1F4E2;</span>LINE 通知設定 (Messaging API)</h4>
                 <p class="admin-panel-note">可指定 line_to、測試發送，並一鍵傳送跑馬燈公告。</p>
@@ -1846,14 +2137,18 @@
                 localStorage.setItem('av_active_tab', tab);
             }
             activeTabName = tab;
+            document.body.dataset.activeTab = tab;
 
             const tabContents = cachedTabContentEls.length > 0 ? cachedTabContentEls : Array.from(document.querySelectorAll('.tab-content'));
             const tabButtons = cachedTabButtonEls.length > 0 ? cachedTabButtonEls : Array.from(document.querySelectorAll('.tab-button[data-tab]'));
-            tabContents.forEach(tc => { tc.style.display = 'none'; });
+            tabContents.forEach(tc => { tc.style.display = 'none'; tc.classList.remove('active'); });
             tabButtons.forEach(tb => tb.classList.remove('active'));
 
             const targetTab = tabEl || document.getElementById(tab);
-            if (targetTab) targetTab.style.display = 'block';
+            if (targetTab) {
+                targetTab.style.display = 'block';
+                targetTab.classList.add('active');
+            }
             if (currentBtn) currentBtn.classList.add('active');
 
             if (tab === 'calendar-tab') {
@@ -1913,9 +2208,101 @@
         function showEventPopover(info) {
             const isCoarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
             if (isMobile || isCoarse) return;
-            const { event, el } = info; const props = event.extendedProps; const popoverEl = document.getElementById('event-popover'); let content = `<h5>${props.full_title}</h5><p><b>日期:</b> ${DATE_FMT_CA_TW.format(new Date(event.start))}</p><p><b>時間:</b> ${props.startTime}${props.endTime ? ' - ' + props.endTime : ''}</p><p><b>額滿人數:</b> ${props.maxAttendees} 人</p>`; if (props.description) { content += `<p><b>說明:</b> ${props.description}</p>`; } if (props.signups && props.signups.length > 0) { content += '<hr style="margin: 8px 0; border-top: 1px dashed var(--card-border);"><ul>'; props.signups.forEach(s => { content += `<li><strong>${s.position}:</strong> ${s.user}</li>`; }); content += '</ul>'; } else { content += '<p style="margin-top: 8px;">目前尚無人報名</p>'; } popoverEl.innerHTML = content; popoverEl.style.visibility = 'hidden'; popoverEl.style.display = 'block'; const rect = el.getBoundingClientRect(); const popoverHeight = popoverEl.offsetHeight; const popoverWidth = popoverEl.offsetWidth; const margin = 10; let left = rect.left + window.scrollX; if (left + popoverWidth > window.innerWidth - margin) { left = window.innerWidth - popoverWidth - margin; } if (left < margin) { left = margin; } let top; if (rect.bottom + popoverHeight + margin > window.innerHeight) { top = rect.top + window.scrollY - popoverHeight - 5; } else { top = rect.bottom + window.scrollY + 5; } if (top < window.scrollY + margin) { top = window.scrollY + margin; } popoverEl.style.left = `${left}px`; popoverEl.style.top = `${top}px`; popoverEl.style.visibility = 'visible';
+            const { event, el } = info;
+            const props = event.extendedProps || {};
+            const popoverEl = document.getElementById('event-popover');
+            let content = `<h5>${props.full_title || event.title || ''}</h5><p><b>日期:</b> ${DATE_FMT_CA_TW.format(new Date(event.start))}</p><p><b>時間:</b> ${props.startTime || '-'}${props.endTime ? ' - ' + props.endTime : ''}</p><p><b>額滿人數:</b> ${props.maxAttendees || 0} 人</p>`;
+            if (props.description) {
+                content += `<p><b>說明:</b> ${props.description}</p>`;
+            }
+            if (props.signups && props.signups.length > 0) {
+                content += '<hr style="margin: 8px 0; border-top: 1px dashed var(--card-border);"><ul>';
+                props.signups.forEach(s => {
+                    content += `<li><strong>${s.position}:</strong> ${s.user}</li>`;
+                });
+                content += '</ul>';
+            } else {
+                content += '<p style="margin-top: 8px;">目前尚無人報名</p>';
+            }
+            popoverEl.innerHTML = content;
+            popoverEl.style.visibility = 'hidden';
+            popoverEl.style.display = 'block';
+            const rect = el.getBoundingClientRect();
+            const popoverHeight = popoverEl.offsetHeight;
+            const popoverWidth = popoverEl.offsetWidth;
+            const margin = 10;
+            let left = rect.left + window.scrollX;
+            if (left + popoverWidth > window.innerWidth - margin) {
+                left = window.innerWidth - popoverWidth - margin;
+            }
+            if (left < margin) {
+                left = margin;
+            }
+            let top;
+            if (rect.bottom + popoverHeight + margin > window.innerHeight) {
+                top = rect.top + window.scrollY - popoverHeight - 5;
+            } else {
+                top = rect.bottom + window.scrollY + 5;
+            }
+            if (top < window.scrollY + margin) {
+                top = window.scrollY + margin;
+            }
+            popoverEl.style.left = `${left}px`;
+            popoverEl.style.top = `${top}px`;
+            popoverEl.style.visibility = 'visible';
         }
         function hideEventPopover() { document.getElementById('event-popover').style.display = 'none'; }
+        function getEventStatusBadges(eventObj) {
+            const props = eventObj && eventObj.extendedProps ? eventObj.extendedProps : {};
+            const signupCount = Array.isArray(props.signups) ? props.signups.length : 0;
+            const maxAttendees = Number(props.maxAttendees || 0);
+            const eventStartDateTime = new Date(eventObj.start);
+            const eventEndDateTime = eventObj && eventObj.end ? new Date(eventObj.end) : new Date(eventObj.start);
+            if (!(eventObj && eventObj.end)) {
+                eventEndDateTime.setHours(23, 59, 59, 999);
+            }
+            const now = new Date();
+            const badges = [];
+
+            if (now > eventEndDateTime) {
+                return [{ text: '已截止', cls: 'is-closed' }];
+            }
+
+            if (maxAttendees > 0) {
+                if (signupCount >= maxAttendees) {
+                    badges.push({ text: '已滿額', cls: 'is-full' });
+                    const backupEnabled = props.allowBackup === true
+                        || props.backupEnabled === true
+                        || props.enableBackup === true
+                        || Number(props.backupLimit || 0) > 0
+                        || Array.isArray(props.backupSignups);
+                    if (backupEnabled) {
+                        badges.push({ text: '候補中', cls: 'is-backup' });
+                    }
+                } else if (signupCount < 5) {
+                    badges.push({ text: '人力短缺', cls: 'is-crowded' });
+                } else {
+                    badges.push({ text: '可報名', cls: 'is-open' });
+                }
+            } else {
+                if (signupCount < 5) {
+                    badges.push({ text: '人力短缺', cls: 'is-crowded' });
+                } else {
+                    badges.push({ text: '可報名', cls: 'is-open' });
+                }
+            }
+
+            if (now.toDateString() === eventStartDateTime.toDateString()) {
+                badges.push({ text: '今日活動', cls: 'is-today' });
+            } else {
+                const hoursToStart = (eventStartDateTime.getTime() - now.getTime()) / 3600000;
+                if (hoursToStart > 0 && hoursToStart <= 48) {
+                    badges.push({ text: '即將開始', cls: 'is-soon' });
+                }
+            }
+
+            return badges.slice(0, 3);
+        }
         function renderSimpleListView() {
             const container = document.getElementById('simple-list-view');
             document.getElementById('custom-calendar-title').textContent = `${currentDisplayDate.getFullYear()}年 ${currentDisplayDate.getMonth() + 1}月`;
@@ -1928,88 +2315,65 @@
                 .filter(e => new Date(e.start) >= viewStart && new Date(e.start) <= viewEnd)
                 .sort((a, b) => new Date(a.start) - new Date(b.start));
 
+            if (simpleListObserver) {
+                simpleListObserver.disconnect();
+                simpleListObserver = null;
+            }
+            if (container._scrollBtnHandler) {
+                container.removeEventListener('click', container._scrollBtnHandler);
+                container._scrollBtnHandler = null;
+            }
+            if (container._mobileEventClickHandler) {
+                container.removeEventListener('click', container._mobileEventClickHandler);
+                container._mobileEventClickHandler = null;
+            }
+
             if (currentMonthEvents.length === 0) {
-                if (container._scrollBtnHandler) {
-                    container.removeEventListener('click', container._scrollBtnHandler);
-                    container._scrollBtnHandler = null;
-                }
-                container.innerHTML = '<div class="table-responsive" style="margin-top:0;"><p style="text-align:center; padding: 20px;">本月尚無活動。</p></div>';
+                container.innerHTML = '';
                 return;
             }
 
-            let tableHtml = `<div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><div class="table-responsive" id="simple-list-table-container" style="margin-top:0;"><table><thead><tr><th>日期</th><th>星期</th><th>標題</th><th>開始</th><th>結束</th><th>上限 (已報)</th><th>報名詳情</th></tr></thead><tbody>`;
+            let cardsHtml = '<div class="event-mobile-list">';
             currentMonthEvents.forEach(event => {
-                const props = event.extendedProps;
+                const props = event.extendedProps || {};
                 const startDate = new Date(event.start);
                 const dateString = DATE_FMT_CA_TW.format(startDate);
-                const dayOfWeek = DATE_FMT_WEEKDAY_ZH_TW.format(startDate);
+                const dayOfWeek = DATE_FMT_WEEKDAY_ZH_TW.format(startDate).replace('週', '');
                 const signupCount = props.signups ? props.signups.length : 0;
-                const signupsDetail = props.signups && props.signups.length > 0 ? props.signups.map(s => `${s.position}：${s.user}`).join('，') : '';
-                tableHtml += `<tr data-event-id="${event.id}"><td><span class="status-dot" style="background-color: ${event.backgroundColor};"></span>${dateString.substring(5)}</td><td>${dayOfWeek.replace('週', '')}</td><td class="event-title-cell">${event.title}</td><td>${props.startTime || ''}</td><td>${props.endTime || ''}</td><td>${props.maxAttendees} (${signupCount})</td><td>${signupsDetail}</td></tr>`;
+                const signupsDetail = props.signups && props.signups.length > 0 ? props.signups.map(s => `${s.position}：${s.user}`).join('、') : '目前尚無人報名';
+                const statusBadges = getEventStatusBadges(event);
+                const statusBadgesHtml = statusBadges.map(s => `<span class="event-status-badge ${s.cls}">${s.text}</span>`).join('');
+                cardsHtml += `
+                    <article class="event-mobile-card" data-event-id="${event.id}">
+                        <div class="event-mobile-head">
+                            <div class="event-mobile-date">${dateString} (${dayOfWeek})</div>
+                            <div class="event-status-badges">${statusBadgesHtml}</div>
+                        </div>
+                        <div class="event-mobile-title">${event.title}</div>
+                        <div class="event-mobile-meta">
+                            <div>開始：${props.startTime || '-'}</div>
+                            <div>結束：${props.endTime || '-'}</div>
+                            <div>名額：${props.maxAttendees || 0}</div>
+                            <div>已報：${signupCount}</div>
+                        </div>
+                        <div class="event-mobile-signups"><strong>報名：</strong>${signupsDetail}</div>
+                        <button class="btn btn-primary simple-event-signup-btn" data-event-id="${event.id}">我要報名</button>
+                    </article>
+                `;
             });
-            tableHtml += `</tbody></table></div><div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><button class="floating-scroll-btn left" data-scroll-target="simple-list-table-container" data-scroll-dir="left">&#8592;</button><button class="floating-scroll-btn right" data-scroll-target="simple-list-table-container" data-scroll-dir="right">&#8594;</button>`;
-            container.innerHTML = tableHtml;
+            cardsHtml += '</div>';
+            container.innerHTML = cardsHtml;
 
-            if (container._scrollBtnHandler) {
-                container.removeEventListener('click', container._scrollBtnHandler);
-            }
-            container._scrollBtnHandler = (e) => {
-                const btn = e.target.closest('.floating-scroll-btn[data-scroll-target][data-scroll-dir]');
-                if (!btn || !container.contains(btn)) return;
-                const target = container.querySelector(`#${btn.dataset.scrollTarget}`);
-                if (!target) return;
-                const delta = btn.dataset.scrollDir === 'left' ? -200 : 200;
-                target.scrollBy({ left: delta, behavior: 'smooth' });
+            container._mobileEventClickHandler = (e) => {
+                const trigger = e.target.closest('.simple-event-signup-btn,[data-event-id]');
+                if (!trigger || !container.contains(trigger)) return;
+                const eventId = trigger.dataset.eventId || (trigger.closest('[data-event-id]') ? trigger.closest('[data-event-id]').dataset.eventId : '');
+                if (!eventId) return;
+                const eventObject = getCalendarEventById(eventId);
+                if (!eventObject) return;
+                handleEventClick({ event: { id: eventId, ...eventObject }, jsEvent: e });
             };
-            container.addEventListener('click', container._scrollBtnHandler);
-
-            const tbody = container.querySelector('#simple-list-table-container tbody');
-            if (tbody) {
-                tbody.addEventListener('click', (e) => {
-                    const row = e.target.closest('tr[data-event-id]');
-                    if (!row || e.target.tagName === 'BUTTON') return;
-                    const eventId = row.dataset.eventId;
-                    const eventObject = getCalendarEventById(eventId);
-                    if (!eventObject) return;
-                    handleEventClick({ event: { id: eventId, ...eventObject }, jsEvent: e });
-                });
-                tbody.addEventListener('mouseover', (e) => {
-                    const titleCell = e.target.closest('.event-title-cell');
-                    if (!titleCell || !tbody.contains(titleCell)) return;
-                    const row = titleCell.closest('tr[data-event-id]');
-                    if (!row) return;
-                    const eventObject = getCalendarEventById(row.dataset.eventId);
-                    if (!eventObject) return;
-                    showEventPopover({ event: { extendedProps: eventObject.extendedProps, start: eventObject.start }, el: titleCell });
-                });
-                tbody.addEventListener('mouseout', (e) => {
-                    const titleCell = e.target.closest('.event-title-cell');
-                    if (!titleCell || !tbody.contains(titleCell)) return;
-                    if (e.relatedTarget && titleCell.contains(e.relatedTarget)) return;
-                    hideEventPopover();
-                });
-            }
-
-            const tableContainer = document.getElementById('simple-list-table-container');
-            const floatBtns = container.querySelectorAll('.floating-scroll-btn');
-            if (tableContainer && floatBtns.length > 0) {
-                if (simpleListObserver) {
-                    simpleListObserver.disconnect();
-                    simpleListObserver = null;
-                }
-                simpleListObserver = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        floatBtns.forEach(btn => {
-                            if (entry.intersectionRatio >= 0.55) {
-                                btn.classList.add('visible');
-                            } else {
-                                btn.classList.remove('visible');
-                            }
-                        });
-                    });
-                }, { threshold: 0.55 });
-                simpleListObserver.observe(tableContainer);
-            }
+            container.addEventListener('click', container._mobileEventClickHandler);
         }
         function isCalendarTabVisible() {
             const calendarTab = document.getElementById('calendar-tab');
@@ -2057,6 +2421,7 @@
             }
 
             simpleView.style.display = 'none';
+            simpleView.innerHTML = '';
             fullView.style.display = 'block';
             fullViewBtn.classList.add('active');
             simpleViewBtn.classList.remove('active');
@@ -2183,12 +2548,20 @@
         function renderMySignupsTable(signups) {
             const resultDiv = document.getElementById('my-signups-result');
             const actionsContainer = document.getElementById('query-actions-container');
+            if (signupsTableObserver) {
+                signupsTableObserver.disconnect();
+                signupsTableObserver = null;
+            }
             if (resultDiv._scrollBtnHandler) {
                 resultDiv.removeEventListener('click', resultDiv._scrollBtnHandler);
                 resultDiv._scrollBtnHandler = null;
             }
+            if (resultDiv._mobileActionHandler) {
+                resultDiv.removeEventListener('click', resultDiv._mobileActionHandler);
+                resultDiv._mobileActionHandler = null;
+            }
             resultDiv.innerHTML = '';
-            actionsContainer.style.display = 'none';
+            if (actionsContainer) actionsContainer.style.display = 'none';
             updateSearchDebug();
 
             if (!signups || signups.length === 0) {
@@ -2203,13 +2576,58 @@
                 rowsToRender = sortSignupsData(rowsToRender, lastQuery.sort.key, lastQuery.sort.dir, lastQuery.sort.type);
             }
 
+            const handleActionClick = (e) => {
+                const btn = e.target.closest('.signup-action-btn');
+                if (!btn) return;
+                const rowIndex = Number(btn.dataset.rowIndex);
+                if (Number.isNaN(rowIndex) || rowIndex < 0 || rowIndex >= rowsToRender.length) return;
+                const rowData = rowsToRender[rowIndex];
+                if (!rowData) return;
+                if (btn.dataset.action === 'edit') {
+                    promptToModifySignup(rowData);
+                } else if (btn.dataset.action === 'delete') {
+                    promptToDeleteSignup(rowData);
+                }
+            };
+
+            if (isMobile) {
+                let cardsHtml = '<div class="signup-mobile-list">';
+                rowsToRender.forEach((s, index) => {
+                    cardsHtml += `
+                        <article class="signup-mobile-card">
+                            <div class="signup-mobile-head">
+                                <div class="signup-mobile-date">${s.eventDate || '-'} ${s.eventDayOfWeek || ''}</div>
+                                <span class="event-status-badge is-open">${s.position || '-'}</span>
+                            </div>
+                            <div class="signup-mobile-title">${s.eventTitle || '-'}</div>
+                            <div class="signup-mobile-meta">
+                                <div>開始：${s.startTime || '-'}</div>
+                                <div>結束：${s.endTime || '-'}</div>
+                                <div>姓名：${s.user || '-'}</div>
+                                <div>報名：${s.timestamp || '-'}</div>
+                            </div>
+                            <div class="signup-mobile-actions">
+                                <button class="btn btn-sm signup-action-btn" data-action="edit" data-row-index="${index}" style="background-color: #ffc107; color: #212529;">修改</button>
+                                <button class="btn btn-danger btn-sm signup-action-btn" data-action="delete" data-row-index="${index}">刪除</button>
+                            </div>
+                        </article>
+                    `;
+                });
+                cardsHtml += '</div>';
+                resultDiv.innerHTML = cardsHtml;
+                if (actionsContainer) actionsContainer.style.display = 'grid';
+                resultDiv._mobileActionHandler = handleActionClick;
+                resultDiv.addEventListener('click', resultDiv._mobileActionHandler);
+                return;
+            }
+
             let tableHtml = `<div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><div class="table-responsive" id="my-signups-table-container"><table class="all-signups-table"><thead><tr><th class="sortable-th" data-sort="eventDate" data-type="date">活動日期<span class="sort-indicator"></span></th><th class="sortable-th" data-sort="eventDayOfWeek" data-type="text">星期<span class="sort-indicator"></span></th><th class="sortable-th" data-sort="eventTitle" data-type="text">活動名稱<span class="sort-indicator"></span></th><th class="sortable-th" data-sort="startTime" data-type="time">開始時間<span class="sort-indicator"></span></th><th class="sortable-th" data-sort="endTime" data-type="time">結束時間<span class="sort-indicator"></span></th><th class="sortable-th" data-sort="position" data-type="text">崗位<span class="sort-indicator"></span></th><th class="sortable-th" data-sort="user" data-type="text">姓名<span class="sort-indicator"></span></th><th class="sortable-th" data-sort="timestamp" data-type="datetime">報名時間<span class="sort-indicator"></span></th><th>操作</th></tr></thead><tbody>`;
             rowsToRender.forEach((s, index) => {
                 tableHtml += `<tr><td>${s.eventDate || ''}</td><td>${s.eventDayOfWeek || ''}</td><td>${s.eventTitle || ''}</td><td>${s.startTime || ''}</td><td>${s.endTime || ''}</td><td>${s.position || ''}</td><td>${s.user || ''}</td><td>${s.timestamp || ''}</td><td style="display: flex; gap: 8px; white-space: nowrap;"><button class="btn btn-sm signup-action-btn" data-action="edit" data-row-index="${index}" style="background-color: #ffc107; color: #212529;">修改</button><button class="btn btn-danger btn-sm signup-action-btn" data-action="delete" data-row-index="${index}">刪除</button></td></tr>`;
             });
             tableHtml += '</tbody></table></div><div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><button class="floating-scroll-btn left" data-scroll-target="my-signups-table-container" data-scroll-dir="left">&#8592;</button><button class="floating-scroll-btn right" data-scroll-target="my-signups-table-container" data-scroll-dir="right">&#8594;</button>';
             resultDiv.innerHTML = tableHtml;
-            actionsContainer.style.display = 'flex';
+            if (actionsContainer) actionsContainer.style.display = 'flex';
 
             if (resultDiv._scrollBtnHandler) {
                 resultDiv.removeEventListener('click', resultDiv._scrollBtnHandler);
@@ -2227,10 +2645,6 @@
             const tableContainer = document.getElementById('my-signups-table-container');
             const floatBtns = resultDiv.querySelectorAll('.floating-scroll-btn');
             if (tableContainer && floatBtns.length > 0) {
-                if (signupsTableObserver) {
-                    signupsTableObserver.disconnect();
-                    signupsTableObserver = null;
-                }
                 signupsTableObserver = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
                         floatBtns.forEach(btn => {
@@ -2266,19 +2680,7 @@
 
             const tbody = tableContainer ? tableContainer.querySelector('tbody') : null;
             if (tbody) {
-                tbody.addEventListener('click', (e) => {
-                    const btn = e.target.closest('.signup-action-btn');
-                    if (!btn) return;
-                    const rowIndex = Number(btn.dataset.rowIndex);
-                    if (Number.isNaN(rowIndex) || rowIndex < 0 || rowIndex >= rowsToRender.length) return;
-                    const rowData = rowsToRender[rowIndex];
-                    if (!rowData) return;
-                    if (btn.dataset.action === 'edit') {
-                        promptToModifySignup(rowData);
-                    } else if (btn.dataset.action === 'delete') {
-                        promptToDeleteSignup(rowData);
-                    }
-                });
+                tbody.addEventListener('click', handleActionClick);
             }
         }
         async function promptToModifySignup(signup) { const eventDetails = getCalendarEventById(signup.eventId); if (!eventDetails) { return Swal.fire('錯誤', '找不到此報名的相關活動資訊，無法修改。', 'error'); } const allPositions = eventDetails.extendedProps.positions; if (!allPositions || allPositions.length === 0) { return Swal.fire('錯誤', '此活動沒有可用的崗位列表。', 'error'); } let optionsHtml = allPositions.map(pos => `<option value="${pos}" ${pos === signup.position ? 'selected' : ''}>${pos}</option>`).join(''); const { value: newPosition } = await Swal.fire({ title: '修改報名崗位', html: ` <div style="text-align: left; margin: 1em 0; line-height: 1.8;"><p><strong>活動:</strong> ${signup.eventTitle}</p><p><strong>日期:</strong> ${signup.eventDate}</p><p><strong>時間:</strong> ${eventDetails.extendedProps.startTime || ''}${eventDetails.extendedProps.endTime ? ' - ' + eventDetails.extendedProps.endTime : ''}</p><p><strong>姓名:</strong> ${signup.user}</p><hr style="margin: 1rem 0; height: 1px; background: #ddd; border: none;"><p style="margin-top: 1em;"><strong>修改崗位為:</strong></p><select id="swal-position-select" class="swal2-select" style="width: 100%; max-width: 300px; margin-top: 0.5em;">${optionsHtml}</select></div>`, width: isMobile ? '90vw' : '500px', focusConfirm: false, showCancelButton: true, confirmButtonText: '確認修改', cancelButtonText: '取消', preConfirm: () => document.getElementById('swal-position-select').value }); if (newPosition && newPosition !== signup.position) { showLoading(); try { const response = await callAppsScript('modifySignup', { signupId: signup.signupId, newPosition: newPosition }); await Swal.fire('修改成功', response.data.message, 'success'); invalidateUnifiedSignupsCache(); executeUnifiedSignupQuery(lastQuery.params.searchText, lastQuery.params.startDateStr, lastQuery.params.endDateStr, lastQuery.params.eventDate || '', lastQuery.params.eventTitle || '', lastQuery.params.startTime || '', lastQuery.params.keyword || ''); setupCalendarTab(true); } catch (e) { Swal.fire('修改失敗', e.message, 'error'); } finally { hideLoading(); } } }
@@ -2723,7 +3125,28 @@
             ['search-start-date', 'stats-start-date', 'export-start-date', 'performance-start-date'].forEach(id => { const el = document.getElementById(id); if (el) el.value = firstDayStr; });
             ['search-end-date', 'stats-end-date', 'export-end-date', 'performance-end-date'].forEach(id => { const el = document.getElementById(id); if (el) el.value = lastDayStr; });
 
-            document.getElementById('unified-search-btn').addEventListener('click', () => {
+            const applyQuickRange = (rangeType) => {
+                const now = new Date();
+                let start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                let end = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                if (rangeType === 'week') {
+                    const day = start.getDay();
+                    const diffToMonday = day === 0 ? -6 : (1 - day);
+                    start.setDate(start.getDate() + diffToMonday);
+                    end = new Date(start);
+                    end.setDate(start.getDate() + 6);
+                } else if (rangeType === 'month') {
+                    start = new Date(now.getFullYear(), now.getMonth(), 1);
+                    end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                }
+                document.getElementById('search-start-date').value = DATE_FMT_CA_TW.format(start);
+                document.getElementById('search-end-date').value = DATE_FMT_CA_TW.format(end);
+                document.querySelectorAll('.query-range-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.range === rangeType);
+                });
+            };
+
+            const runUnifiedQuery = () => {
                 const selectedEventId = document.getElementById('event-select').value;
                 let eventDate = '';
                 let eventTitle = '';
@@ -2754,8 +3177,30 @@
                     sort: null
                 };
                 executeUnifiedSignupQuery(searchText, queryStartDate, queryEndDate, eventDate, eventTitle, startTime, keyword);
+            };
+
+            const clearUnifiedQuery = () => {
+                document.getElementById('event-select').value = '';
+                document.getElementById('universal-search-input').value = '';
+                const { firstDayStr, lastDayStr } = getMonthDateRange();
+                document.getElementById('search-start-date').value = firstDayStr;
+                document.getElementById('search-end-date').value = lastDayStr;
+                document.querySelectorAll('.query-range-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.range === 'month');
+                });
+                document.getElementById('my-signups-result').innerHTML = '';
+                lastQuery = { type: null, params: {}, data: [], sort: null };
+            };
+
+            document.getElementById('unified-search-btn').addEventListener('click', runUnifiedQuery);
+            document.getElementById('clear-search-btn').addEventListener('click', clearUnifiedQuery);
+            document.querySelectorAll('.query-range-btn').forEach(btn => {
+                btn.addEventListener('click', () => applyQuickRange(btn.dataset.range || 'month'));
             });
-            document.getElementById('clear-search-btn').addEventListener('click', () => { document.getElementById('event-select').value = ''; document.getElementById('universal-search-input').value = ''; const { firstDayStr, lastDayStr } = getMonthDateRange(); document.getElementById('search-start-date').value = firstDayStr; document.getElementById('search-end-date').value = lastDayStr; document.getElementById('my-signups-result').innerHTML = ''; document.getElementById('query-actions-container').style.display = 'none'; lastQuery = { type: null, params: {}, data: [], sort: null }; });
+            const mobileQuerySearchBtn = document.getElementById('mobile-query-search-btn');
+            const mobileQueryClearBtn = document.getElementById('mobile-query-clear-btn');
+            if (mobileQuerySearchBtn) mobileQuerySearchBtn.addEventListener('click', runUnifiedQuery);
+            if (mobileQueryClearBtn) mobileQueryClearBtn.addEventListener('click', clearUnifiedQuery);
             document.getElementById('generate-stats').addEventListener('click', generateStatsReport);
             document.getElementById('generate-performance-report').addEventListener('click', generatePerformanceReport);
             const resetStatsBtn = document.getElementById('reset-stats-btn');
@@ -2785,176 +3230,6 @@
                     if (perfDetails) perfDetails.innerHTML = '';
                 });
             }
-
-            document.getElementById('export-from-query-btn').addEventListener('click', exportCurrentQueryResultToExcel);
-
-            const generateShareText = (data, rangeTitle) => {
-                // Sort: Date ASC, Time ASC, Title ASC
-                const sortedData = [...data].sort((a, b) => {
-                    const dateA = new Date(a.eventDate);
-                    const dateB = new Date(b.eventDate);
-                    if (dateA - dateB !== 0) return dateA - dateB;
-
-                    const timeA = parseTimeToMinutes(a.startTime) || 0;
-                    const timeB = parseTimeToMinutes(b.startTime) || 0;
-                    if (timeA - timeB !== 0) return timeA - timeB;
-
-                    return (a.eventTitle || '').localeCompare(b.eventTitle || '');
-                });
-
-                const groups = {};
-                const groupKeys = [];
-
-                sortedData.forEach(s => {
-                    const timeStr = s.startTime ? (s.endTime ? `${s.startTime}-${s.endTime}` : s.startTime) : '';
-                    const key = `${s.eventDate}|${timeStr}|${s.eventTitle}|${s.eventDayOfWeek}`;
-                    if (!groups[key]) { groups[key] = []; groupKeys.push(key); }
-                    groups[key].push(`- ${s.position}: ${s.user}`);
-                });
-
-                let shareText = `【AV放送立願奉仕名單】\n範圍：${rangeTitle}\n----------\n`;
-                groupKeys.forEach(key => {
-                    const [date, time, title, day] = key.split('|');
-                    const timeDisplay = time ? ` ${time}` : '';
-                    shareText += `\n【${date} (${day})${timeDisplay} ${title}】\n`;
-                    shareText += groups[key].join('\n');
-                    shareText += '\n';
-                });
-                shareText += '\n查看最新報名資訊：\nhttps://angewoo.github.io/AVschedule/';
-                return shareText;
-            };
-
-            const fetchAndProcessSignups = async (startDateStr, endDateStr, rangeTitle, action) => {
-                showLoading();
-                try {
-                    const data = await getUnifiedSignups('', startDateStr, endDateStr);
-
-                    if (!data || data.length === 0) {
-                        Swal.fire('無資料', `${rangeTitle}沒有任何報名記錄。`, 'info');
-                        return;
-                    }
-
-                    const shareText = generateShareText(data, rangeTitle);
-
-                    if (action === 'clipboard') {
-                        Swal.fire({
-                            title: '📋 準備分享的內容',
-                            width: isMobile ? '92vw' : '680px',
-                            html: `<div style="width:100%;"><textarea id="clipboard-textarea" readonly style="width:100%;max-width:100%;min-height:220px;padding:12px 14px;border-radius:10px;border:1px solid #d8dee9;box-sizing:border-box;font-size:15px;line-height:1.5;white-space:pre-wrap;">${shareText}</textarea></div>`,
-                            confirmButtonText: '📋 複製內容',
-                            showCancelButton: true,
-                            cancelButtonText: '關閉',
-                            didOpen: () => {
-                                const textarea = document.getElementById('clipboard-textarea');
-                                if (textarea) {
-                                    textarea.style.height = 'auto';
-                                    textarea.style.height = (textarea.scrollHeight + 5) + 'px';
-                                    textarea.select();
-                                }
-                            },
-                            preConfirm: () => {
-                                const textToCopy = document.getElementById('clipboard-textarea').value;
-                                return navigator.clipboard ? navigator.clipboard.writeText(textToCopy).then(() => true).catch(err => {
-                                    Swal.showValidationMessage(`複製失敗: ${err.message}`);
-                                    return false;
-                                }) : (document.execCommand('copy'), true);
-                            }
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                Swal.fire({ icon: 'success', title: '已複製成功！', text: '請手動切換到 LINE 或其他應用程式並貼上內容。', timer: 2500, showConfirmButton: false });
-                            }
-                        });
-                    } else if (action === 'email') {
-                        const { isConfirmed } = await Swal.fire({
-                            title: '📧 預覽郵件內容',
-                            width: isMobile ? '92vw' : '680px',
-                            html: `<div style="width:100%;"><p style="text-align:left;margin-bottom:5px;">請確認以下內容無誤後，點擊「下一步」輸入 Email。</p><textarea id="email-preview-textarea" readonly style="width:100%;max-width:100%;min-height:220px;padding:12px 14px;border-radius:10px;border:1px solid #d8dee9;box-sizing:border-box;font-size:15px;line-height:1.5;white-space:pre-wrap;">${shareText}</textarea></div>`,
-                            confirmButtonText: '下一步',
-                            showCancelButton: true,
-                            cancelButtonText: '取消',
-                            didOpen: () => {
-                                const textarea = document.getElementById('email-preview-textarea');
-                                if (textarea) {
-                                    textarea.style.height = 'auto';
-                                    textarea.style.height = (textarea.scrollHeight + 5) + 'px';
-                                }
-                            }
-                        });
-
-                        if (isConfirmed) {
-                            const { value: email } = await Swal.fire({
-                                title: '輸入 Email 地址',
-                                input: 'email',
-                                inputLabel: '將把上述內容發送至此 Email',
-                                inputPlaceholder: 'example@email.com',
-                                showCancelButton: true,
-                                confirmButtonText: '發送',
-                                cancelButtonText: '取消'
-                            });
-
-                            if (email) {
-                                showLoading();
-                                try {
-                                    const response = await callAppsScript('sendSignupsToEmail', { startDateStr, endDateStr, targetEmail: email, customBody: shareText });
-                                    if (response.data.status === 'success') { Swal.fire('成功', 'Email 已發送！', 'success'); }
-                                    else { Swal.fire('提示', response.data.message || '發送失敗', response.data.status === 'nodata' ? 'info' : 'error'); }
-                                } catch (e) { Swal.fire('錯誤', e.message, 'error'); } finally { hideLoading(); }
-                            }
-                        }
-                    }
-                } catch (e) {
-                    Swal.fire('操作失敗', e.message, 'error');
-                } finally {
-                    hideLoading();
-                }
-            };
-
-            document.getElementById('share-to-clipboard-btn').addEventListener('click', async () => {
-                const { isConfirmed, isDenied, dismiss } = await Swal.fire({
-                    title: '選擇要分享的日期',
-                    text: '您要分享今天、明天還是指定日期區間的報名資料？',
-                    showDenyButton: true, showCancelButton: true, showCloseButton: true,
-                    confirmButtonText: '今天', denyButtonText: '明天', cancelButtonText: '按日期',
-                    icon: 'question', customClass: { cancelButton: 'swal2-styled swal2-default-outline' }, buttonsStyling: true
-                });
-
-                const today = new Date();
-                const todayStr = DATE_FMT_CA_TW.format(today);
-                const tomorrow = new Date(today);
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                const tomorrowStr = DATE_FMT_CA_TW.format(tomorrow);
-
-                if (isConfirmed) {
-                    fetchAndProcessSignups(todayStr, todayStr, '今天', 'clipboard');
-                }
-                else if (isDenied) {
-                    fetchAndProcessSignups(tomorrowStr, tomorrowStr, '明天', 'clipboard');
-                }
-                else if (dismiss === Swal.DismissReason.cancel) {
-                    const startDateAdmin = document.getElementById('export-start-date').value;
-                    const endDateAdmin = document.getElementById('export-end-date').value;
-                    if (!startDateAdmin || !endDateAdmin) { return Swal.fire('提示', '請在上方「開始日期」和「結束日期」輸入框中選擇日期區間。', 'info'); }
-                    if (new Date(startDateAdmin) > new Date(endDateAdmin)) { return Swal.fire('提示', '開始日期不能晚於結束日期。', 'info'); }
-                    fetchAndProcessSignups(startDateAdmin, endDateAdmin, `${startDateAdmin} 至 ${endDateAdmin}`, 'clipboard');
-                }
-            });
-
-            document.getElementById('send-to-email-btn').addEventListener('click', async () => {
-                const startDate = document.getElementById('export-start-date').value;
-                const endDate = document.getElementById('export-end-date').value;
-                if (!startDate || !endDate) { return Swal.fire('提示', '請選擇開始與結束日期。', 'info'); }
-                if (new Date(startDate) > new Date(endDate)) { return Swal.fire('提示', '開始日期不能晚於結束日期。', 'info'); }
-
-                fetchAndProcessSignups(startDate, endDate, `${startDate} 至 ${endDate}`, 'email');
-            });
-
-            document.getElementById('admin-reset-btn').addEventListener('click', () => {
-                const { firstDayStr, lastDayStr } = getMonthDateRange();
-                const startEl = document.getElementById('export-start-date');
-                const endEl = document.getElementById('export-end-date');
-                if (startEl) startEl.value = firstDayStr;
-                if (endEl) endEl.value = lastDayStr;
-            });
 
             // --- LINE 通知設定按鈕事件 ---
             document.getElementById('save-line-token-btn').addEventListener('click', async () => {
@@ -3254,63 +3529,6 @@
                     Swal.fire('發送失敗', e.message, 'error');
                 } finally {
                     hideLoading();
-                }
-            });
-
-            document.getElementById('share-query-to-clipboard-btn').addEventListener('click', () => {
-                if (!lastQuery || !lastQuery.data || lastQuery.data.length === 0) { return Swal.fire('無資料', '沒有可分享的查詢結果。', 'info'); }
-                const { searchText, startDateStr, endDateStr } = lastQuery.params;
-                const titleKeyword = searchText ? `，關鍵字：「${searchText}」` : '';
-                const rangeTitle = `${startDateStr} ~ ${endDateStr}${titleKeyword}`;
-
-                const shareText = generateShareText(lastQuery.data, rangeTitle);
-
-                Swal.fire({ title: '📋 準備分享的內容', width: isMobile ? '92vw' : '680px', html: `<div style="width:100%;"><textarea id="clipboard-textarea" readonly style="width:100%;max-width:100%;min-height:220px;padding:12px 14px;border-radius:10px;border:1px solid #d8dee9;box-sizing:border-box;font-size:15px;line-height:1.5;white-space:pre-wrap;">${shareText}</textarea></div>`, confirmButtonText: '📋 複製內容', showCancelButton: true, cancelButtonText: '關閉', didOpen: () => { const textarea = document.getElementById('clipboard-textarea'); if (textarea) { textarea.style.height = 'auto'; textarea.style.height = (textarea.scrollHeight + 5) + 'px'; textarea.select(); } }, preConfirm: () => { const textToCopy = document.getElementById('clipboard-textarea').value; return navigator.clipboard ? navigator.clipboard.writeText(textToCopy).then(() => true).catch(err => { Swal.showValidationMessage(`複製失敗: ${err.message}`); return false; }) : (document.execCommand('copy'), true); } }).then((result) => { if (result.isConfirmed) { Swal.fire({ icon: 'success', title: '已複製成功！', text: '請手動切換到 LINE 或其他應用程式並貼上內容。', timer: 2500, showConfirmButton: false }); } });
-            });
-
-            document.getElementById('send-query-to-email-btn').addEventListener('click', async () => {
-                if (!lastQuery || !lastQuery.data || lastQuery.data.length === 0) { return Swal.fire('無資料', '沒有可發送的查詢結果。', 'info'); }
-                const { searchText, startDateStr, endDateStr } = lastQuery.params;
-                const titleKeyword = searchText ? `，關鍵字：「${searchText}」` : '';
-                const rangeTitle = `${startDateStr} ~ ${endDateStr}${titleKeyword}`;
-
-                const shareText = generateShareText(lastQuery.data, rangeTitle);
-
-                const { isConfirmed } = await Swal.fire({
-                    title: '📧 預覽郵件內容',
-                    width: isMobile ? '92vw' : '680px',
-                    html: `<div style="width:100%;"><p style="text-align:left;margin-bottom:5px;">請確認以下內容無誤後，點擊「下一步」輸入 Email。</p><textarea id="email-preview-textarea" readonly style="width:100%;max-width:100%;min-height:220px;padding:12px 14px;border-radius:10px;border:1px solid #d8dee9;box-sizing:border-box;font-size:15px;line-height:1.5;white-space:pre-wrap;">${shareText}</textarea></div>`,
-                    confirmButtonText: '下一步',
-                    showCancelButton: true,
-                    cancelButtonText: '取消',
-                    didOpen: () => {
-                        const textarea = document.getElementById('email-preview-textarea');
-                        if (textarea) {
-                            textarea.style.height = 'auto';
-                            textarea.style.height = (textarea.scrollHeight + 5) + 'px';
-                        }
-                    }
-                });
-
-                if (isConfirmed) {
-                    const { value: email } = await Swal.fire({
-                        title: '輸入 Email 地址',
-                        input: 'email',
-                        inputLabel: '將把查詢結果發送至此 Email',
-                        inputPlaceholder: 'example@email.com',
-                        showCancelButton: true,
-                        confirmButtonText: '發送',
-                        cancelButtonText: '取消'
-                    });
-
-                    if (email) {
-                        showLoading();
-                        try {
-                            const response = await callAppsScript('sendSignupsToEmail', { startDateStr, endDateStr, targetEmail: email, customBody: shareText });
-                            if (response.data.status === 'success') { Swal.fire('成功', 'Email 已發送！', 'success'); }
-                            else { Swal.fire('提示', response.data.message || '發送失敗', response.data.status === 'nodata' ? 'info' : 'error'); }
-                        } catch (e) { Swal.fire('錯誤', e.message, 'error'); } finally { hideLoading(); }
-                    }
                 }
             });
 

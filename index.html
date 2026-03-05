@@ -4,6 +4,7 @@
 <head>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
     <link
         href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Noto+Sans+TC:wght@400;600;700&display=swap"
         rel="stylesheet">
@@ -14,13 +15,7 @@
     <meta http-equiv="Expires" content="0" />
 
     <title>AV放送立願表</title>
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script
-        src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         :root {
@@ -1035,24 +1030,71 @@
             }
 
             .inline-form {
-                flex-direction: column;
+                flex-direction: row;
+                flex-wrap: wrap;
                 align-items: stretch;
+                justify-content: space-between;
                 width: 100%;
                 padding: 12px;
-                gap: 10px;
+                gap: 8px;
             }
 
             .inline-form>.form-group,
             .inline-form>.btn {
-                width: 100%;
-                max-width: 100%;
-                margin: 0;
+                flex: 0 0 100%;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
             }
 
-            .form-group input[type="date"] {
+            .inline-form .form-group-date {
+                flex: 0 0 calc(50% - 4px);
+                width: calc(50% - 4px);
+                max-width: calc(50% - 4px);
+                min-width: 0;
+                padding: 0 1px;
+            }
+
+            .inline-form .form-group>input,
+            .inline-form .form-group>select {
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box;
+            }
+
+            .inline-form input[type="date"] {
                 -webkit-appearance: none;
                 appearance: none;
                 min-width: 0;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0;
+                text-align: center;
+            }
+
+            .inline-form .form-group label {
+                margin-bottom: 2px;
+                font-size: 0.85rem;
+            }
+
+            .inline-form .btn {
+                min-height: 40px;
+                padding: 8px 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            #admin-tab .admin-panel {
+                padding: 12px 10px 4px;
+            }
+
+            #admin-tab .admin-panel-note {
+                font-size: 0.88rem;
+                margin: -4px 0 10px;
+            }
+
+            #admin-tab .line-action-grid .btn {
                 width: 100%;
             }
 
@@ -1356,110 +1398,6 @@
             display: none;
         }
 
-        /* --- MOBILE DATE INPUT FIX (追加) --- */
-        @media (max-width: 768px) {
-            #admin-tab .admin-panel {
-                padding: 12px 10px 4px;
-            }
-
-            #admin-tab .admin-panel-note {
-                font-size: 0.88rem;
-                margin: -4px 0 10px;
-            }
-
-            .inline-form {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .inline-form>.form-group,
-            .inline-form>.btn {
-                width: 92vw;
-                max-width: 480px;
-            }
-
-            .inline-form .form-group>input,
-            .inline-form .form-group>select {
-                width: 100%;
-                box-sizing: border-box;
-            }
-
-            .inline-form input[type="date"] {
-                -webkit-appearance: none;
-                appearance: none;
-                min-width: 0;
-                max-width: 100%;
-            }
-        }
-
-
-        /* --- HOTFIX: 修正手機超出容器（覆寫前一版 92vw 設定） --- */
-        @media (max-width: 768px) {
-            #admin-tab .line-action-grid .btn {
-                width: 100%;
-            }
-
-            .inline-form {
-                flex-direction: row !important;
-                flex-wrap: wrap !important;
-                align-items: stretch !important;
-                justify-content: space-between !important;
-                width: 100% !important;
-                gap: 4px !important;
-            }
-
-            .inline-form>.form-group,
-            .inline-form>.btn {
-                width: 100% !important;
-                max-width: 100% !important;
-                margin-left: 0 !important;
-                margin-right: 0 !important;
-                flex: 0 0 100%;
-                margin-bottom: 0 !important;
-            }
-
-            /* 讓所有頁籤的日期選擇器在手機上並排 */
-            .inline-form .form-group-date {
-                width: calc(50% - 2px) !important;
-                max-width: calc(50% - 2px) !important;
-                flex: 0 0 calc(50% - 2px) !important;
-                min-width: 0 !important;
-                padding: 0 1px !important;
-            }
-
-            .inline-form .form-group>input,
-            .inline-form .form-group>select {
-                width: 100% !important;
-                max-width: 100% !important;
-                box-sizing: border-box;
-                padding: 2px 4px !important;
-                height: 36px !important;
-                font-size: 0.95rem !important;
-            }
-
-            .inline-form input[type="date"] {
-                -webkit-appearance: none;
-                appearance: none;
-                min-width: 0;
-                width: 100% !important;
-                max-width: 100% !important;
-                padding: 0 !important;
-                text-align: center;
-            }
-
-            .inline-form .form-group label {
-                margin-bottom: 2px !important;
-                font-size: 0.85rem !important;
-            }
-
-            .inline-form .btn {
-                padding: 6px 12px !important;
-                height: 38px !important;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-        }
     </style>
 </head>
 
@@ -1467,7 +1405,7 @@
 
     <header class="page-header">
         <h1>
-            <span class="brand-icon" onclick="reloadSystem()" title="重新整理">
+            <span class="brand-icon" id="reload-system-btn" title="重新整理">
                 <img src="cam.png" alt="攝影機">
             </span>
             AV放送立願表
@@ -1480,18 +1418,18 @@
             <div id="marquee-text">載入中...</div>
         </div>
 
-        <div class="tabs">
-            <button class="tab-button active" onclick="openTab(event, 'calendar-tab')"><span
+        <div class="tabs" id="tabs-container">
+            <button class="tab-button active" data-tab="calendar-tab"><span
                     class="tab-icon">&#x1F4C5;</span><span class="tab-label">立願</span></button>
-            <button class="tab-button" onclick="openTab(event, 'my-signups-tab')"><span
+            <button class="tab-button" data-tab="my-signups-tab"><span
                     class="tab-icon">&#x1F50D;</span><span class="tab-label">查詢</span></button>
-            <button class="tab-button" onclick="openTab(event, 'stats-tab')"><span
+            <button class="tab-button" data-tab="stats-tab"><span
                     class="tab-icon">&#x1F4CA;</span><span class="tab-label">統計</span></button>
-            <button class="tab-button" onclick="openTab(event, 'performance-tab')"><span
+            <button class="tab-button" data-tab="performance-tab"><span
                     class="tab-icon">&#x1F4C8;</span><span class="tab-label">績效</span></button>
-            <button class="tab-button" onclick="openTab(event, 'download-tab')"><span
+            <button class="tab-button" data-tab="download-tab"><span
                     class="tab-icon">&#x1F4E5;</span><span class="tab-label">下載</span></button>
-            <button class="tab-button" onclick="openTab(event, 'admin-tab')"><span class="tab-icon">&#9881;</span><span
+            <button class="tab-button" data-tab="admin-tab"><span class="tab-icon">&#9881;</span><span
                     class="tab-label">管理</span></button>
         </div>
 
@@ -1582,8 +1520,7 @@
         <div id="download-tab" class="tab-content">
             <h4 style="justify-content:center;text-align:center;"><span class="title-icon">&#x1F4C2;</span>相關文件下載</h4>
             <div class="button-grid">
-                <button id="download-jobhtml" class="btn btn-primary btn-icon-left"
-                    onclick="window.open('job.html', '_blank')"><span
+                <button id="download-jobhtml" class="btn btn-primary btn-icon-left"><span
                         class="icon">&#x1F4D1;</span><span>奉仕崗位職掌（網頁版）</span></button>
                 <button id="download-poster" class="btn btn-primary btn-icon-left"><span
                         class="icon">&#x1F5BC;</span><span>AV招生海報</span></button>
@@ -1734,7 +1671,7 @@
     </div>
 
     <div id="event-popover" class="event-popover"></div>
-    <audio id="dog-audio" src="dog.wav" preload="auto" playsinline></audio>
+    <audio id="dog-audio" src="dog.wav" preload="metadata" playsinline></audio>
     <footer class="page-footer">
         <p>2026 AV 放送立願系統. All Rights Reserved.</p>
         <span id="frontend-version" style="display:none;"></span>
@@ -1745,35 +1682,205 @@
     <script>
         const FRONTEND_VERSION = "0717";
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1dCHAzjMNklN96jXKpWYcTv-NvzKoB8J6CcY30L55dAtaAf0bTRWTJTc20Fk2MZbgeQ/exec";
+        const FULLCALENDAR_URL = "https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js";
+        const CHART_JS_URL = "https://cdn.jsdelivr.net/npm/chart.js";
+        const CHART_DATALABELS_URL = "https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js";
+        const DATE_FMT_CA_TW = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei' });
+        const DATE_FMT_WEEKDAY_ZH_TW = new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', weekday: 'short' });
 
         function reloadSystem() {
             showLoading();
             localStorage.setItem('av_active_tab', 'calendar-tab');
             setTimeout(() => { location.reload(); }, 200);
         }
-        let calendar = null, statsChart, performanceChart, allCalendarEvents = [], currentDisplayDate = new Date(), lastQuery = { type: null, params: {}, data: [], sort: null }, lastStatsData = null, eventHandlingInProgress = false;
-        const isMobile = window.innerWidth <= 768;
+        let calendar = null, statsChart, performanceChart, allCalendarEvents = [], calendarEventsById = new Map(), currentDisplayDate = new Date(), lastQuery = { type: null, params: {}, data: [], sort: null }, lastStatsData = null, eventHandlingInProgress = false;
+        let isMobile = window.innerWidth <= 768;
         let currentCalendarOptions = { height: isMobile ? 'auto' : undefined, aspectRatio: isMobile ? 0.8 : 1.35 };
-        function showLoading() { document.getElementById('loading').style.display = 'flex'; }
-        function hideLoading() { document.getElementById('loading').style.display = 'none'; }
+        let fullCalendarReadyPromise = null;
+        let chartLibReadyPromise = null;
+        let chartPluginsRegistered = false;
+        let simpleListObserver = null;
+        let signupsTableObserver = null;
+        let calendarEventsLoadPromise = null;
+        let calendarTabSetupSeq = 0;
+        let loadingCounter = 0;
+        let activeTabName = 'calendar-tab';
+        let cachedTabContentEls = [];
+        let cachedTabButtonEls = [];
+        const UNIFIED_SIGNUPS_CACHE_TTL_MS = 15000;
+        const unifiedSignupsCache = new Map();
+        const unifiedSignupsCacheTime = new Map();
+        const unifiedSignupsPromiseCache = new Map();
+        function showLoading() {
+            const loadingEl = document.getElementById('loading');
+            if (!loadingEl) return;
+            loadingCounter += 1;
+            loadingEl.style.display = 'flex';
+        }
+        function hideLoading() {
+            const loadingEl = document.getElementById('loading');
+            if (!loadingEl) return;
+            loadingCounter = Math.max(0, loadingCounter - 1);
+            if (loadingCounter === 0) {
+                loadingEl.style.display = 'none';
+            }
+        }
+        function initializeTabCache() {
+            cachedTabContentEls = Array.from(document.querySelectorAll('.tab-content'));
+            cachedTabButtonEls = Array.from(document.querySelectorAll('.tab-button[data-tab]'));
+        }
+        function getUnifiedSignupsCacheKey(searchText, startDateStr, endDateStr) {
+            return `${searchText || ''}|${startDateStr || ''}|${endDateStr || ''}`;
+        }
+        function invalidateUnifiedSignupsCache() {
+            unifiedSignupsCache.clear();
+            unifiedSignupsCacheTime.clear();
+            unifiedSignupsPromiseCache.clear();
+        }
+        async function getUnifiedSignups(searchText, startDateStr, endDateStr, forceRefresh = false) {
+            const key = getUnifiedSignupsCacheKey(searchText, startDateStr, endDateStr);
+            const cachedAt = unifiedSignupsCacheTime.get(key) || 0;
+            if (!forceRefresh && unifiedSignupsCache.has(key) && (Date.now() - cachedAt) < UNIFIED_SIGNUPS_CACHE_TTL_MS) {
+                return unifiedSignupsCache.get(key);
+            }
+            if (unifiedSignupsPromiseCache.has(key)) {
+                return unifiedSignupsPromiseCache.get(key);
+            }
+            const promise = (async () => {
+                const response = await callAppsScriptWithRetry('getUnifiedSignups', { searchText, startDateStr, endDateStr });
+                const data = response.data || [];
+                unifiedSignupsCache.set(key, data);
+                unifiedSignupsCacheTime.set(key, Date.now());
+                return data;
+            })();
+            unifiedSignupsPromiseCache.set(key, promise);
+            try {
+                return await promise;
+            } finally {
+                unifiedSignupsPromiseCache.delete(key);
+            }
+        }
+        function syncViewportMode() {
+            const nextIsMobile = window.innerWidth <= 768;
+            if (nextIsMobile === isMobile) return;
+            isMobile = nextIsMobile;
+            currentCalendarOptions = { height: isMobile ? 'auto' : undefined, aspectRatio: isMobile ? 0.8 : 1.35 };
+            if (calendar && isCalendarTabVisible() && document.getElementById('full-calendar-view').style.display !== 'none') {
+                initializeFullCalendar().then(() => { if (calendar) calendar.updateSize(); }).catch(() => { });
+            }
+        }
+        function setCalendarEvents(events) {
+            allCalendarEvents = Array.isArray(events) ? events : [];
+            calendarEventsById = new Map(allCalendarEvents.map(e => [String(e.id), e]));
+        }
+        function getCalendarEventById(eventId) {
+            return calendarEventsById.get(String(eventId));
+        }
+        function loadExternalScript(src, globalName) {
+            if (globalName && window[globalName]) return Promise.resolve();
+            return new Promise((resolve, reject) => {
+                const existing = document.querySelector(`script[data-src="${src}"]`);
+                if (existing) {
+                    if (existing.dataset.loaded === 'true' || (globalName && window[globalName])) {
+                        resolve();
+                        return;
+                    }
+                    existing.addEventListener('load', () => resolve(), { once: true });
+                    existing.addEventListener('error', () => reject(new Error(`載入失敗：${src}`)), { once: true });
+                    return;
+                }
+                const script = document.createElement('script');
+                script.src = src;
+                script.async = true;
+                script.dataset.src = src;
+                script.onload = () => {
+                    script.dataset.loaded = 'true';
+                    resolve();
+                };
+                script.onerror = () => reject(new Error(`載入失敗：${src}`));
+                document.head.appendChild(script);
+            });
+        }
+        async function ensureChartLibReady() {
+            if (!chartLibReadyPromise) {
+                chartLibReadyPromise = (async () => {
+                    await loadExternalScript(CHART_JS_URL, 'Chart');
+                    await loadExternalScript(CHART_DATALABELS_URL, 'ChartDataLabels');
+                    if (!chartPluginsRegistered && window.Chart && window.ChartDataLabels) {
+                        Chart.register(ChartDataLabels);
+                        chartPluginsRegistered = true;
+                    }
+                })();
+            }
+            return chartLibReadyPromise;
+        }
+        async function ensureFullCalendarReady() {
+            if (!fullCalendarReadyPromise) {
+                fullCalendarReadyPromise = loadExternalScript(FULLCALENDAR_URL, 'FullCalendar');
+            }
+            return fullCalendarReadyPromise;
+        }
 
         function callAppsScript(functionName, params = {}) { return new Promise((resolve, reject) => { const callbackName = 'jsonpCallback_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9); function makeRequest() { const timeoutId = setTimeout(() => { if (window[callbackName]) delete window[callbackName]; const scriptEl = document.getElementById(callbackName); if (scriptEl && scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl); reject(new Error('請求超時，請檢查網路連線或稍後再試。')); }, 90000); window[callbackName] = (response) => { clearTimeout(timeoutId); try { const scriptEl = document.getElementById(callbackName); if (scriptEl && scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl); delete window[callbackName]; } catch (e) { console.error("清理 JSONP 腳本時出錯:", e); } if (response && response.status === 'success') { resolve(response); } else { reject(new Error(response.message || '後端服務回傳錯誤。')); } }; const script = document.createElement('script'); script.id = callbackName; const encodedPayload = encodeURIComponent(JSON.stringify({ functionName, params })); script.src = `${SCRIPT_URL}?callback=${callbackName}&payload=${encodedPayload}&_t=${Date.now()}`; script.onerror = () => { clearTimeout(timeoutId); hideLoading(); if (window[callbackName]) delete window[callbackName]; if (script.parentNode) script.parentNode.removeChild(script); reject(new Error('網路請求失敗，請檢查部署網址與權限設定。')); }; document.head.appendChild(script); } makeRequest(); }); }
         async function callAppsScriptWithRetry(functionName, params = {}, attempts = 3, delayMs = 1200) { let lastError; for (let i = 1; i <= attempts; i++) { try { return await callAppsScript(functionName, params); } catch (e) { lastError = e; if (i < attempts) { await new Promise(res => setTimeout(res, delayMs)); } } } throw lastError; }
 
-        function openTab(evt, tabName) { localStorage.setItem('av_active_tab', tabName); document.querySelectorAll('.tab-content').forEach(tc => tc.style.display = 'none'); document.querySelectorAll('.tab-button').forEach(tb => tb.classList.remove('active')); document.getElementById(tabName).style.display = 'block'; evt.currentTarget.classList.add('active'); if (tabName === 'calendar-tab' && calendar) { setTimeout(() => { calendar.updateSize(); }, 0); } }
+        function openTab(evt, tabName) {
+            const tab = String(tabName || '');
+            const currentBtn = evt && evt.currentTarget ? evt.currentTarget : null;
+            if (!tab) return;
+            const tabEl = document.getElementById(tab);
+            const isAlreadyActive = tab === activeTabName && tabEl && tabEl.style.display !== 'none';
+            if (isAlreadyActive) {
+                if (tab === 'calendar-tab') {
+                    const fullViewVisible = document.getElementById('full-calendar-view').style.display !== 'none';
+                    if (allCalendarEvents.length === 0 || (fullViewVisible && !calendar)) {
+                        setupCalendarTab(false, true);
+                    } else if (calendar) {
+                        setTimeout(() => { calendar.updateSize(); }, 0);
+                    }
+                }
+                return;
+            }
+
+            if (tab !== activeTabName) {
+                localStorage.setItem('av_active_tab', tab);
+            }
+            activeTabName = tab;
+
+            const tabContents = cachedTabContentEls.length > 0 ? cachedTabContentEls : Array.from(document.querySelectorAll('.tab-content'));
+            const tabButtons = cachedTabButtonEls.length > 0 ? cachedTabButtonEls : Array.from(document.querySelectorAll('.tab-button[data-tab]'));
+            tabContents.forEach(tc => { tc.style.display = 'none'; });
+            tabButtons.forEach(tb => tb.classList.remove('active'));
+
+            const targetTab = tabEl || document.getElementById(tab);
+            if (targetTab) targetTab.style.display = 'block';
+            if (currentBtn) currentBtn.classList.add('active');
+
+            if (tab === 'calendar-tab') {
+                const fullViewVisible = document.getElementById('full-calendar-view').style.display !== 'none';
+                if (allCalendarEvents.length === 0 || (fullViewVisible && !calendar)) {
+                    setupCalendarTab(false, true);
+                }
+                if (calendar) {
+                    setTimeout(() => { calendar.updateSize(); }, 0);
+                }
+            } else if (tab === 'my-signups-tab' && allCalendarEvents.length === 0) {
+                setupCalendarTab(false, false);
+            }
+        }
         async function promptForName() { let currentUserName = localStorage.getItem('av_signup_username') || ''; const { value: name } = await Swal.fire({ title: "請輸入您的姓名", input: "text", inputValue: currentUserName, inputPlaceholder: "請輸入姓名", showCancelButton: true, inputValidator: (v) => !v && "姓名不能為空！" }); if (name) { localStorage.setItem('av_signup_username', name); } return name; }
         async function handleEventClick(info) {
             if (eventHandlingInProgress) return;
             eventHandlingInProgress = true;
             try {
-                const eventObject = allCalendarEvents.find(e => e.id === info.event.id); if (!eventObject) { eventHandlingInProgress = false; return; }
+                const eventObject = getCalendarEventById(info.event.id); if (!eventObject) { eventHandlingInProgress = false; return; }
                 const props = eventObject.extendedProps;
                 const eventEndDateTime = eventObject.end ? new Date(eventObject.end) : new Date(eventObject.start);
                 if (!eventObject.end) { eventEndDateTime.setHours(23, 59, 59, 999); }
                 if (new Date() > eventEndDateTime) { await Swal.fire({ icon: 'warning', title: '活動已結束', text: '此活動的報名時間已截止，無法進行操作。', confirmButtonColor: '#d33' }); eventHandlingInProgress = false; return; }
                 const name = await promptForName(); if (!name) { eventHandlingInProgress = false; return; }
                 const existingSignup = props.signups.find(s => s.user === name);
-                if (existingSignup) { await Swal.fire({ icon: 'info', title: '您已報名過此活動', html: `<div style="text-align: left; padding: 0 1em;"><p><strong>活動：</strong> ${props.full_title}</p><p><strong>日期：</strong> ${new Date(eventObject.start).toLocaleDateString('en-CA')}</p><p><strong>您報名的崗位：</strong> ${existingSignup.position}</p></div>` }); eventHandlingInProgress = false; return; }
+                if (existingSignup) { await Swal.fire({ icon: 'info', title: '您已報名過此活動', html: `<div style="text-align: left; padding: 0 1em;"><p><strong>活動：</strong> ${props.full_title}</p><p><strong>日期：</strong> ${DATE_FMT_CA_TW.format(new Date(eventObject.start))}</p><p><strong>您報名的崗位：</strong> ${existingSignup.position}</p></div>` }); eventHandlingInProgress = false; return; }
                 const allBackendPositions = props.positions;
                 if (!allBackendPositions || allBackendPositions.length === 0) { await Swal.fire('無可報名崗位', '此活動尚未設定任何可報名的崗位。', 'info'); eventHandlingInProgress = false; return; }
                 const positionOptions = allBackendPositions.reduce((obj, pos) => ({ ...obj, [pos]: pos }), {});
@@ -1796,6 +1903,7 @@
                             successPayload.html = `<div style="text-align: left; padding: 0 1em;"><p><strong>姓名：</strong> ${name}</p><p><strong>活動：</strong> ${props.full_title}</p><p><strong>崗位：</strong> ${selectedPosition}</p></div>`;
                         }
                         await Swal.fire(successPayload);
+                        invalidateUnifiedSignupsCache();
                         setupCalendarTab(true);
                     } catch (error) { Swal.fire('報名失敗', error.message, 'error'); }
                     finally { hideLoading(); }
@@ -1805,22 +1913,414 @@
         function showEventPopover(info) {
             const isCoarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
             if (isMobile || isCoarse) return;
-            const { event, el } = info; const props = event.extendedProps; const popoverEl = document.getElementById('event-popover'); let content = `<h5>${props.full_title}</h5><p><b>日期:</b> ${new Date(event.start).toLocaleDateString('en-CA')}</p><p><b>時間:</b> ${props.startTime}${props.endTime ? ' - ' + props.endTime : ''}</p><p><b>額滿人數:</b> ${props.maxAttendees} 人</p>`; if (props.description) { content += `<p><b>說明:</b> ${props.description}</p>`; } if (props.signups && props.signups.length > 0) { content += '<hr style="margin: 8px 0; border-top: 1px dashed var(--card-border);"><ul>'; props.signups.forEach(s => { content += `<li><strong>${s.position}:</strong> ${s.user}</li>`; }); content += '</ul>'; } else { content += '<p style="margin-top: 8px;">目前尚無人報名</p>'; } popoverEl.innerHTML = content; popoverEl.style.visibility = 'hidden'; popoverEl.style.display = 'block'; const rect = el.getBoundingClientRect(); const popoverHeight = popoverEl.offsetHeight; const popoverWidth = popoverEl.offsetWidth; const margin = 10; let left = rect.left + window.scrollX; if (left + popoverWidth > window.innerWidth - margin) { left = window.innerWidth - popoverWidth - margin; } if (left < margin) { left = margin; } let top; if (rect.bottom + popoverHeight + margin > window.innerHeight) { top = rect.top + window.scrollY - popoverHeight - 5; } else { top = rect.bottom + window.scrollY + 5; } if (top < window.scrollY + margin) { top = window.scrollY + margin; } popoverEl.style.left = `${left}px`; popoverEl.style.top = `${top}px`; popoverEl.style.visibility = 'visible';
+            const { event, el } = info; const props = event.extendedProps; const popoverEl = document.getElementById('event-popover'); let content = `<h5>${props.full_title}</h5><p><b>日期:</b> ${DATE_FMT_CA_TW.format(new Date(event.start))}</p><p><b>時間:</b> ${props.startTime}${props.endTime ? ' - ' + props.endTime : ''}</p><p><b>額滿人數:</b> ${props.maxAttendees} 人</p>`; if (props.description) { content += `<p><b>說明:</b> ${props.description}</p>`; } if (props.signups && props.signups.length > 0) { content += '<hr style="margin: 8px 0; border-top: 1px dashed var(--card-border);"><ul>'; props.signups.forEach(s => { content += `<li><strong>${s.position}:</strong> ${s.user}</li>`; }); content += '</ul>'; } else { content += '<p style="margin-top: 8px;">目前尚無人報名</p>'; } popoverEl.innerHTML = content; popoverEl.style.visibility = 'hidden'; popoverEl.style.display = 'block'; const rect = el.getBoundingClientRect(); const popoverHeight = popoverEl.offsetHeight; const popoverWidth = popoverEl.offsetWidth; const margin = 10; let left = rect.left + window.scrollX; if (left + popoverWidth > window.innerWidth - margin) { left = window.innerWidth - popoverWidth - margin; } if (left < margin) { left = margin; } let top; if (rect.bottom + popoverHeight + margin > window.innerHeight) { top = rect.top + window.scrollY - popoverHeight - 5; } else { top = rect.bottom + window.scrollY + 5; } if (top < window.scrollY + margin) { top = window.scrollY + margin; } popoverEl.style.left = `${left}px`; popoverEl.style.top = `${top}px`; popoverEl.style.visibility = 'visible';
         }
         function hideEventPopover() { document.getElementById('event-popover').style.display = 'none'; }
-        function renderSimpleListView() { const container = document.getElementById('simple-list-view'); document.getElementById('custom-calendar-title').textContent = `${currentDisplayDate.getFullYear()}年 ${currentDisplayDate.getMonth() + 1}月`; const viewStart = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth(), 1); const viewEnd = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth() + 1, 0); viewEnd.setHours(23, 59, 59, 999); const currentMonthEvents = allCalendarEvents.filter(e => new Date(e.start) >= viewStart && new Date(e.start) <= viewEnd).sort((a, b) => new Date(a.start) - new Date(b.start)); if (currentMonthEvents.length === 0) { container.innerHTML = '<div class="table-responsive" style="margin-top:0;"><p style="text-align:center; padding: 20px;">本月尚無活動。</p></div>'; return; } let tableHtml = `<div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><div class="table-responsive" id="simple-list-table-container" style="margin-top:0;"><table><thead><tr><th>日期</th><th>星期</th><th>標題</th><th>開始</th><th>結束</th><th>上限 (已報)</th><th>報名詳情</th></tr></thead><tbody>`; currentMonthEvents.forEach(event => { const props = event.extendedProps; const startDate = new Date(event.start); const dateString = startDate.toLocaleDateString('en-CA', { timeZone: 'Asia/Taipei' }); const dayOfWeek = startDate.toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei', weekday: 'short' }); const signupCount = props.signups ? props.signups.length : 0; let signupsDetail = props.signups && props.signups.length > 0 ? props.signups.map(s => `${s.position}：${s.user}`).join('，') : ''; tableHtml += `<tr data-event-id="${event.id}"><td><span class="status-dot" style="background-color: ${event.backgroundColor};"></span>${dateString.substring(5)}</td><td>${dayOfWeek.replace('週', '')}</td><td class="event-title-cell">${event.title}</td><td>${props.startTime || ''}</td><td>${props.endTime || ''}</td><td>${props.maxAttendees} (${signupCount})</td><td>${signupsDetail}</td></tr>`; }); tableHtml += `</tbody></table></div><div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><button class="floating-scroll-btn left" onclick="document.getElementById('simple-list-table-container').scrollBy({left: -200, behavior: 'smooth'})">&#8592;</button><button class="floating-scroll-btn right" onclick="document.getElementById('simple-list-table-container').scrollBy({left: 200, behavior: 'smooth'})">&#8594;</button>`; container.innerHTML = tableHtml; container.querySelectorAll('tbody tr').forEach(row => { const eventId = row.dataset.eventId; const eventObject = allCalendarEvents.find(e => e.id === eventId); if (!eventObject) return; row.addEventListener('click', (e) => { if (e.target.tagName !== 'BUTTON') { handleEventClick({ event: { id: eventId, ...eventObject }, jsEvent: e }) } }); const titleCell = row.querySelector('.event-title-cell'); if (titleCell) { titleCell.addEventListener('mouseenter', (e) => showEventPopover({ event: { extendedProps: eventObject.extendedProps, start: eventObject.start }, el: e.currentTarget })); titleCell.addEventListener('mouseleave', hideEventPopover); } }); const tableContainer = document.getElementById('simple-list-table-container'); const floatBtns = container.querySelectorAll('.floating-scroll-btn'); if (tableContainer && floatBtns.length > 0) { const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { floatBtns.forEach(btn => { if (entry.intersectionRatio >= 0.55) { btn.classList.add('visible'); } else { btn.classList.remove('visible'); } }); }); }, { threshold: 0.55 }); observer.observe(tableContainer); } }
-        function initializeFullCalendar() { const calendarEl = document.getElementById('calendar'); if (calendar) calendar.destroy(); let options = { headerToolbar: false, initialDate: currentDisplayDate, locale: 'zh-tw', events: allCalendarEvents, datesSet: (dateInfo) => { currentDisplayDate = dateInfo.view.currentStart; document.getElementById('custom-calendar-title').textContent = dateInfo.view.title; if (document.getElementById('simple-list-view').style.display === 'block') { renderSimpleListView(); } }, eventClick: handleEventClick, eventMouseEnter: showEventPopover, eventMouseLeave: hideEventPopover, ...currentCalendarOptions }; calendar = new FullCalendar.Calendar(calendarEl, options); calendar.render(); }
-        async function setupCalendarTab(forceRefresh = false) { if (!forceRefresh && allCalendarEvents.length > 0) { if (calendar) { calendar.refetchEvents(); } else { initializeFullCalendar(); } populateEventSelect(); return; } showLoading(); try { const response = await callAppsScriptWithRetry('getEventsAndSignups'); allCalendarEvents = response.data; if (!document.getElementById('custom-prev-btn')._isInitialized) { document.getElementById('custom-prev-btn').addEventListener('click', () => calendar.prev()); document.getElementById('custom-next-btn').addEventListener('click', () => calendar.next()); document.getElementById('custom-today-btn').addEventListener('click', () => calendar.today()); const fullViewBtn = document.getElementById('show-full-view-btn'); const simpleViewBtn = document.getElementById('show-simple-view-btn'); fullViewBtn.addEventListener('click', () => { document.getElementById('simple-list-view').style.display = 'none'; document.getElementById('full-calendar-view').style.display = 'block'; fullViewBtn.classList.add('active'); simpleViewBtn.classList.remove('active'); currentCalendarOptions = { height: isMobile ? 'auto' : undefined, aspectRatio: isMobile ? 0.8 : 1.35 }; initializeFullCalendar(); calendar.updateSize(); }); simpleViewBtn.addEventListener('click', () => { document.getElementById('full-calendar-view').style.display = 'none'; document.getElementById('simple-list-view').style.display = 'block'; simpleViewBtn.classList.add('active'); fullViewBtn.classList.remove('active'); renderSimpleListView(); }); document.getElementById('custom-prev-btn')._isInitialized = true; } initializeFullCalendar(); if (document.getElementById('simple-list-view').style.display === 'block') { renderSimpleListView(); } else { if (isMobile) { document.getElementById('show-simple-view-btn').click(); } else { document.getElementById('show-full-view-btn').click(); } } populateEventSelect(); } catch (error) { Swal.fire('載入失敗', error.message, 'error'); } finally { hideLoading(); } }
+        function renderSimpleListView() {
+            const container = document.getElementById('simple-list-view');
+            document.getElementById('custom-calendar-title').textContent = `${currentDisplayDate.getFullYear()}年 ${currentDisplayDate.getMonth() + 1}月`;
+
+            const viewStart = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth(), 1);
+            const viewEnd = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth() + 1, 0);
+            viewEnd.setHours(23, 59, 59, 999);
+
+            const currentMonthEvents = allCalendarEvents
+                .filter(e => new Date(e.start) >= viewStart && new Date(e.start) <= viewEnd)
+                .sort((a, b) => new Date(a.start) - new Date(b.start));
+
+            if (currentMonthEvents.length === 0) {
+                if (container._scrollBtnHandler) {
+                    container.removeEventListener('click', container._scrollBtnHandler);
+                    container._scrollBtnHandler = null;
+                }
+                container.innerHTML = '<div class="table-responsive" style="margin-top:0;"><p style="text-align:center; padding: 20px;">本月尚無活動。</p></div>';
+                return;
+            }
+
+            let tableHtml = `<div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><div class="table-responsive" id="simple-list-table-container" style="margin-top:0;"><table><thead><tr><th>日期</th><th>星期</th><th>標題</th><th>開始</th><th>結束</th><th>上限 (已報)</th><th>報名詳情</th></tr></thead><tbody>`;
+            currentMonthEvents.forEach(event => {
+                const props = event.extendedProps;
+                const startDate = new Date(event.start);
+                const dateString = DATE_FMT_CA_TW.format(startDate);
+                const dayOfWeek = DATE_FMT_WEEKDAY_ZH_TW.format(startDate);
+                const signupCount = props.signups ? props.signups.length : 0;
+                const signupsDetail = props.signups && props.signups.length > 0 ? props.signups.map(s => `${s.position}：${s.user}`).join('，') : '';
+                tableHtml += `<tr data-event-id="${event.id}"><td><span class="status-dot" style="background-color: ${event.backgroundColor};"></span>${dateString.substring(5)}</td><td>${dayOfWeek.replace('週', '')}</td><td class="event-title-cell">${event.title}</td><td>${props.startTime || ''}</td><td>${props.endTime || ''}</td><td>${props.maxAttendees} (${signupCount})</td><td>${signupsDetail}</td></tr>`;
+            });
+            tableHtml += `</tbody></table></div><div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><button class="floating-scroll-btn left" data-scroll-target="simple-list-table-container" data-scroll-dir="left">&#8592;</button><button class="floating-scroll-btn right" data-scroll-target="simple-list-table-container" data-scroll-dir="right">&#8594;</button>`;
+            container.innerHTML = tableHtml;
+
+            if (container._scrollBtnHandler) {
+                container.removeEventListener('click', container._scrollBtnHandler);
+            }
+            container._scrollBtnHandler = (e) => {
+                const btn = e.target.closest('.floating-scroll-btn[data-scroll-target][data-scroll-dir]');
+                if (!btn || !container.contains(btn)) return;
+                const target = container.querySelector(`#${btn.dataset.scrollTarget}`);
+                if (!target) return;
+                const delta = btn.dataset.scrollDir === 'left' ? -200 : 200;
+                target.scrollBy({ left: delta, behavior: 'smooth' });
+            };
+            container.addEventListener('click', container._scrollBtnHandler);
+
+            const tbody = container.querySelector('#simple-list-table-container tbody');
+            if (tbody) {
+                tbody.addEventListener('click', (e) => {
+                    const row = e.target.closest('tr[data-event-id]');
+                    if (!row || e.target.tagName === 'BUTTON') return;
+                    const eventId = row.dataset.eventId;
+                    const eventObject = getCalendarEventById(eventId);
+                    if (!eventObject) return;
+                    handleEventClick({ event: { id: eventId, ...eventObject }, jsEvent: e });
+                });
+                tbody.addEventListener('mouseover', (e) => {
+                    const titleCell = e.target.closest('.event-title-cell');
+                    if (!titleCell || !tbody.contains(titleCell)) return;
+                    const row = titleCell.closest('tr[data-event-id]');
+                    if (!row) return;
+                    const eventObject = getCalendarEventById(row.dataset.eventId);
+                    if (!eventObject) return;
+                    showEventPopover({ event: { extendedProps: eventObject.extendedProps, start: eventObject.start }, el: titleCell });
+                });
+                tbody.addEventListener('mouseout', (e) => {
+                    const titleCell = e.target.closest('.event-title-cell');
+                    if (!titleCell || !tbody.contains(titleCell)) return;
+                    if (e.relatedTarget && titleCell.contains(e.relatedTarget)) return;
+                    hideEventPopover();
+                });
+            }
+
+            const tableContainer = document.getElementById('simple-list-table-container');
+            const floatBtns = container.querySelectorAll('.floating-scroll-btn');
+            if (tableContainer && floatBtns.length > 0) {
+                if (simpleListObserver) {
+                    simpleListObserver.disconnect();
+                    simpleListObserver = null;
+                }
+                simpleListObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        floatBtns.forEach(btn => {
+                            if (entry.intersectionRatio >= 0.55) {
+                                btn.classList.add('visible');
+                            } else {
+                                btn.classList.remove('visible');
+                            }
+                        });
+                    });
+                }, { threshold: 0.55 });
+                simpleListObserver.observe(tableContainer);
+            }
+        }
+        function isCalendarTabVisible() {
+            const calendarTab = document.getElementById('calendar-tab');
+            if (!calendarTab) return false;
+            return calendarTab.style.display !== 'none';
+        }
+        async function initializeFullCalendar() {
+            await ensureFullCalendarReady();
+            const calendarEl = document.getElementById('calendar');
+            if (calendar) calendar.destroy();
+            const options = {
+                headerToolbar: false,
+                initialDate: currentDisplayDate,
+                locale: 'zh-tw',
+                events: allCalendarEvents,
+                datesSet: (dateInfo) => {
+                    currentDisplayDate = dateInfo.view.currentStart;
+                    document.getElementById('custom-calendar-title').textContent = dateInfo.view.title;
+                    if (document.getElementById('simple-list-view').style.display === 'block') {
+                        renderSimpleListView();
+                    }
+                },
+                eventClick: handleEventClick,
+                eventMouseEnter: showEventPopover,
+                eventMouseLeave: hideEventPopover,
+                ...currentCalendarOptions
+            };
+            calendar = new FullCalendar.Calendar(calendarEl, options);
+            calendar.render();
+        }
+        async function switchCalendarView(mode, rebuildCalendar = false) {
+            const fullView = document.getElementById('full-calendar-view');
+            const simpleView = document.getElementById('simple-list-view');
+            const fullViewBtn = document.getElementById('show-full-view-btn');
+            const simpleViewBtn = document.getElementById('show-simple-view-btn');
+            if (!fullView || !simpleView || !fullViewBtn || !simpleViewBtn) return;
+
+            if (mode === 'simple') {
+                fullView.style.display = 'none';
+                simpleView.style.display = 'block';
+                simpleViewBtn.classList.add('active');
+                fullViewBtn.classList.remove('active');
+                renderSimpleListView();
+                return;
+            }
+
+            simpleView.style.display = 'none';
+            fullView.style.display = 'block';
+            fullViewBtn.classList.add('active');
+            simpleViewBtn.classList.remove('active');
+            currentCalendarOptions = { height: isMobile ? 'auto' : undefined, aspectRatio: isMobile ? 0.8 : 1.35 };
+            if (rebuildCalendar || !calendar) {
+                await initializeFullCalendar();
+            }
+            if (calendar) calendar.updateSize();
+        }
+        function ensureCalendarToolbarInitialized() {
+            const prevBtn = document.getElementById('custom-prev-btn');
+            if (!prevBtn || prevBtn._isInitialized) return;
+
+            const nextBtn = document.getElementById('custom-next-btn');
+            const todayBtn = document.getElementById('custom-today-btn');
+            const fullViewBtn = document.getElementById('show-full-view-btn');
+            const simpleViewBtn = document.getElementById('show-simple-view-btn');
+
+            prevBtn.addEventListener('click', () => {
+                if (calendar) {
+                    calendar.prev();
+                    return;
+                }
+                currentDisplayDate = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth() - 1, 1);
+                renderSimpleListView();
+            });
+            nextBtn.addEventListener('click', () => {
+                if (calendar) {
+                    calendar.next();
+                    return;
+                }
+                currentDisplayDate = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth() + 1, 1);
+                renderSimpleListView();
+            });
+            todayBtn.addEventListener('click', () => {
+                if (calendar) {
+                    calendar.today();
+                    return;
+                }
+                const now = new Date();
+                currentDisplayDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                renderSimpleListView();
+            });
+            fullViewBtn.addEventListener('click', async () => {
+                await switchCalendarView('full', true);
+            });
+            simpleViewBtn.addEventListener('click', () => {
+                switchCalendarView('simple');
+            });
+
+            prevBtn._isInitialized = true;
+        }
+        async function fetchCalendarEvents(forceRefresh = false) {
+            if (!forceRefresh && allCalendarEvents.length > 0) return allCalendarEvents;
+            if (calendarEventsLoadPromise) return calendarEventsLoadPromise;
+
+            calendarEventsLoadPromise = (async () => {
+                const response = await callAppsScriptWithRetry('getEventsAndSignups');
+                setCalendarEvents(response.data);
+                return allCalendarEvents;
+            })();
+
+            try {
+                return await calendarEventsLoadPromise;
+            } finally {
+                calendarEventsLoadPromise = null;
+            }
+        }
+        async function setupCalendarTab(forceRefresh = false, renderCalendar = null) {
+            const shouldRenderCalendar = renderCalendar === null ? isCalendarTabVisible() : Boolean(renderCalendar);
+            const fullViewVisible = document.getElementById('full-calendar-view').style.display !== 'none';
+            const simpleViewVisible = document.getElementById('simple-list-view').style.display === 'block';
+
+            if (!forceRefresh && allCalendarEvents.length > 0) {
+                if (shouldRenderCalendar) {
+                    ensureCalendarToolbarInitialized();
+                    if (simpleViewVisible || isMobile) {
+                        await switchCalendarView('simple');
+                    } else if (fullViewVisible && !calendar) {
+                        await initializeFullCalendar();
+                        if (calendar) calendar.updateSize();
+                    }
+                }
+                populateEventSelect();
+                return;
+            }
+
+            showLoading();
+            const setupSeq = ++calendarTabSetupSeq;
+            try {
+                await fetchCalendarEvents(forceRefresh);
+                if (setupSeq !== calendarTabSetupSeq) return;
+                if (!shouldRenderCalendar && forceRefresh && calendar) {
+                    calendar.destroy();
+                    calendar = null;
+                }
+
+                if (shouldRenderCalendar) {
+                    ensureCalendarToolbarInitialized();
+                    if (simpleViewVisible || isMobile) {
+                        if (forceRefresh && calendar) {
+                            calendar.destroy();
+                            calendar = null;
+                        }
+                        await switchCalendarView('simple');
+                    } else {
+                        await switchCalendarView('full', true);
+                    }
+                }
+
+                populateEventSelect();
+            } catch (error) {
+                Swal.fire('載入失敗', error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
 
         function updateSearchDebug() { return; }
         function parseTimeToMinutes(value) { if (!value) return null; const match = String(value).match(/(\d{1,2}):(\d{2})/); if (!match) return null; const hours = Number(match[1]); const minutes = Number(match[2]); if (Number.isNaN(hours) || Number.isNaN(minutes)) return null; return (hours * 60) + minutes; }
         function parseDateToTimestamp(value) { if (!value) return null; const normalized = normalizeDateStr(String(value)); const parsed = new Date(normalized); if (Number.isNaN(parsed.getTime())) return null; return parsed.getTime(); }
         function parseDateTimeToTimestamp(value) { if (!value) return null; const sanitized = String(value).replace(/-/g, '/'); const parsed = new Date(sanitized); if (!Number.isNaN(parsed.getTime())) return parsed.getTime(); const asTime = parseTimeToMinutes(value); return asTime !== null ? asTime * 60000 : null; }
         function sortSignupsData(data, key, direction, type) { const dir = direction === 'desc' ? -1 : 1; return data.sort((a, b) => { const aVal = a ? a[key] : ''; const bVal = b ? b[key] : ''; const aEmpty = aVal === null || aVal === undefined || aVal === ''; const bEmpty = bVal === null || bVal === undefined || bVal === ''; if (aEmpty && bEmpty) return 0; if (aEmpty) return 1; if (bEmpty) return -1; let cmp = 0; if (type === 'date') { const aTs = parseDateToTimestamp(aVal); const bTs = parseDateToTimestamp(bVal); cmp = (aTs ?? 0) - (bTs ?? 0); } else if (type === 'time') { const aMin = parseTimeToMinutes(aVal); const bMin = parseTimeToMinutes(bVal); cmp = (aMin ?? 0) - (bMin ?? 0); } else if (type === 'datetime') { const aTs = parseDateTimeToTimestamp(aVal); const bTs = parseDateTimeToTimestamp(bVal); cmp = (aTs ?? 0) - (bTs ?? 0); } else { cmp = String(aVal).localeCompare(String(bVal), 'zh-Hant', { numeric: true, sensitivity: 'base' }); } return cmp * dir; }); }
-        function renderMySignupsTable(signups) { const resultDiv = document.getElementById('my-signups-result'); const actionsContainer = document.getElementById('query-actions-container'); resultDiv.innerHTML = ''; actionsContainer.style.display = 'none'; updateSearchDebug(); if (!signups || signups.length === 0) { Swal.fire({ icon: 'info', title: '查無資料', text: '在您指定的條件下，找不到相關的報名紀錄。' }); lastQuery.data = []; return; } lastQuery.data = signups; let rowsToRender = Array.isArray(signups) ? [...signups] : []; if (lastQuery.sort && lastQuery.sort.key) { rowsToRender = sortSignupsData(rowsToRender, lastQuery.sort.key, lastQuery.sort.dir, lastQuery.sort.type); } let tableHtml = `<div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><div class="table-responsive" id="my-signups-table-container"><table class="all-signups-table"><thead><tr><th class="sortable-th" data-sort="eventDate" data-type="date">活動日期<span class="sort-indicator"></span></th><th class="sortable-th" data-sort="eventDayOfWeek" data-type="text">星期<span class="sort-indicator"></span></th><th class="sortable-th" data-sort="eventTitle" data-type="text">活動名稱<span class="sort-indicator"></span></th><th class="sortable-th" data-sort="startTime" data-type="time">開始時間<span class="sort-indicator"></span></th><th class="sortable-th" data-sort="endTime" data-type="time">結束時間<span class="sort-indicator"></span></th><th class="sortable-th" data-sort="position" data-type="text">崗位<span class="sort-indicator"></span></th><th class="sortable-th" data-sort="user" data-type="text">姓名<span class="sort-indicator"></span></th><th class="sortable-th" data-sort="timestamp" data-type="datetime">報名時間<span class="sort-indicator"></span></th><th>操作</th></tr></thead><tbody>`; rowsToRender.forEach(s => { tableHtml += `<tr><td>${s.eventDate || ''}</td><td>${s.eventDayOfWeek || ''}</td><td>${s.eventTitle || ''}</td><td>${s.startTime || ''}</td><td>${s.endTime || ''}</td><td>${s.position || ''}</td><td>${s.user || ''}</td><td>${s.timestamp || ''}</td><td style="display: flex; gap: 8px; white-space: nowrap;"><button class="btn btn-sm" style="background-color: #ffc107; color: #212529;" onclick='promptToModifySignup(${JSON.stringify(s).replace(/'/g, "\\'")})'>修改</button><button class="btn btn-danger btn-sm" onclick='promptToDeleteSignup(${JSON.stringify(s).replace(/'/g, "\\'")})'>刪除</button></td></tr>`; }); tableHtml += '</tbody></table></div><div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><button class="floating-scroll-btn left" onclick="document.getElementById(\'my-signups-table-container\').scrollBy({left: -200, behavior: \'smooth\'})">&#8592;</button><button class="floating-scroll-btn right" onclick="document.getElementById(\'my-signups-table-container\').scrollBy({left: 200, behavior: \'smooth\'})">&#8594;</button>'; resultDiv.innerHTML = tableHtml; actionsContainer.style.display = 'flex'; const tableContainer = document.getElementById('my-signups-table-container'); const floatBtns = resultDiv.querySelectorAll('.floating-scroll-btn'); if (tableContainer && floatBtns.length > 0) { const observer = new IntersectionObserver((entries) => { entries.forEach(entry => { floatBtns.forEach(btn => { if (entry.isIntersecting) { btn.classList.add('visible'); } else { btn.classList.remove('visible'); } }); }); }, { threshold: 0.1 }); observer.observe(tableContainer); } const sortableHeaders = resultDiv.querySelectorAll('th.sortable-th'); sortableHeaders.forEach(th => { const key = th.dataset.sort; const type = th.dataset.type || 'text'; const indicator = th.querySelector('.sort-indicator'); if (lastQuery.sort && lastQuery.sort.key === key) { th.classList.add('sorted'); if (indicator) { indicator.textContent = lastQuery.sort.dir === 'desc' ? '▼' : '▲'; } } else if (indicator) { indicator.textContent = '↕'; } th.addEventListener('click', () => { const isSameKey = lastQuery.sort && lastQuery.sort.key === key; const nextDir = isSameKey && lastQuery.sort.dir === 'asc' ? 'desc' : 'asc'; lastQuery.sort = { key, dir: nextDir, type }; renderMySignupsTable(lastQuery.data || []); }); }); }
-        async function promptToModifySignup(signup) { const eventDetails = allCalendarEvents.find(e => e.id === signup.eventId); if (!eventDetails) { return Swal.fire('錯誤', '找不到此報名的相關活動資訊，無法修改。', 'error'); } const allPositions = eventDetails.extendedProps.positions; if (!allPositions || allPositions.length === 0) { return Swal.fire('錯誤', '此活動沒有可用的崗位列表。', 'error'); } let optionsHtml = allPositions.map(pos => `<option value="${pos}" ${pos === signup.position ? 'selected' : ''}>${pos}</option>`).join(''); const { value: newPosition } = await Swal.fire({ title: '修改報名崗位', html: ` <div style="text-align: left; margin: 1em 0; line-height: 1.8;"><p><strong>活動:</strong> ${signup.eventTitle}</p><p><strong>日期:</strong> ${signup.eventDate}</p><p><strong>時間:</strong> ${eventDetails.extendedProps.startTime || ''}${eventDetails.extendedProps.endTime ? ' - ' + eventDetails.extendedProps.endTime : ''}</p><p><strong>姓名:</strong> ${signup.user}</p><hr style="margin: 1rem 0; height: 1px; background: #ddd; border: none;"><p style="margin-top: 1em;"><strong>修改崗位為:</strong></p><select id="swal-position-select" class="swal2-select" style="width: 100%; max-width: 300px; margin-top: 0.5em;">${optionsHtml}</select></div>`, width: isMobile ? '90vw' : '500px', focusConfirm: false, showCancelButton: true, confirmButtonText: '確認修改', cancelButtonText: '取消', preConfirm: () => document.getElementById('swal-position-select').value }); if (newPosition && newPosition !== signup.position) { showLoading(); try { const response = await callAppsScript('modifySignup', { signupId: signup.signupId, newPosition: newPosition }); await Swal.fire('修改成功', response.data.message, 'success'); executeUnifiedSignupQuery(lastQuery.params.searchText, lastQuery.params.startDateStr, lastQuery.params.endDateStr, lastQuery.params.eventDate || '', lastQuery.params.eventTitle || '', lastQuery.params.startTime || '', lastQuery.params.keyword || ''); setupCalendarTab(true); } catch (e) { Swal.fire('修改失敗', e.message, 'error'); } finally { hideLoading(); } } }
-        function normalizeDateStr(input) { if (!input) return ''; const sanitized = input.replace(/[./]/g, '-'); const parsed = new Date(sanitized); if (isNaN(parsed.getTime())) { return sanitized.slice(0, 10); } return parsed.toLocaleDateString('en-CA'); }
-        async function executeUnifiedSignupQuery(searchText, startDateStr, endDateStr, eventDate = '', eventTitle = '', startTime = '', keyword = '') { showLoading(); try { const response = await callAppsScriptWithRetry('getUnifiedSignups', { searchText, startDateStr, endDateStr }); const keywordTokens = (keyword || '').split(/\s+/).filter(Boolean).map(s => s.toLowerCase()); let results = response.data || []; const targetDate = normalizeDateStr(eventDate); if (targetDate && results.length > 0) { results = results.filter(item => normalizeDateStr(item.eventDate) === targetDate); } if (eventTitle && results.length > 0) { results = results.filter(item => item.eventTitle && (item.eventTitle.includes(eventTitle) || eventTitle.includes(item.eventTitle))); } if (startTime && results.length > 0) { const targetMinutes = parseTimeToMinutes(startTime); results = results.filter(item => { const itemMinutes = parseTimeToMinutes(item.startTime); return targetMinutes !== null && itemMinutes !== null && itemMinutes === targetMinutes; }); } if (keywordTokens.length > 0 && results.length > 0) { results = results.filter(item => { const haystack = [item.eventTitle, item.position, item.user, item.eventDate, item.eventDayOfWeek, item.description].filter(Boolean).join(' ').toLowerCase(); return keywordTokens.every(k => haystack.includes(k)); }); } renderMySignupsTable(results); } catch (e) { Swal.fire('查詢失敗', e.message, 'error'); } finally { hideLoading(); } }
+        function renderMySignupsTable(signups) {
+            const resultDiv = document.getElementById('my-signups-result');
+            const actionsContainer = document.getElementById('query-actions-container');
+            if (resultDiv._scrollBtnHandler) {
+                resultDiv.removeEventListener('click', resultDiv._scrollBtnHandler);
+                resultDiv._scrollBtnHandler = null;
+            }
+            resultDiv.innerHTML = '';
+            actionsContainer.style.display = 'none';
+            updateSearchDebug();
+
+            if (!signups || signups.length === 0) {
+                Swal.fire({ icon: 'info', title: '查無資料', text: '在您指定的條件下，找不到相關的報名紀錄。' });
+                lastQuery.data = [];
+                return;
+            }
+
+            lastQuery.data = signups;
+            let rowsToRender = Array.isArray(signups) ? [...signups] : [];
+            if (lastQuery.sort && lastQuery.sort.key) {
+                rowsToRender = sortSignupsData(rowsToRender, lastQuery.sort.key, lastQuery.sort.dir, lastQuery.sort.type);
+            }
+
+            let tableHtml = `<div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><div class="table-responsive" id="my-signups-table-container"><table class="all-signups-table"><thead><tr><th class="sortable-th" data-sort="eventDate" data-type="date">活動日期<span class="sort-indicator"></span></th><th class="sortable-th" data-sort="eventDayOfWeek" data-type="text">星期<span class="sort-indicator"></span></th><th class="sortable-th" data-sort="eventTitle" data-type="text">活動名稱<span class="sort-indicator"></span></th><th class="sortable-th" data-sort="startTime" data-type="time">開始時間<span class="sort-indicator"></span></th><th class="sortable-th" data-sort="endTime" data-type="time">結束時間<span class="sort-indicator"></span></th><th class="sortable-th" data-sort="position" data-type="text">崗位<span class="sort-indicator"></span></th><th class="sortable-th" data-sort="user" data-type="text">姓名<span class="sort-indicator"></span></th><th class="sortable-th" data-sort="timestamp" data-type="datetime">報名時間<span class="sort-indicator"></span></th><th>操作</th></tr></thead><tbody>`;
+            rowsToRender.forEach((s, index) => {
+                tableHtml += `<tr><td>${s.eventDate || ''}</td><td>${s.eventDayOfWeek || ''}</td><td>${s.eventTitle || ''}</td><td>${s.startTime || ''}</td><td>${s.endTime || ''}</td><td>${s.position || ''}</td><td>${s.user || ''}</td><td>${s.timestamp || ''}</td><td style="display: flex; gap: 8px; white-space: nowrap;"><button class="btn btn-sm signup-action-btn" data-action="edit" data-row-index="${index}" style="background-color: #ffc107; color: #212529;">修改</button><button class="btn btn-danger btn-sm signup-action-btn" data-action="delete" data-row-index="${index}">刪除</button></td></tr>`;
+            });
+            tableHtml += '</tbody></table></div><div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><button class="floating-scroll-btn left" data-scroll-target="my-signups-table-container" data-scroll-dir="left">&#8592;</button><button class="floating-scroll-btn right" data-scroll-target="my-signups-table-container" data-scroll-dir="right">&#8594;</button>';
+            resultDiv.innerHTML = tableHtml;
+            actionsContainer.style.display = 'flex';
+
+            if (resultDiv._scrollBtnHandler) {
+                resultDiv.removeEventListener('click', resultDiv._scrollBtnHandler);
+            }
+            resultDiv._scrollBtnHandler = (e) => {
+                const btn = e.target.closest('.floating-scroll-btn[data-scroll-target][data-scroll-dir]');
+                if (!btn || !resultDiv.contains(btn)) return;
+                const target = resultDiv.querySelector(`#${btn.dataset.scrollTarget}`);
+                if (!target) return;
+                const delta = btn.dataset.scrollDir === 'left' ? -200 : 200;
+                target.scrollBy({ left: delta, behavior: 'smooth' });
+            };
+            resultDiv.addEventListener('click', resultDiv._scrollBtnHandler);
+
+            const tableContainer = document.getElementById('my-signups-table-container');
+            const floatBtns = resultDiv.querySelectorAll('.floating-scroll-btn');
+            if (tableContainer && floatBtns.length > 0) {
+                if (signupsTableObserver) {
+                    signupsTableObserver.disconnect();
+                    signupsTableObserver = null;
+                }
+                signupsTableObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        floatBtns.forEach(btn => {
+                            if (entry.isIntersecting) {
+                                btn.classList.add('visible');
+                            } else {
+                                btn.classList.remove('visible');
+                            }
+                        });
+                    });
+                }, { threshold: 0.1 });
+                signupsTableObserver.observe(tableContainer);
+            }
+
+            const sortableHeaders = resultDiv.querySelectorAll('th.sortable-th');
+            sortableHeaders.forEach(th => {
+                const key = th.dataset.sort;
+                const type = th.dataset.type || 'text';
+                const indicator = th.querySelector('.sort-indicator');
+                if (lastQuery.sort && lastQuery.sort.key === key) {
+                    th.classList.add('sorted');
+                    if (indicator) indicator.textContent = lastQuery.sort.dir === 'desc' ? '▼' : '▲';
+                } else if (indicator) {
+                    indicator.textContent = '↕';
+                }
+                th.addEventListener('click', () => {
+                    const isSameKey = lastQuery.sort && lastQuery.sort.key === key;
+                    const nextDir = isSameKey && lastQuery.sort.dir === 'asc' ? 'desc' : 'asc';
+                    lastQuery.sort = { key, dir: nextDir, type };
+                    renderMySignupsTable(lastQuery.data || []);
+                });
+            });
+
+            const tbody = tableContainer ? tableContainer.querySelector('tbody') : null;
+            if (tbody) {
+                tbody.addEventListener('click', (e) => {
+                    const btn = e.target.closest('.signup-action-btn');
+                    if (!btn) return;
+                    const rowIndex = Number(btn.dataset.rowIndex);
+                    if (Number.isNaN(rowIndex) || rowIndex < 0 || rowIndex >= rowsToRender.length) return;
+                    const rowData = rowsToRender[rowIndex];
+                    if (!rowData) return;
+                    if (btn.dataset.action === 'edit') {
+                        promptToModifySignup(rowData);
+                    } else if (btn.dataset.action === 'delete') {
+                        promptToDeleteSignup(rowData);
+                    }
+                });
+            }
+        }
+        async function promptToModifySignup(signup) { const eventDetails = getCalendarEventById(signup.eventId); if (!eventDetails) { return Swal.fire('錯誤', '找不到此報名的相關活動資訊，無法修改。', 'error'); } const allPositions = eventDetails.extendedProps.positions; if (!allPositions || allPositions.length === 0) { return Swal.fire('錯誤', '此活動沒有可用的崗位列表。', 'error'); } let optionsHtml = allPositions.map(pos => `<option value="${pos}" ${pos === signup.position ? 'selected' : ''}>${pos}</option>`).join(''); const { value: newPosition } = await Swal.fire({ title: '修改報名崗位', html: ` <div style="text-align: left; margin: 1em 0; line-height: 1.8;"><p><strong>活動:</strong> ${signup.eventTitle}</p><p><strong>日期:</strong> ${signup.eventDate}</p><p><strong>時間:</strong> ${eventDetails.extendedProps.startTime || ''}${eventDetails.extendedProps.endTime ? ' - ' + eventDetails.extendedProps.endTime : ''}</p><p><strong>姓名:</strong> ${signup.user}</p><hr style="margin: 1rem 0; height: 1px; background: #ddd; border: none;"><p style="margin-top: 1em;"><strong>修改崗位為:</strong></p><select id="swal-position-select" class="swal2-select" style="width: 100%; max-width: 300px; margin-top: 0.5em;">${optionsHtml}</select></div>`, width: isMobile ? '90vw' : '500px', focusConfirm: false, showCancelButton: true, confirmButtonText: '確認修改', cancelButtonText: '取消', preConfirm: () => document.getElementById('swal-position-select').value }); if (newPosition && newPosition !== signup.position) { showLoading(); try { const response = await callAppsScript('modifySignup', { signupId: signup.signupId, newPosition: newPosition }); await Swal.fire('修改成功', response.data.message, 'success'); invalidateUnifiedSignupsCache(); executeUnifiedSignupQuery(lastQuery.params.searchText, lastQuery.params.startDateStr, lastQuery.params.endDateStr, lastQuery.params.eventDate || '', lastQuery.params.eventTitle || '', lastQuery.params.startTime || '', lastQuery.params.keyword || ''); setupCalendarTab(true); } catch (e) { Swal.fire('修改失敗', e.message, 'error'); } finally { hideLoading(); } } }
+        function normalizeDateStr(input) { if (!input) return ''; const sanitized = input.replace(/[./]/g, '-'); const parsed = new Date(sanitized); if (isNaN(parsed.getTime())) { return sanitized.slice(0, 10); } return DATE_FMT_CA_TW.format(parsed); }
+        async function executeUnifiedSignupQuery(searchText, startDateStr, endDateStr, eventDate = '', eventTitle = '', startTime = '', keyword = '') {
+            showLoading();
+            try {
+                const sourceRows = await getUnifiedSignups(searchText, startDateStr, endDateStr);
+                const keywordTokens = (keyword || '').split(/\s+/).filter(Boolean).map(s => s.toLowerCase());
+                let results = sourceRows.slice();
+                const targetDate = normalizeDateStr(eventDate);
+
+                if (targetDate && results.length > 0) {
+                    results = results.filter(item => normalizeDateStr(item.eventDate) === targetDate);
+                }
+                if (eventTitle && results.length > 0) {
+                    results = results.filter(item => item.eventTitle && (item.eventTitle.includes(eventTitle) || eventTitle.includes(item.eventTitle)));
+                }
+                if (startTime && results.length > 0) {
+                    const targetMinutes = parseTimeToMinutes(startTime);
+                    results = results.filter(item => {
+                        const itemMinutes = parseTimeToMinutes(item.startTime);
+                        return targetMinutes !== null && itemMinutes !== null && itemMinutes === targetMinutes;
+                    });
+                }
+                if (keywordTokens.length > 0 && results.length > 0) {
+                    results = results.filter(item => {
+                        const haystack = [item.eventTitle, item.position, item.user, item.eventDate, item.eventDayOfWeek, item.description]
+                            .filter(Boolean)
+                            .join(' ')
+                            .toLowerCase();
+                        return keywordTokens.every(k => haystack.includes(k));
+                    });
+                }
+
+                renderMySignupsTable(results);
+            } catch (e) {
+                Swal.fire('查詢失敗', e.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
         function populateEventSelect() {
             const eventSelect = document.getElementById('event-select');
             if (!eventSelect) return;
@@ -1835,18 +2335,18 @@
             eventSelect.innerHTML = '<option value="">-- 請選擇法會 --</option>';
             currentMonthEvents.forEach(event => {
                 const eventDate = new Date(event.start);
-                const dateString = eventDate.toLocaleDateString('en-CA');
+                const dateString = DATE_FMT_CA_TW.format(eventDate);
                 const startTime = event.extendedProps.startTime || '';
                 const titleText = event.extendedProps.full_title || event.title;
                 const displayText = `${dateString} ${titleText}${startTime ? ` ${startTime}` : ''}`;
                 const option = document.createElement('option');
-                option.value = JSON.stringify({ date: dateString, title: titleText, startTime });
+                option.value = String(event.id);
                 option.textContent = displayText;
                 eventSelect.appendChild(option);
             });
         }
-        async function promptToDeleteSignup(signup) { const { value: password } = await Swal.fire({ title: '確定要刪除此筆報名嗎？', html: `<div style="text-align: left; margin: 1em auto; background: #f8f9fa; border-left: 4px solid #e74c3c; padding: 1em; border-radius: 4px; width: 90%;"><p><strong>活動日期:</strong> ${signup.eventDate || 'N/A'}</p><p><strong>活動名稱:</strong> ${signup.eventTitle || 'N/A'}</p><p><strong>報名人員:</strong> ${signup.user || 'N/A'}</p><p><strong>報名崗位:</strong> ${signup.position || 'N/A'}</p><p><strong>報名時間:</strong> ${signup.timestamp || 'N/A'}</p></div><div style="text-align: center; margin-top: 1.5em;"><p style="margin-bottom: 0.5em;">請輸入密碼以確認刪除：</p><input type="password" id="password-input" class="swal2-input" placeholder="請輸入密碼" style="width: 90%; margin: 0 auto;"></div>`, icon: 'warning', showCancelButton: true, confirmButtonText: '確認刪除', cancelButtonText: '取消', preConfirm: () => { const pw = document.getElementById('password-input').value; if (pw !== '0425') { Swal.showValidationMessage('密碼錯誤！'); return false; } return pw; } }); if (password) { showLoading(); try { const response = await callAppsScript('removeSignup', { eventId: signup.eventId, userName: signup.user }); await Swal.fire('刪除成功', response.data.message, 'success'); if (lastQuery.type === 'unified') { await executeUnifiedSignupQuery(lastQuery.params.searchText, lastQuery.params.startDateStr, lastQuery.params.endDateStr, lastQuery.params.eventDate || '', lastQuery.params.eventTitle || '', lastQuery.params.startTime || '', lastQuery.params.keyword || ''); } setupCalendarTab(true); } catch (e) { Swal.fire('刪除失敗', e.message, 'error'); } finally { hideLoading(); } } }
-        async function generateStatsReport() { showLoading(); const detailsContainer = document.getElementById('stats-details-container'); detailsContainer.innerHTML = ''; try { const response = await callAppsScriptWithRetry('getStatsData', { startDateStr: document.getElementById('stats-start-date').value, endDateStr: document.getElementById('stats-end-date').value }); const data = response.data; lastStatsData = data; const ctx = document.getElementById('stats-chart').getContext('2d'); if (statsChart) statsChart.destroy(); if (!data || data.labels.length === 0) { document.getElementById('stats-chart').style.display = 'none'; detailsContainer.innerHTML = '<p style="text-align:center; padding: 20px;">在選定的日期範圍?沒有任何報名記錄可供統計。</p>'; Swal.fire('提示', '在選定的日期範圍?沒有任何報名記錄可供統計。', 'info'); return; } document.getElementById('stats-chart').style.display = 'block'; const backgroundColors = data.labels.map(() => `rgba(${Math.floor(Math.random() * 200) + 50},${Math.floor(Math.random() * 200) + 50},${Math.floor(Math.random() * 200) + 50},0.8)`); const chartLabels = data.labels.map(label => { const parts = label.match(/(.*?)\s*\((.*?)\)/); return (parts && parts.length === 3) ? (isMobile ? parts[1].trim() : [parts[1].trim(), `(${parts[2]})`]) : label; }); const chartOptions = { responsive: true, maintainAspectRatio: false, backgroundColor: 'white', plugins: { datalabels: { anchor: 'end', align: 'top', offset: 4, color: '#444', font: { weight: 'bold', size: 14 } }, tooltip: { callbacks: { title: (items) => data.fullDetails[items[0].dataIndex].eventInfo.title, label: (item) => { const d = data.fullDetails[item.dataIndex]; let l = [`日期: ${d.eventInfo.date}`, `時間: ${d.eventInfo.startTime}${d.eventInfo.endTime ? ' - ' + d.eventInfo.endTime : ''}`, `已報名: ${item.raw} / ${d.eventInfo.maxAttendees} 人`, '--- 崗位人員 ---']; d.signups.forEach(s => l.push(`${s.position}: ${s.user}`)); return l; } } } }, scales: { x: { ticks: { autoSkip: false } }, y: { grace: '10%' } }, layout: { padding: { top: 30, bottom: isMobile ? 80 : 40 } } }; if (isMobile) { chartOptions.scales.x.ticks.maxRotation = 45; chartOptions.scales.x.ticks.minRotation = 45; } statsChart = new Chart(ctx, { type: 'bar', data: { labels: chartLabels, datasets: [{ label: '報名人數', data: data.data, backgroundColor: backgroundColors, borderColor: backgroundColors.map(c => c.replace('0.8', '1')), borderWidth: 1 }] }, options: chartOptions }); let detailsHtml = '<h2>詳細活動報名資訊</h2>'; data.fullDetails.forEach((eventData, index) => { const dayOfWeekText = eventData.eventInfo.dayOfWeek ? `(${eventData.eventInfo.dayOfWeek})` : ''; detailsHtml += `<div class="stats-event-block"><h3>${index + 1}. ${eventData.eventInfo.title}</h3><p><strong>日期:</strong> ${eventData.eventInfo.date} ${dayOfWeekText}</p><p><strong>時間:</strong> ${eventData.eventInfo.startTime}${eventData.eventInfo.endTime ? ' - ' + eventData.eventInfo.endTime : ''}</p><p><strong>報名狀況:</strong> ${eventData.signups.length} / ${eventData.eventInfo.maxAttendees}</p>`; if (eventData.signups && eventData.signups.length > 0) { detailsHtml += '<ul>'; eventData.signups.forEach(signup => { detailsHtml += `<li><strong>${signup.position}:</strong> ${signup.user}</li>`; }); detailsHtml += '</ul>'; } else { detailsHtml += '<p>無人報名</p>'; } detailsHtml += '</div>'; }); detailsContainer.innerHTML = detailsHtml; setTimeout(() => { const canvas = document.getElementById('stats-chart'); if (canvas) canvas.style.backgroundColor = 'white'; }, 100); } catch (e) { Swal.fire('產生失敗', e.message, 'error'); } finally { hideLoading(); } }
+        async function promptToDeleteSignup(signup) { const { value: password } = await Swal.fire({ title: '確定要刪除此筆報名嗎？', html: `<div style="text-align: left; margin: 1em auto; background: #f8f9fa; border-left: 4px solid #e74c3c; padding: 1em; border-radius: 4px; width: 90%;"><p><strong>活動日期:</strong> ${signup.eventDate || 'N/A'}</p><p><strong>活動名稱:</strong> ${signup.eventTitle || 'N/A'}</p><p><strong>報名人員:</strong> ${signup.user || 'N/A'}</p><p><strong>報名崗位:</strong> ${signup.position || 'N/A'}</p><p><strong>報名時間:</strong> ${signup.timestamp || 'N/A'}</p></div><div style="text-align: center; margin-top: 1.5em;"><p style="margin-bottom: 0.5em;">請輸入密碼以確認刪除：</p><input type="password" id="password-input" class="swal2-input" placeholder="請輸入密碼" style="width: 90%; margin: 0 auto;"></div>`, icon: 'warning', showCancelButton: true, confirmButtonText: '確認刪除', cancelButtonText: '取消', preConfirm: () => { const pw = document.getElementById('password-input').value; if (pw !== '0425') { Swal.showValidationMessage('密碼錯誤！'); return false; } return pw; } }); if (password) { showLoading(); try { const response = await callAppsScript('removeSignup', { eventId: signup.eventId, userName: signup.user }); await Swal.fire('刪除成功', response.data.message, 'success'); invalidateUnifiedSignupsCache(); if (lastQuery.type === 'unified') { await executeUnifiedSignupQuery(lastQuery.params.searchText, lastQuery.params.startDateStr, lastQuery.params.endDateStr, lastQuery.params.eventDate || '', lastQuery.params.eventTitle || '', lastQuery.params.startTime || '', lastQuery.params.keyword || ''); } setupCalendarTab(true); } catch (e) { Swal.fire('刪除失敗', e.message, 'error'); } finally { hideLoading(); } } }
+        async function generateStatsReport() { showLoading(); const detailsContainer = document.getElementById('stats-details-container'); detailsContainer.innerHTML = ''; try { await ensureChartLibReady(); const response = await callAppsScriptWithRetry('getStatsData', { startDateStr: document.getElementById('stats-start-date').value, endDateStr: document.getElementById('stats-end-date').value }); const data = response.data; lastStatsData = data; const ctx = document.getElementById('stats-chart').getContext('2d'); if (statsChart) statsChart.destroy(); if (!data || data.labels.length === 0) { document.getElementById('stats-chart').style.display = 'none'; detailsContainer.innerHTML = '<p style="text-align:center; padding: 20px;">在選定的日期範圍?沒有任何報名記錄可供統計。</p>'; Swal.fire('提示', '在選定的日期範圍?沒有任何報名記錄可供統計。', 'info'); return; } document.getElementById('stats-chart').style.display = 'block'; const backgroundColors = data.labels.map(() => `rgba(${Math.floor(Math.random() * 200) + 50},${Math.floor(Math.random() * 200) + 50},${Math.floor(Math.random() * 200) + 50},0.8)`); const chartLabels = data.labels.map(label => { const parts = label.match(/(.*?)\s*\((.*?)\)/); return (parts && parts.length === 3) ? (isMobile ? parts[1].trim() : [parts[1].trim(), `(${parts[2]})`]) : label; }); const chartOptions = { responsive: true, maintainAspectRatio: false, backgroundColor: 'white', plugins: { datalabels: { anchor: 'end', align: 'top', offset: 4, color: '#444', font: { weight: 'bold', size: 14 } }, tooltip: { callbacks: { title: (items) => data.fullDetails[items[0].dataIndex].eventInfo.title, label: (item) => { const d = data.fullDetails[item.dataIndex]; let l = [`日期: ${d.eventInfo.date}`, `時間: ${d.eventInfo.startTime}${d.eventInfo.endTime ? ' - ' + d.eventInfo.endTime : ''}`, `已報名: ${item.raw} / ${d.eventInfo.maxAttendees} 人`, '--- 崗位人員 ---']; d.signups.forEach(s => l.push(`${s.position}: ${s.user}`)); return l; } } } }, scales: { x: { ticks: { autoSkip: false } }, y: { grace: '10%' } }, layout: { padding: { top: 30, bottom: isMobile ? 80 : 40 } } }; if (isMobile) { chartOptions.scales.x.ticks.maxRotation = 45; chartOptions.scales.x.ticks.minRotation = 45; } statsChart = new Chart(ctx, { type: 'bar', data: { labels: chartLabels, datasets: [{ label: '報名人數', data: data.data, backgroundColor: backgroundColors, borderColor: backgroundColors.map(c => c.replace('0.8', '1')), borderWidth: 1 }] }, options: chartOptions }); let detailsHtml = '<h2>詳細活動報名資訊</h2>'; data.fullDetails.forEach((eventData, index) => { const dayOfWeekText = eventData.eventInfo.dayOfWeek ? `(${eventData.eventInfo.dayOfWeek})` : ''; detailsHtml += `<div class="stats-event-block"><h3>${index + 1}. ${eventData.eventInfo.title}</h3><p><strong>日期:</strong> ${eventData.eventInfo.date} ${dayOfWeekText}</p><p><strong>時間:</strong> ${eventData.eventInfo.startTime}${eventData.eventInfo.endTime ? ' - ' + eventData.eventInfo.endTime : ''}</p><p><strong>報名狀況:</strong> ${eventData.signups.length} / ${eventData.eventInfo.maxAttendees}</p>`; if (eventData.signups && eventData.signups.length > 0) { detailsHtml += '<ul>'; eventData.signups.forEach(signup => { detailsHtml += `<li><strong>${signup.position}:</strong> ${signup.user}</li>`; }); detailsHtml += '</ul>'; } else { detailsHtml += '<p>無人報名</p>'; } detailsHtml += '</div>'; }); detailsContainer.innerHTML = detailsHtml; setTimeout(() => { const canvas = document.getElementById('stats-chart'); if (canvas) canvas.style.backgroundColor = 'white'; }, 100); } catch (e) { Swal.fire('產生失敗', e.message, 'error'); } finally { hideLoading(); } }
         async function generatePerformanceReport() {
             showLoading();
             const detailsContainer = document.getElementById('performance-details-container');
@@ -1854,10 +2354,10 @@
             const ctx = canvas.getContext('2d');
 
             try {
+                await ensureChartLibReady();
                 const startDateStr = document.getElementById('performance-start-date').value;
                 const endDateStr = document.getElementById('performance-end-date').value;
-                const response = await callAppsScriptWithRetry('getUnifiedSignups', { searchText: '', startDateStr, endDateStr });
-                const signups = response.data;
+                const signups = await getUnifiedSignups('', startDateStr, endDateStr);
 
                 if (performanceChart) performanceChart.destroy();
                 detailsContainer.innerHTML = '';
@@ -1942,61 +2442,7 @@
         }
         async function exportCurrentQueryResultToExcel() {
             if (!lastQuery.type || !lastQuery.params) { return Swal.fire('錯誤', '沒有可匯出的查詢條件。', 'error'); } showLoading(); try {
-                const { searchText, startDateStr, endDateStr } = lastQuery.params; const response = await callAppsScript('getUnifiedSignups', { searchText, startDateStr, endDateStr }); const dataToExport = response.data; if (!dataToExport || dataToExport.length === 0) { hideLoading(); return Swal.fire('無資料', '在選定的條件下沒有任何報名記錄可供匯出。', 'info'); } const dateRangeText = (startDateStr && endDateStr) ? `${startDateStr} - ${endDateStr}` : '所有日期'; const titleSuffix = searchText ? ` (關鍵字: "${searchText}")` : ''; const title = `AV放送立願報名記錄 (${dateRangeText})${titleSuffix}`; const generateTime = new Date().toLocaleString('zh-TW'); let htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>table{border-collapse:collapse;width:100%;font-family:'Microsoft JhengHei',sans-serif}td,th{border:1px solid #ddd;text-align:left;padding:8px}th{background-color:#f2f2f2}.title-row{background-color:#FF8C42;color:white;font-weight:bold;font-size:16px;text-align:center}
-/* --- MOBILE DATE INPUT FIX (追加) --- */
-@media (max-width: 768px) {
-  .inline-form {
-    flex-direction: column;
-    align-items: center;
-  }
-  .inline-form > .form-group,
-  .inline-form > .btn {
-    width: 92vw;
-    max-width: 480px;
-  }
-  .inline-form .form-group > input,
-  .inline-form .form-group > select {
-    width: 100%;
-    box-sizing: border-box;
-  }
-  .inline-form input[type="date"] {
-    -webkit-appearance: none;
-    appearance: none;
-    min-width: 0;
-    max-width: 100%;
-  }
-}
-
-
-/* --- HOTFIX: 修正手機超出容器（覆寫前一版 92vw 設定） --- */
-@media (max-width: 768px) {
-  .inline-form { 
-    align-items: stretch !important; 
-    width: 100% !important;
-  }
-  .inline-form > .form-group,
-  .inline-form > .btn {
-    width: 100% !important;
-    max-width: 100% !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-  }
-  .inline-form .form-group > input,
-  .inline-form .form-group > select {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box;
-  }
-  .inline-form input[type="date"] {
-    -webkit-appearance: none;
-    appearance: none;
-    min-width: 0;
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-}
-
-</style></head><body><table><tr><td colspan="5" class="title-row">${title}</td></tr><tr><td colspan="5">報表生成時間：${generateTime}</td></tr><tr><th>活動日期</th><th>活動名稱</th><th>崗位</th><th>報名者</th><th>報名時間</th></tr>`; dataToExport.forEach(row => { htmlContent += `<tr><td>${row.eventDate || ''}</td><td>${row.eventTitle || ''}</td><td>${row.position || ''}</td><td>${row.user || ''}</td><td>'${row.timestamp || ''}'</td></tr>`; }); htmlContent += '</table></body></html>'; const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' }); const fileName = `AV立願報名記錄_${new Date().toISOString().slice(0, 10)}.xls`; const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = fileName; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(link.href);
+                const { searchText, startDateStr, endDateStr } = lastQuery.params; const dataToExport = await getUnifiedSignups(searchText, startDateStr, endDateStr); if (!dataToExport || dataToExport.length === 0) { return Swal.fire('無資料', '在選定的條件下沒有任何報名記錄可供匯出。', 'info'); } const dateRangeText = (startDateStr && endDateStr) ? `${startDateStr} - ${endDateStr}` : '所有日期'; const titleSuffix = searchText ? ` (關鍵字: "${searchText}")` : ''; const title = `AV放送立願報名記錄 (${dateRangeText})${titleSuffix}`; const generateTime = new Date().toLocaleString('zh-TW'); let htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>table{border-collapse:collapse;width:100%;font-family:'Microsoft JhengHei',sans-serif}td,th{border:1px solid #ddd;text-align:left;padding:8px}th{background-color:#f2f2f2}.title-row{background-color:#FF8C42;color:white;font-weight:bold;font-size:16px;text-align:center}</style></head><body><table><tr><td colspan="5" class="title-row">${title}</td></tr><tr><td colspan="5">報表生成時間：${generateTime}</td></tr><tr><th>活動日期</th><th>活動名稱</th><th>崗位</th><th>報名者</th><th>報名時間</th></tr>`; dataToExport.forEach(row => { htmlContent += `<tr><td>${row.eventDate || ''}</td><td>${row.eventTitle || ''}</td><td>${row.position || ''}</td><td>${row.user || ''}</td><td>'${row.timestamp || ''}'</td></tr>`; }); htmlContent += '</table></body></html>'; const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel;charset=utf-8;' }); const fileName = `AV立願報名記錄_${new Date().toISOString().slice(0, 10)}.xls`; const link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = fileName; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(link.href);
             } catch (e) { Swal.fire('匯出失?', e.message, 'error'); } finally { hideLoading(); }
         }
 
@@ -2004,7 +2450,29 @@
             const feVerEl = document.getElementById('frontend-version');
             if (feVerEl) feVerEl.textContent = FRONTEND_VERSION;
             window.scrollTo(0, 0);
-            Chart.register(ChartDataLabels);
+            initializeTabCache();
+            const tabsContainerEl = document.getElementById('tabs-container');
+            const reloadSystemBtnEl = document.getElementById('reload-system-btn');
+            if (tabsContainerEl) {
+                tabsContainerEl.addEventListener('click', (e) => {
+                    const tabBtn = e.target.closest('.tab-button[data-tab]');
+                    if (!tabBtn || !tabsContainerEl.contains(tabBtn)) return;
+                    openTab({ currentTarget: tabBtn }, tabBtn.dataset.tab);
+                });
+            }
+            if (reloadSystemBtnEl) {
+                reloadSystemBtnEl.addEventListener('click', reloadSystem);
+            }
+            let viewportTicking = false;
+            const handleViewportResize = () => {
+                if (viewportTicking) return;
+                viewportTicking = true;
+                requestAnimationFrame(() => {
+                    syncViewportMode();
+                    viewportTicking = false;
+                });
+            };
+            window.addEventListener('resize', handleViewportResize, { passive: true });
             const lineTokenInputEl = document.getElementById('line-token-input');
             const linToInputEl = document.getElementById('lin-to-input');
             const lineTargetSelectEl = document.getElementById('line-target-select');
@@ -2117,17 +2585,37 @@
                 lineUserOnlyToggleEl.addEventListener('change', () => renderLineTargetOptions(cachedLineTargets));
             }
 
-            let marqueeMessages = [], marqueeIndex = 0;
+            let marqueeMessages = [], marqueeIndex = 0, marqueeTimer = null;
             const marqueeTextEl = document.getElementById('marquee-text');
+            const startMarqueeTimer = () => {
+                if (marqueeTimer || document.hidden || !marqueeMessages.length) return;
+                marqueeTimer = setInterval(cycleMarquee, 5000);
+            };
+            const stopMarqueeTimer = () => {
+                if (!marqueeTimer) return;
+                clearInterval(marqueeTimer);
+                marqueeTimer = null;
+            };
 
-            async function setupMarquee() {
+            async function setupMarquee(forceLoad = false) {
                 if (!marqueeTextEl) return;
+                const shouldLoad = forceLoad || localStorage.getItem('av_marquee_visible') !== 'false';
+                if (!shouldLoad && marqueeMessages.length === 0) {
+                    marqueeTextEl.textContent = '公告已隱藏';
+                    marqueeTextEl.style.animation = 'none';
+                    return;
+                }
+                if (marqueeMessages.length > 0) {
+                    cycleMarquee();
+                    startMarqueeTimer();
+                    return;
+                }
                 try {
                     const response = await callAppsScript('getNewsAnnouncements');
                     marqueeMessages = response.data;
                     if (marqueeMessages && marqueeMessages.length > 0) {
                         cycleMarquee();
-                        setInterval(cycleMarquee, 5000);
+                        startMarqueeTimer();
                     } else {
                         marqueeTextEl.textContent = '目前沒有最新公告';
                         marqueeTextEl.style.animation = 'none';
@@ -2160,6 +2648,13 @@
             }
 
             setupMarquee();
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    stopMarqueeTimer();
+                } else {
+                    startMarqueeTimer();
+                }
+            });
 
             function setupMarqueeToggle() {
                 const toggleBtn = document.getElementById('toggle-marquee-btn');
@@ -2192,7 +2687,10 @@
                         marqueeContainer.style.maxHeight = '200px';
                         marqueeContainer.style.opacity = '1';
                         marqueeContainer.style.marginBottom = '20px';
+                        if (marqueeMessages.length > 0) startMarqueeTimer();
+                        else setupMarquee(true);
                     } else {
+                        stopMarqueeTimer();
                         marqueeContainer.style.maxHeight = '0';
                         marqueeContainer.style.opacity = '0';
                         marqueeContainer.style.marginBottom = '0';
@@ -2220,14 +2718,43 @@
             }
             setupMarqueeToggle();
 
-            const getMonthDateRange = () => { const today = new Date(); const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1); const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0); return { firstDayStr: firstDayOfMonth.toLocaleDateString('en-CA'), lastDayStr: lastDayOfMonth.toLocaleDateString('en-CA') }; };
+            const getMonthDateRange = () => { const today = new Date(); const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1); const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0); return { firstDayStr: DATE_FMT_CA_TW.format(firstDayOfMonth), lastDayStr: DATE_FMT_CA_TW.format(lastDayOfMonth) }; };
             const { firstDayStr, lastDayStr } = getMonthDateRange();
             ['search-start-date', 'stats-start-date', 'export-start-date', 'performance-start-date'].forEach(id => { const el = document.getElementById(id); if (el) el.value = firstDayStr; });
             ['search-end-date', 'stats-end-date', 'export-end-date', 'performance-end-date'].forEach(id => { const el = document.getElementById(id); if (el) el.value = lastDayStr; });
 
-            setupCalendarTab(true);
-
-            document.getElementById('unified-search-btn').addEventListener('click', () => { const eventSelectValue = document.getElementById('event-select').value; let eventDate = ''; let eventTitle = ''; let startTime = ''; if (eventSelectValue) { try { const eventData = JSON.parse(eventSelectValue); eventDate = eventData.date; eventTitle = eventData.title; startTime = eventData.startTime || ''; } catch (e) { eventTitle = eventSelectValue; } } const keyword = document.getElementById('universal-search-input').value.trim(); const queryStartDate = document.getElementById('search-start-date').value; const queryEndDate = document.getElementById('search-end-date').value; if (!queryStartDate || !queryEndDate) { return Swal.fire('提示', '請選擇查詢的開始及結束日期。', 'info'); } if (new Date(queryStartDate) > new Date(queryEndDate)) { return Swal.fire('提示', '開始日期不可晚於結束日期。', 'info'); } const searchText = keyword; lastQuery = { type: 'unified', params: { searchText, startDateStr: queryStartDate, endDateStr: queryEndDate, eventDate, eventTitle, startTime, keyword }, data: [], sort: null }; executeUnifiedSignupQuery(searchText, queryStartDate, queryEndDate, eventDate, eventTitle, startTime, keyword); });
+            document.getElementById('unified-search-btn').addEventListener('click', () => {
+                const selectedEventId = document.getElementById('event-select').value;
+                let eventDate = '';
+                let eventTitle = '';
+                let startTime = '';
+                if (selectedEventId) {
+                    const selectedEvent = getCalendarEventById(selectedEventId);
+                    if (selectedEvent) {
+                        const selectedDate = new Date(selectedEvent.start);
+                        eventDate = DATE_FMT_CA_TW.format(selectedDate);
+                        eventTitle = selectedEvent.extendedProps.full_title || selectedEvent.title || '';
+                        startTime = selectedEvent.extendedProps.startTime || '';
+                    }
+                }
+                const keyword = document.getElementById('universal-search-input').value.trim();
+                const queryStartDate = document.getElementById('search-start-date').value;
+                const queryEndDate = document.getElementById('search-end-date').value;
+                if (!queryStartDate || !queryEndDate) {
+                    return Swal.fire('提示', '請選擇查詢的開始及結束日期。', 'info');
+                }
+                if (new Date(queryStartDate) > new Date(queryEndDate)) {
+                    return Swal.fire('提示', '開始日期不可晚於結束日期。', 'info');
+                }
+                const searchText = keyword;
+                lastQuery = {
+                    type: 'unified',
+                    params: { searchText, startDateStr: queryStartDate, endDateStr: queryEndDate, eventDate, eventTitle, startTime, keyword },
+                    data: [],
+                    sort: null
+                };
+                executeUnifiedSignupQuery(searchText, queryStartDate, queryEndDate, eventDate, eventTitle, startTime, keyword);
+            });
             document.getElementById('clear-search-btn').addEventListener('click', () => { document.getElementById('event-select').value = ''; document.getElementById('universal-search-input').value = ''; const { firstDayStr, lastDayStr } = getMonthDateRange(); document.getElementById('search-start-date').value = firstDayStr; document.getElementById('search-end-date').value = lastDayStr; document.getElementById('my-signups-result').innerHTML = ''; document.getElementById('query-actions-container').style.display = 'none'; lastQuery = { type: null, params: {}, data: [], sort: null }; });
             document.getElementById('generate-stats').addEventListener('click', generateStatsReport);
             document.getElementById('generate-performance-report').addEventListener('click', generatePerformanceReport);
@@ -2300,9 +2827,7 @@
             const fetchAndProcessSignups = async (startDateStr, endDateStr, rangeTitle, action) => {
                 showLoading();
                 try {
-                    const response = await callAppsScript('getUnifiedSignups', { searchText: '', startDateStr, endDateStr });
-                    const data = response.data;
-                    hideLoading();
+                    const data = await getUnifiedSignups('', startDateStr, endDateStr);
 
                     if (!data || data.length === 0) {
                         Swal.fire('無資料', `${rangeTitle}沒有任何報名記錄。`, 'info');
@@ -2378,8 +2903,9 @@
                         }
                     }
                 } catch (e) {
-                    hideLoading();
                     Swal.fire('操作失敗', e.message, 'error');
+                } finally {
+                    hideLoading();
                 }
             };
 
@@ -2393,10 +2919,10 @@
                 });
 
                 const today = new Date();
-                const todayStr = today.toLocaleDateString('en-CA');
+                const todayStr = DATE_FMT_CA_TW.format(today);
                 const tomorrow = new Date(today);
                 tomorrow.setDate(tomorrow.getDate() + 1);
-                const tomorrowStr = tomorrow.toLocaleDateString('en-CA');
+                const tomorrowStr = DATE_FMT_CA_TW.format(tomorrow);
 
                 if (isConfirmed) {
                     fetchAndProcessSignups(todayStr, todayStr, '今天', 'clipboard');
@@ -2798,14 +3324,27 @@
                 if (bottomFab) bottomFab.classList.toggle('hidden', scrollTop + viewportHeight > docHeight - 120);
             };
             if (topFab && bottomFab) {
+                let fabTicking = false;
+                const onScroll = () => {
+                    if (fabTicking) return;
+                    fabTicking = true;
+                    requestAnimationFrame(() => {
+                        updateFabVisibility();
+                        fabTicking = false;
+                    });
+                };
                 topFab.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
                 bottomFab.addEventListener('click', () => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' }));
-                window.addEventListener('scroll', updateFabVisibility, { passive: true });
+                window.addEventListener('scroll', onScroll, { passive: true });
                 updateFabVisibility();
             }
             const savedTab = localStorage.getItem('av_active_tab') || 'calendar-tab';
-            const tabBtn = document.querySelector(`.tab-button[onclick*="'${savedTab}'"]`);
-            if (tabBtn) tabBtn.click();
+            const tabBtn = document.querySelector(`.tab-button[data-tab="${savedTab}"]`);
+            if (tabBtn) {
+                openTab({ currentTarget: tabBtn }, savedTab);
+            } else {
+                setupCalendarTab(false, true);
+            }
             const handleDocDownload = (docType) => {
                 const docMap = {
                     poster: { action: 'open', url: '01.pdf', filename: 'AV招生海報.pdf' },
@@ -2828,6 +3367,7 @@
                 if (doc.action === 'open') { window.open(doc.url, '_blank'); }
                 else { const link = document.createElement('a'); link.href = doc.url; link.download = doc.filename; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
             };
+            document.getElementById('download-jobhtml').addEventListener('click', () => window.open('job.html', '_blank'));
             document.getElementById('download-poster').addEventListener('click', () => handleDocDownload('poster'));
             document.getElementById('download-manual-night').addEventListener('click', () => handleDocDownload('manualNight'));
             document.getElementById('download-manual-day').addEventListener('click', () => handleDocDownload('manualDay'));

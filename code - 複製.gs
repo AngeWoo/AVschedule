@@ -60,6 +60,8 @@ function doGet(e) {
       case 'getLineTargets': result = getLineTargets_(); break;
       case 'getLineWebhookStatus': result = getLineWebhookStatus_(); break;
       case 'sendMarqueeAnnouncementsToLine': result = sendMarqueeAnnouncementsToLine_MessageAPI(params.lin_to); break;
+      case 'clearLineTo': result = clearLineTo(); break;
+      case 'removeLineTarget': result = removeLineTarget(params.targetId); break;
       default: throw new Error(`未知的函式名稱: ${functionName}`);
     }
 
@@ -202,8 +204,7 @@ function getNewsAnnouncements() {
 
           // 只顯示今天及未來的公告
           if (messageDate >= today) {
-            const dateStr = Utilities.formatDate(messageDate, scriptTimeZone, 'yyyy/MM/dd');
-            return `${dateStr}：${messageTitle} - ${messageContent}`;
+            return `${messageTitle} - ${messageContent}`;
           }
         } catch (e) {
           console.error(`處理公告日期時發生錯誤: ${dateValue}. Error: ${e.message}`);
@@ -962,6 +963,25 @@ function setLineToken(rawToken) {
     status: 'success',
     token_preview: maskToken_(token),
     token_length: token.length
+  };
+}
+
+function clearLineTo() {
+  PropertiesService.getScriptProperties().deleteProperty(LINE_TO_PROPERTY_KEY);
+  return { status: 'success', message: 'AV_LIN_TO 已清除。' };
+}
+
+function removeLineTarget(targetId) {
+  const id = String(targetId || '').trim();
+  if (!id) return { status: 'error', error: 'targetId 不可為空。' };
+  const current = getLineTargets_();
+  const filtered = current.filter(item => String(item && item.target_id || '').trim() !== id);
+  setLineTargets_(filtered);
+  return {
+    status: 'success',
+    removed: current.length - filtered.length,
+    remaining: filtered.length,
+    message: `已從 LINE_TARGETS 移除 ${id}。`
   };
 }
 

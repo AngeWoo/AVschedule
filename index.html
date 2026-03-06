@@ -1647,8 +1647,28 @@
                 margin: -4px 0 10px;
             }
 
+            #admin-tab .admin-form-row,
+            #admin-tab .admin-form-row.row-token,
+            #admin-tab .admin-form-row.row-linto,
+            #admin-tab .admin-form-row.row-selector,
+            #admin-tab .admin-form-row.row-alias,
+            #admin-tab .admin-form-row.row-remove {
+                grid-template-columns: 1fr;
+            }
+
+            #admin-tab .admin-form-row .btn,
             #admin-tab .line-action-grid .btn {
                 width: 100%;
+            }
+
+            #admin-tab .line-action-grid {
+                grid-template-columns: 1fr;
+            }
+
+            #admin-tab .admin-form-row select[multiple] {
+                min-height: 168px;
+                padding-top: 10px;
+                padding-bottom: 10px;
             }
 
             #admin-tab .button-grid .btn,
@@ -1884,6 +1904,9 @@
             border-radius: 16px;
             padding: 14px 14px 6px;
             box-shadow: 0 10px 24px rgba(15, 76, 163, 0.08);
+            width: 100%;
+            max-width: 1180px;
+            margin: 0 auto;
         }
 
         #admin-tab .admin-panel-note {
@@ -1899,8 +1922,62 @@
             border-color: #d9e5fb;
         }
 
+        #admin-tab .admin-form-row {
+            display: grid;
+            gap: 14px;
+            align-items: end;
+            width: 100%;
+            max-width: 1120px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #admin-tab .admin-form-row.row-token,
+        #admin-tab .admin-form-row.row-alias,
+        #admin-tab .admin-form-row.row-remove {
+            grid-template-columns: minmax(0, 1fr) minmax(180px, 220px);
+        }
+
+        #admin-tab .admin-form-row.row-linto {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        #admin-tab .admin-form-row.row-selector {
+            grid-template-columns: minmax(180px, 220px) minmax(180px, 220px) minmax(320px, 1fr) minmax(180px, 220px);
+        }
+
+        #admin-tab .admin-form-row .form-group {
+            min-width: 0;
+            width: 100%;
+            max-width: none !important;
+        }
+
+        #admin-tab .admin-form-row select[multiple] {
+            min-height: 56px;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+
+        #admin-tab .admin-form-row .btn {
+            width: 100%;
+            min-height: 56px;
+            justify-content: center;
+        }
+
         #admin-tab .line-action-grid {
             margin-top: 6px;
+            width: 100%;
+            max-width: 1120px;
+            margin-left: auto;
+            margin-right: auto;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 15px;
+        }
+
+        #admin-tab .line-action-grid.single-action {
+            grid-template-columns: minmax(220px, 380px);
+            justify-content: center;
         }
 
         #send-line-marquee-btn {
@@ -1945,6 +2022,43 @@
             height: auto;
             display: block;
             margin: 0 auto;
+        }
+
+        .line-target-meta {
+            margin: -2px 0 8px;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            line-height: 1.5;
+            min-height: 1.5em;
+        }
+
+        @media (max-width: 768px) {
+            #admin-tab .admin-form-row,
+            #admin-tab .admin-form-row.row-token,
+            #admin-tab .admin-form-row.row-linto,
+            #admin-tab .admin-form-row.row-selector,
+            #admin-tab .admin-form-row.row-alias,
+            #admin-tab .admin-form-row.row-remove {
+                grid-template-columns: 1fr !important;
+            }
+
+            #admin-tab .admin-form-row .form-group,
+            #admin-tab .admin-form-row .btn,
+            #admin-tab .line-action-grid,
+            #admin-tab .line-action-grid .btn {
+                width: 100% !important;
+            }
+
+            #admin-tab .line-action-grid,
+            #admin-tab .line-action-grid.single-action {
+                grid-template-columns: 1fr !important;
+            }
+
+            #admin-tab .admin-form-row select[multiple] {
+                min-height: 168px;
+                padding-top: 10px;
+                padding-bottom: 10px;
+            }
         }
 
         #my-signups-tab h4::before {
@@ -2155,8 +2269,8 @@
                     <p>掃描 QRCode 接收通知</p>
                     <img src="V_Bot_QRcode.png" alt="LINE 通知 QRCode" loading="lazy">
                 </div>
-                <div class="inline-form" style="justify-content: center;">
-                    <div class="form-group" style="max-width: 520px; width: 100%;">
+                <div class="inline-form admin-form-row row-token">
+                    <div class="form-group">
                         <label for="line-token-input">line_channel_access_token</label>
                         <input type="password" id="line-token-input" placeholder="請輸入 LINE Channel Access Token">
                     </div>
@@ -2164,31 +2278,42 @@
                         <span class="icon">&#x1F511;</span><span>儲存 Token</span>
                     </button>
                 </div>
-                <div class="inline-form" style="justify-content: center;">
-                    <div class="form-group" style="max-width: 520px; width: 100%;">
+                <div class="inline-form admin-form-row row-linto">
+                    <div class="form-group">
                         <label for="lin-to-input">line_to (User ID / Group ID)</label>
+                        <div id="lin-to-meta" class="line-target-meta">目前未指定 line_to。</div>
                         <input type="text" id="lin-to-input" placeholder="請輸入 LINE User ID 或 Group ID">
                     </div>
                 </div>
-                <div class="inline-form" style="justify-content: center;">
+                <div class="inline-form admin-form-row row-selector">
                     <button id="load-line-targets-btn" class="btn btn-icon-left" style="background-color: #6366f1; color: white;">
                         <span class="icon">&#x1F4E5;</span><span>載入 LINE 對象清單</span>
                     </button>
-                    <div class="form-group" style="max-width: 220px; width: 100%;">
+                    <div class="form-group">
                         <label for="line-user-only-toggle">清單篩選</label>
                         <select id="line-user-only-toggle">
                             <option value="user-only" selected>只顯示 user</option>
                             <option value="all">顯示全部</option>
                         </select>
                     </div>
-                    <div class="form-group" style="max-width: 520px; width: 100%;">
-                        <label for="line-target-select">已記錄 line_to 清單</label>
-                        <select id="line-target-select">
+                    <div class="form-group">
+                        <label for="line-target-select">已記錄 line_to 清單（可多選）</label>
+                        <select id="line-target-select" multiple size="1">
                             <option value="">-- 請先載入清單 --</option>
                         </select>
                     </div>
                     <button id="apply-line-target-btn" class="btn btn-icon-left" style="background-color: #0f766e; color: white;">
                         <span class="icon">&#x2705;</span><span>套用到 line_to</span>
+                    </button>
+                </div>
+                <div class="inline-form admin-form-row row-alias" style="margin-top: -8px;">
+                    <div class="form-group">
+                        <label for="line-target-alias-input">LINE 對象標註 / 備註</label>
+                        <div id="line-target-alias-meta" class="line-target-meta">請先載入清單並選擇一個 LINE 對象。</div>
+                        <input type="text" id="line-target-alias-input" placeholder="例如：台長手機、AV 測試群組、慧君">
+                    </div>
+                    <button id="save-line-target-alias-btn" class="btn btn-icon-left" style="background-color: #7c3aed; color: white;">
+                        <span class="icon">&#x1F4DD;</span><span>儲存標註</span>
                     </button>
                 </div>
                 <div class="button-grid line-action-grid">
@@ -2208,14 +2333,14 @@
             <div class="admin-panel">
                 <h4 style="margin-top: 0.25rem;"><span class="title-icon">&#x1F5D1;</span>LINE 對象清除管理</h4>
                 <p class="admin-panel-note">可清除 line_to 設定值，或從已記錄清單中移除特定對象。操作均需輸入管理密碼。</p>
-                <div class="button-grid line-action-grid">
+                <div class="button-grid line-action-grid single-action">
                     <button id="clear-line-to-btn" class="btn btn-icon-left"
                         style="background-color: #dc3545; color: white;">
                         <span class="icon">&#x1F5D1;</span><span>清除 line_to 設定值</span>
                     </button>
                 </div>
-                <div class="inline-form" style="justify-content: center; margin-top: 0.8rem;">
-                    <div class="form-group" style="max-width: 520px; width: 100%;">
+                <div class="inline-form admin-form-row row-remove" style="margin-top: 0.8rem;">
+                    <div class="form-group">
                         <label for="remove-target-select">選擇要移除的 LINE 對象（請先載入清單）</label>
                         <select id="remove-target-select">
                             <option value="">-- 請先點「載入 LINE 對象清單」--</option>
@@ -2411,6 +2536,10 @@
             if (nextIsMobile === isMobile) return;
             isMobile = nextIsMobile;
             currentCalendarOptions = { height: isMobile ? 'auto' : undefined, aspectRatio: isMobile ? 0.8 : 1.35 };
+            const lineTargetSelectEl = document.getElementById('line-target-select');
+            if (lineTargetSelectEl && lineTargetSelectEl.multiple) {
+                lineTargetSelectEl.size = isMobile ? 4 : 1;
+            }
             if (calendar && isCalendarTabVisible() && document.getElementById('full-calendar-view').style.display !== 'none') {
                 initializeFullCalendar().then(() => { if (calendar) calendar.updateSize(); }).catch(() => { });
             }
@@ -3243,17 +3372,17 @@
             window.addEventListener('resize', handleViewportResize, { passive: true });
             const lineTokenInputEl = document.getElementById('line-token-input');
             const linToInputEl = document.getElementById('lin-to-input');
+            const linToMetaEl = document.getElementById('lin-to-meta');
             const lineTargetSelectEl = document.getElementById('line-target-select');
+            const lineTargetAliasInputEl = document.getElementById('line-target-alias-input');
+            const lineTargetAliasMetaEl = document.getElementById('line-target-alias-meta');
             const lineUserOnlyToggleEl = document.getElementById('line-user-only-toggle');
             let cachedLineTargets = [];
             const ADMIN_PASSWORD = '590314';
             let savedLinTo = '';
-            const commitLinToValue = (value) => {
-                const normalized = String(value || '').trim();
-                if (linToInputEl) linToInputEl.value = normalized;
-                localStorage.setItem('av_lin_to', normalized);
-                savedLinTo = normalized;
-            };
+            if (lineTargetSelectEl && lineTargetSelectEl.multiple) {
+                lineTargetSelectEl.size = isMobile ? 4 : 1;
+            }
             const promptAdminPasswordForLineToChange = async (nextValue, sourceLabel) => {
                 const safeValue = String(nextValue || '').trim() || '(空白)';
                 const { value: password, isConfirmed } = await Swal.fire({
@@ -3280,6 +3409,84 @@
                 });
                 return Boolean(isConfirmed && password);
             };
+            const getCachedLineTargetById = (targetId) => {
+                const id = String(targetId || '').trim();
+                if (!id) return null;
+                return (cachedLineTargets || []).find(item => String(item && item.target_id || '').trim() === id) || null;
+            };
+            const parseLineTargetIds = (value) => String(value || '')
+                .split(/[\s,;\n\r]+/)
+                .map(item => String(item || '').trim())
+                .filter(Boolean)
+                .filter((item, index, arr) => arr.indexOf(item) === index);
+            const getSelectedLineTargetIds = () => {
+                if (!lineTargetSelectEl) return [];
+                return Array.from(lineTargetSelectEl.selectedOptions || [])
+                    .map(option => String(option.value || '').trim())
+                    .filter(Boolean)
+                    .filter((item, index, arr) => arr.indexOf(item) === index);
+            };
+            const getLineTargetTypeLabel = (sourceType) => {
+                const normalized = String(sourceType || '').trim().toLowerCase();
+                if (normalized === 'user') return '個人 User ID';
+                if (normalized === 'group') return '群組 Group ID';
+                if (normalized === 'room') return '聊天室 Room ID';
+                return '未知類型 ID';
+            };
+            const formatLineTargetLabel = (item) => {
+                const targetId = item && item.target_id ? String(item.target_id) : '';
+                if (!targetId) return '';
+                const sourceType = item && item.source_type ? String(item.source_type) : 'unknown';
+                const sourceTypeLabel = getLineTargetTypeLabel(sourceType);
+                const alias = item && item.alias ? String(item.alias).trim() : '';
+                const lastSeen = item && item.last_seen_at ? new Date(item.last_seen_at).toLocaleString('zh-TW') : '';
+                const parts = [];
+                if (alias) parts.push(`【${alias}】`);
+                parts.push(sourceTypeLabel);
+                parts.push(targetId);
+                if (lastSeen) parts.push(lastSeen);
+                return parts.join(' | ');
+            };
+            const syncLinToMeta = () => {
+                if (!linToMetaEl) return;
+                const currentIds = parseLineTargetIds(savedLinTo);
+                if (!currentIds.length) {
+                    linToMetaEl.textContent = '目前未指定 line_to。';
+                    return;
+                }
+                if (currentIds.length === 1) {
+                    const currentId = currentIds[0];
+                    const target = getCachedLineTargetById(currentId);
+                    if (!target) {
+                        linToMetaEl.textContent = `目前 line_to：${currentId} | 尚未載入清單或此 ID 尚未記錄標註。`;
+                        return;
+                    }
+                    const sourceTypeLabel = getLineTargetTypeLabel(target.source_type);
+                    const aliasText = target && target.alias ? `目前標註：${target.alias}` : '目前尚未標註';
+                    linToMetaEl.textContent = `${aliasText} | ${sourceTypeLabel} | ${currentId}`;
+                    return;
+                }
+                const summaryLabels = currentIds.slice(0, 3).map(id => {
+                    const target = getCachedLineTargetById(id);
+                    const alias = target && target.alias ? String(target.alias).trim() : '';
+                    return alias || id;
+                });
+                const remainingCount = currentIds.length - summaryLabels.length;
+                const suffix = remainingCount > 0 ? ` 等 ${currentIds.length} 個對象` : ` 共 ${currentIds.length} 個對象`;
+                linToMetaEl.textContent = `目前 line_to：${summaryLabels.join('、')}${suffix}`;
+            };
+            const commitLinToValue = (value) => {
+                const normalizedIds = parseLineTargetIds(value);
+                const normalized = normalizedIds.join('\n');
+                if (linToInputEl) linToInputEl.value = normalized;
+                if (normalized) {
+                    localStorage.setItem('av_lin_to', normalized);
+                } else {
+                    localStorage.removeItem('av_lin_to');
+                }
+                savedLinTo = normalized;
+                syncLinToMeta();
+            };
             if (linToInputEl) {
                 commitLinToValue(localStorage.getItem('av_lin_to') || '');
                 linToInputEl.addEventListener('change', async () => {
@@ -3294,39 +3501,80 @@
                     Swal.fire('已更新', 'line_to 已更新。', 'success');
                 });
             }
-            const renderLineTargetOptions = (targets) => {
+            const syncLineTargetAliasEditor = () => {
+                const selectedIds = getSelectedLineTargetIds();
+                const selectedId = selectedIds.length === 1 ? selectedIds[0] : '';
+                const saveLineTargetAliasBtn = document.getElementById('save-line-target-alias-btn');
+                if (selectedIds.length > 1) {
+                    if (lineTargetAliasInputEl) {
+                        lineTargetAliasInputEl.value = '';
+                        lineTargetAliasInputEl.disabled = true;
+                    }
+                    if (saveLineTargetAliasBtn) saveLineTargetAliasBtn.disabled = true;
+                    if (lineTargetAliasMetaEl) {
+                        lineTargetAliasMetaEl.textContent = `目前選取 ${selectedIds.length} 筆對象。標註功能一次只能編輯 1 筆。`;
+                    }
+                    return;
+                }
+                const target = getCachedLineTargetById(selectedId);
+                if (lineTargetAliasInputEl) {
+                    lineTargetAliasInputEl.disabled = false;
+                    lineTargetAliasInputEl.value = target && target.alias ? String(target.alias) : '';
+                }
+                if (saveLineTargetAliasBtn) saveLineTargetAliasBtn.disabled = false;
+                if (!lineTargetAliasMetaEl) return;
+                if (!selectedId) {
+                    lineTargetAliasMetaEl.textContent = '請先從清單選擇一個 LINE 對象。';
+                    return;
+                }
+                const sourceType = target && target.source_type ? String(target.source_type) : 'unknown';
+                const sourceTypeLabel = getLineTargetTypeLabel(sourceType);
+                const aliasText = target && target.alias ? `目前標註：${target.alias}` : '目前尚未標註';
+                lineTargetAliasMetaEl.textContent = `${aliasText} | ${sourceTypeLabel} | ${selectedId}`;
+            };
+            const renderLineTargetOptions = (targets, preferredValues = []) => {
                 if (!lineTargetSelectEl) return;
-                lineTargetSelectEl.innerHTML = '<option value="">-- 請選擇對象 --</option>';
+                const fallbackValues = getSelectedLineTargetIds();
+                const nextValues = Array.isArray(preferredValues) && preferredValues.length
+                    ? preferredValues.map(item => String(item || '').trim()).filter(Boolean)
+                    : (fallbackValues.length ? fallbackValues : parseLineTargetIds(savedLinTo));
+                lineTargetSelectEl.innerHTML = '';
                 const mode = lineUserOnlyToggleEl ? String(lineUserOnlyToggleEl.value || 'user-only') : 'user-only';
                 const filteredTargets = (targets || []).filter(item => {
                     if (mode === 'all') return true;
                     return String((item && item.source_type) || '').toLowerCase() === 'user';
                 });
+                if (!filteredTargets.length) {
+                    lineTargetSelectEl.innerHTML = '<option value="">-- 無可選對象 --</option>';
+                    syncLineTargetAliasEditor();
+                    return;
+                }
                 filteredTargets.forEach(item => {
                     const targetId = item && item.target_id ? String(item.target_id) : '';
                     if (!targetId) return;
-                    const sourceType = item.source_type || 'unknown';
-                    const lastSeen = item.last_seen_at ? new Date(item.last_seen_at).toLocaleString('zh-TW') : '';
                     const option = document.createElement('option');
                     option.value = targetId;
-                    option.textContent = `${sourceType} | ${targetId}${lastSeen ? ` | ${lastSeen}` : ''}`;
+                    option.textContent = formatLineTargetLabel(item);
+                    option.selected = nextValues.includes(targetId);
                     lineTargetSelectEl.appendChild(option);
                 });
+                syncLineTargetAliasEditor();
             };
-            const renderRemoveTargetOptions = (targets) => {
+            const renderRemoveTargetOptions = (targets, preferredValue = '') => {
                 const removeSelectEl = document.getElementById('remove-target-select');
                 if (!removeSelectEl) return;
+                const fallbackValue = String(removeSelectEl.value || '').trim();
+                const nextValue = String(preferredValue || fallbackValue || '').trim();
                 removeSelectEl.innerHTML = '<option value="">-- 請選擇要移除的對象 --</option>';
                 (targets || []).forEach(item => {
                     const targetId = item && item.target_id ? String(item.target_id) : '';
                     if (!targetId) return;
-                    const sourceType = item.source_type || 'unknown';
-                    const lastSeen = item.last_seen_at ? new Date(item.last_seen_at).toLocaleString('zh-TW') : '';
                     const option = document.createElement('option');
                     option.value = targetId;
-                    option.textContent = `${sourceType} | ${targetId}${lastSeen ? ` | ${lastSeen}` : ''}`;
+                    option.textContent = formatLineTargetLabel(item);
                     removeSelectEl.appendChild(option);
                 });
+                if (nextValue) removeSelectEl.value = nextValue;
             };
 
             const loadLineTargets = async () => {
@@ -3339,8 +3587,9 @@
                     const targets = response.data || [];
                     const webhookStatus = statusResp.data || {};
                     cachedLineTargets = targets;
-                    renderLineTargetOptions(targets);
+                    renderLineTargetOptions(targets, parseLineTargetIds(savedLinTo));
                     renderRemoveTargetOptions(targets);
+                    syncLinToMeta();
                     return { targets, webhookStatus };
                 } catch (e) {
                     Swal.fire('載入失敗', e.message, 'error');
@@ -3352,6 +3601,41 @@
             if (lineUserOnlyToggleEl) {
                 lineUserOnlyToggleEl.addEventListener('change', () => renderLineTargetOptions(cachedLineTargets));
             }
+            if (lineTargetSelectEl) {
+                lineTargetSelectEl.addEventListener('change', syncLineTargetAliasEditor);
+            }
+            const saveLineTargetAliasBtn = document.getElementById('save-line-target-alias-btn');
+            if (saveLineTargetAliasBtn) {
+                saveLineTargetAliasBtn.addEventListener('click', async () => {
+                    const targetId = lineTargetSelectEl ? String(lineTargetSelectEl.value || '').trim() : '';
+                    if (!targetId) {
+                        return Swal.fire('請先選擇對象', '請先從 LINE 對象清單選擇要標註的 ID。', 'info');
+                    }
+                    const alias = lineTargetAliasInputEl ? String(lineTargetAliasInputEl.value || '').trim() : '';
+                    showLoading();
+                    try {
+                        const response = await callAppsScript('updateLineTargetAlias', { targetId, alias });
+                        const updatedAlias = response.data && Object.prototype.hasOwnProperty.call(response.data, 'alias')
+                            ? String(response.data.alias || '')
+                            : alias;
+                        cachedLineTargets = (cachedLineTargets || []).map(item => {
+                            const itemId = String(item && item.target_id || '').trim();
+                            return itemId === targetId ? Object.assign({}, item, { alias: updatedAlias }) : item;
+                        });
+                        renderLineTargetOptions(cachedLineTargets, [targetId]);
+                        renderRemoveTargetOptions(cachedLineTargets);
+                        if (lineTargetAliasInputEl) lineTargetAliasInputEl.value = updatedAlias;
+                        syncLineTargetAliasEditor();
+                        syncLinToMeta();
+                        Swal.fire('已儲存', updatedAlias ? `已為 ${targetId} 儲存標註。` : `已清除 ${targetId} 的標註。`, 'success');
+                    } catch (e) {
+                        Swal.fire('儲存失敗', e.message, 'error');
+                    } finally {
+                        hideLoading();
+                    }
+                });
+            }
+            syncLineTargetAliasEditor();
 
             let marqueeMessages = [], marqueeIndex = 0, marqueeTimer = null;
             const marqueeTextEl = document.getElementById('marquee-text');
@@ -3725,18 +4009,19 @@
                 }
             });
             document.getElementById('apply-line-target-btn').addEventListener('click', async () => {
-                const selected = lineTargetSelectEl ? String(lineTargetSelectEl.value || '').trim() : '';
-                if (!selected) {
-                    return Swal.fire('提示', '請先從清單選擇一筆對象。', 'info');
+                const selectedIds = getSelectedLineTargetIds();
+                if (!selectedIds.length) {
+                    return Swal.fire('提示', '請先從清單選擇至少一筆對象。', 'info');
                 }
-                if (selected === savedLinTo) {
-                    if (linToInputEl) linToInputEl.value = selected;
-                    return Swal.fire('已套用', `line_to 已是 ${selected}。`, 'success');
+                const nextValue = selectedIds.join('\n');
+                if (nextValue === savedLinTo) {
+                    if (linToInputEl) linToInputEl.value = nextValue;
+                    return Swal.fire('已套用', `line_to 已是目前選取的 ${selectedIds.length} 筆對象。`, 'success');
                 }
-                const ok = await promptAdminPasswordForLineToChange(selected, '清單套用');
+                const ok = await promptAdminPasswordForLineToChange(nextValue, `清單套用（${selectedIds.length} 筆）`);
                 if (!ok) return;
-                commitLinToValue(selected);
-                Swal.fire('已套用', `已將 ${selected} 套用到 line_to。`, 'success');
+                commitLinToValue(nextValue);
+                Swal.fire('已套用', `已將 ${selectedIds.length} 筆對象套用到 line_to。`, 'success');
             });
 
             document.getElementById('clear-line-to-btn').addEventListener('click', async () => {
@@ -3767,10 +4052,7 @@
                 showLoading();
                 try {
                     await callAppsScript('clearLineTo');
-                    localStorage.removeItem('av_lin_to');
-                    savedLinTo = '';
-                    const linToInputEl = document.getElementById('lin-to-input');
-                    if (linToInputEl) linToInputEl.value = '';
+                    commitLinToValue('');
                     Swal.fire('已清除', 'line_to 設定值已成功清除。', 'success');
                 } catch (e) {
                     Swal.fire('清除失敗', e.message, 'error');
@@ -3813,6 +4095,7 @@
                     cachedLineTargets = cachedLineTargets.filter(t => String(t && t.target_id || '') !== targetId);
                     renderLineTargetOptions(cachedLineTargets);
                     renderRemoveTargetOptions(cachedLineTargets);
+                    syncLinToMeta();
                     Swal.fire('已移除', `對象 ${targetId} 已從清單移除。`, 'success');
                 } catch (e) {
                     Swal.fire('移除失敗', e.message, 'error');
@@ -3914,7 +4197,15 @@
                     const response = await callAppsScript('manualTriggerDailyNotify', { lin_to: linTo });
                     console.log('[DEBUG] 後端 callAppsScript("manualTriggerDailyNotify") 回應:', response);
                     if (response.data && response.data.status === 'success') {
-                        Swal.fire('發送成功', '測試訊息已發送，請檢查 LINE。', 'success');
+                        const targetList = Array.isArray(response.data.targets) ? response.data.targets.filter(Boolean) : [];
+                        const targetHtml = targetList.length
+                            ? `<div style="margin-top:0.8em;text-align:left;"><strong>實際發送對象：</strong><br><code style="word-break:break-all;">${targetList.join('<br>')}</code></div>`
+                            : '';
+                        Swal.fire({
+                            title: '發送成功',
+                            html: `<div>測試訊息已發送，請檢查 LINE。</div>${targetHtml}`,
+                            icon: 'success'
+                        });
                     } else {
                         const errorMessage = (response.data && response.data.error) ? response.data.error : (response.message || '發送失敗');
                         console.error('[DEBUG] 後端回傳失敗:', errorMessage, response);
@@ -3957,7 +4248,15 @@
                         const successCount = Number(response.data.success_count || 0);
                         const targetCount = Number(response.data.target_count || 0);
                         const sentCount = Number(response.data.announcement_count || 0);
-                        Swal.fire('發送成功', `已送出 ${sentCount} 則跑馬燈資訊（${successCount}/${targetCount}）。`, 'success');
+                        const targetList = Array.isArray(response.data.targets) ? response.data.targets.filter(Boolean) : [];
+                        const targetHtml = targetList.length
+                            ? `<div style="margin-top:0.8em;text-align:left;"><strong>實際發送對象：</strong><br><code style="word-break:break-all;">${targetList.join('<br>')}</code></div>`
+                            : '';
+                        Swal.fire({
+                            title: '發送成功',
+                            html: `<div>已送出 ${sentCount} 則跑馬燈資訊（${successCount}/${targetCount}）。</div>${targetHtml}`,
+                            icon: 'success'
+                        });
                     } else {
                         const errorMessage = (response.data && response.data.error) ? response.data.error : (response.message || '發送失敗');
                         throw new Error(errorMessage);

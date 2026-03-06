@@ -1,4 +1,4 @@
-// ====================================================================
+﻿// ====================================================================
 //  檔案：code.gs (AV放送立願報名行事曆 - 後端 API)
 //  版本：0815_CSV_Confirmed (確認使用 CSV URL 讀取資料)
 // ====================================================================
@@ -58,10 +58,11 @@ function doGet(e) {
       case 'debugLineAuth': result = debugLineAuth(params.lin_to); break;
       case 'setLineToken': result = setLineToken(params.line_channel_access_token); break;
       case 'getLineTargets': result = getLineTargets_(); break;
-      case 'getLineWebhookStatus': result = getLineWebhookStatus_(); break;
-      case 'sendMarqueeAnnouncementsToLine': result = sendMarqueeAnnouncementsToLine_MessageAPI(params.lin_to); break;
       case 'clearLineTo': result = clearLineTo(); break;
       case 'removeLineTarget': result = removeLineTarget(params.targetId); break;
+      case 'updateLineTargetAlias': result = updateLineTargetAlias(params.targetId, params.alias); break;
+      case 'getLineWebhookStatus': result = getLineWebhookStatus_(); break;
+      case 'sendMarqueeAnnouncementsToLine': result = sendMarqueeAnnouncementsToLine_MessageAPI(params.lin_to); break;
       default: throw new Error(`未知的函式名稱: ${functionName}`);
     }
 
@@ -204,7 +205,8 @@ function getNewsAnnouncements() {
 
           // 只顯示今天及未來的公告
           if (messageDate >= today) {
-            return `${messageTitle} - ${messageContent}`;
+            const dateStr = Utilities.formatDate(messageDate, scriptTimeZone, 'yyyy/MM/dd');
+            return `${dateStr}：${messageTitle} - ${messageContent}`;
           }
         } catch (e) {
           console.error(`處理公告日期時發生錯誤: ${dateValue}. Error: ${e.message}`);
@@ -839,13 +841,22 @@ function getRecordedLineTargetIds_() {
 }
 
 function resolveLineTargetsForSend_(linTo) {
-  const targetLineToRaw = resolveLineTo(linTo);
-  const configuredTargets = parseLineTargets_(targetLineToRaw);
+  const directTargets = parseLineTargets_(linTo);
+  if (directTargets.length) {
+    return directTargets.filter((target, index, arr) => arr.indexOf(target) === index);
+  }
+
+  const savedTargetLineToRaw = String(PropertiesService.getScriptProperties().getProperty(LINE_TO_PROPERTY_KEY) || '').trim();
+  const configuredTargets = parseLineTargets_(savedTargetLineToRaw);
+  if (configuredTargets.length) {
+    return configuredTargets.filter((target, index, arr) => arr.indexOf(target) === index);
+  }
+
   const recordedTargets = getRecordedLineTargetIds_();
-  const merged = configuredTargets.concat(recordedTargets);
+  const fallbackTargets = recordedTargets.length ? recordedTargets : parseLineTargets_(String(LINE_USER_ID || '').trim());
   const deduped = [];
   const seen = {};
-  merged.forEach(t => {
+  fallbackTargets.forEach(t => {
     const key = String(t || '').trim();
     if (!key || seen[key]) return;
     seen[key] = true;
@@ -859,7 +870,15 @@ function getLineTargets_() {
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) ? parsed.map(item => ({
+      target_id: String(item && item.target_id || '').trim(),
+      source_type: String(item && item.source_type || '').trim(),
+      user_id: String(item && item.user_id || '').trim(),
+      group_id: String(item && item.group_id || '').trim(),
+      room_id: String(item && item.room_id || '').trim(),
+      last_seen_at: String(item && item.last_seen_at || '').trim(),
+      alias: normalizeLineTargetAlias_(item && item.alias || '')
+    })).filter(item => item.target_id) : [];
   } catch (e) {
     console.error('解析 LINE_TARGETS 失敗: ' + e.toString());
     return [];
@@ -867,8 +886,26 @@ function getLineTargets_() {
 }
 
 function setLineTargets_(items) {
-  const arr = Array.isArray(items) ? items : [];
+  const arr = Array.isArray(items) ? items.map(item => {
+    const row = item || {};
+    return {
+      target_id: String(row.target_id || '').trim(),
+      source_type: String(row.source_type || '').trim(),
+      user_id: String(row.user_id || '').trim(),
+      group_id: String(row.group_id || '').trim(),
+      room_id: String(row.room_id || '').trim(),
+      last_seen_at: String(row.last_seen_at || '').trim(),
+      alias: normalizeLineTargetAlias_(row.alias || '')
+    };
+  }).filter(item => item.target_id) : [];
   PropertiesService.getScriptProperties().setProperty(PROP_LINE_TARGETS, JSON.stringify(arr));
+}
+
+function normalizeLineTargetAlias_(rawAlias) {
+  return String(rawAlias || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 80);
 }
 
 function getLineWebhookStatus_() {
@@ -923,7 +960,8 @@ function lineWebhook_(payload) {
       user_id: String(source.userId || ''),
       group_id: String(source.groupId || ''),
       room_id: String(source.roomId || ''),
-      last_seen_at: nowIso
+      last_seen_at: nowIso,
+      alias: normalizeLineTargetAlias_(existing.alias || '')
     };
     if (!existing.target_id) recorded += 1;
   });
@@ -963,25 +1001,6 @@ function setLineToken(rawToken) {
     status: 'success',
     token_preview: maskToken_(token),
     token_length: token.length
-  };
-}
-
-function clearLineTo() {
-  PropertiesService.getScriptProperties().deleteProperty(LINE_TO_PROPERTY_KEY);
-  return { status: 'success', message: 'AV_LIN_TO 已清除。' };
-}
-
-function removeLineTarget(targetId) {
-  const id = String(targetId || '').trim();
-  if (!id) return { status: 'error', error: 'targetId 不可為空。' };
-  const current = getLineTargets_();
-  const filtered = current.filter(item => String(item && item.target_id || '').trim() !== id);
-  setLineTargets_(filtered);
-  return {
-    status: 'success',
-    removed: current.length - filtered.length,
-    remaining: filtered.length,
-    message: `已從 LINE_TARGETS 移除 ${id}。`
   };
 }
 
@@ -1029,6 +1048,69 @@ function debugLineAuth(linTo) {
       lin_to: target || ''
     };
   }
+}
+
+function clearLineTo() {
+  PropertiesService.getScriptProperties().deleteProperty(LINE_TO_PROPERTY_KEY);
+  return { status: 'success', lin_to: '' };
+}
+
+function removeLineTarget(targetId) {
+  const normalizedId = String(targetId || '').trim();
+  if (!normalizedId) {
+    return { status: 'error', error: 'targetId is required' };
+  }
+
+  const current = getLineTargets_();
+  const next = current.filter(item => String(item && item.target_id || '') !== normalizedId);
+  if (next.length === current.length) {
+    return { status: 'error', error: `LINE target not found: ${normalizedId}` };
+  }
+
+  setLineTargets_(next);
+  const savedLineTo = String(PropertiesService.getScriptProperties().getProperty(LINE_TO_PROPERTY_KEY) || '').trim();
+  if (savedLineTo === normalizedId) {
+    PropertiesService.getScriptProperties().deleteProperty(LINE_TO_PROPERTY_KEY);
+  }
+
+  return {
+    status: 'success',
+    removed_target_id: normalizedId,
+    data: next
+  };
+}
+
+function updateLineTargetAlias(targetId, rawAlias) {
+  const normalizedId = String(targetId || '').trim();
+  if (!normalizedId) {
+    return { status: 'error', error: 'targetId is required' };
+  }
+
+  const current = getLineTargets_();
+  let updated = false;
+  const next = current.map(item => {
+    if (String(item && item.target_id || '') !== normalizedId) {
+      return item;
+    }
+    updated = true;
+    return Object.assign({}, item, {
+      alias: normalizeLineTargetAlias_(rawAlias)
+    });
+  });
+
+  if (!updated) {
+    return { status: 'error', error: `LINE target not found: ${normalizedId}` };
+  }
+
+  setLineTargets_(next);
+  const saved = next.find(item => String(item && item.target_id || '') === normalizedId) || {};
+  return {
+    status: 'success',
+    target_id: normalizedId,
+    alias: String(saved.alias || ''),
+    message: `Alias updated for ${normalizedId}.`,
+    data: next
+  };
 }
 
 function sendLinePushSingle_(token, target, text) {
@@ -1082,10 +1164,10 @@ function sendLineMessage(message, linTo) {
   const results = targets.map(target => sendLinePushSingle_(channelAccessToken, target, message));
   const successCount = results.filter(r => r && r.sent).length;
   if (successCount > 0) {
-    return { status: 'success', target_count: targets.length, success_count: successCount, results: results };
+    return { status: 'success', target_count: targets.length, success_count: successCount, targets: targets, results: results };
   }
   const firstError = results[0] && results[0].error ? results[0].error : '發送失敗';
-  return { status: 'error', error: firstError, target_count: targets.length, results: results };
+  return { status: 'error', error: firstError, target_count: targets.length, targets: targets, results: results };
 }
 
 function dailyNotifyTomorrow_MessageAPI(linTo) { // 函式名稱維持不變以相容前端

@@ -11,6 +11,7 @@ const SHEET_ID = '1gBIlhEKPQHBvslY29veTdMEJeg2eVcaJx_7A-8cTWIM';
 const EVENTS_SHEET_NAME = 'Events';
 const SIGNUPS_SHEET_NAME = 'Signups';
 const LOGS_SHEET_NAME = 'Logs';
+const LINE_SEND_LOGS_SHEET_NAME = 'LineSendLogs';
 
 // --- CSV 公開網址設定 (用於唯讀操作) ---
 const EVENTS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRT5YNZcSXbE6ULGft15cba4Mx8kK1Eb7bLftucmkmUGmTxkrA8vw5uerAP2dYqptBHnbmq_3QNOOJx/pub?gid=795926947&single=true&output=csv';
@@ -62,7 +63,10 @@ function doGet(e) {
       case 'removeLineTarget': result = removeLineTarget(params.targetId); break;
       case 'updateLineTargetAlias': result = updateLineTargetAlias(params.targetId, params.alias); break;
       case 'getLineWebhookStatus': result = getLineWebhookStatus_(); break;
+      case 'getLineSendLogs': result = getLineSendLogs_(params.limit); break;
+      case 'deleteLineSendLog': result = deleteLineSendLog_(params.sheet_row); break;
       case 'sendMarqueeAnnouncementsToLine': result = sendMarqueeAnnouncementsToLine_MessageAPI(params.lin_to); break;
+      case 'sendCustomLineMessage': result = sendCustomLineMessage_MessageAPI(params.message, params.lin_to); break;
       default: throw new Error(`未知的函式名稱: ${functionName}`);
     }
 
@@ -920,6 +924,81 @@ function getLineWebhookStatus_() {
   };
 }
 
+function getLineSendLogs_(limit) {
+  const requestedLimit = Number(limit || 50);
+  const normalizedLimit = Math.min(Math.max(requestedLimit, 1), 500);
+  const sheet = ensureLineSendLogSheet_();
+  const totalRows = Math.max(sheet.getLastRow() - 1, 0);
+
+  if (totalRows === 0) {
+    return {
+      rows: [],
+      total_count: 0,
+      returned_count: 0,
+      limit: normalizedLimit,
+      sheet_name: LINE_SEND_LOGS_SHEET_NAME
+    };
+  }
+
+  const lastColumn = Math.max(sheet.getLastColumn(), 18);
+  const startRow = Math.max(2, sheet.getLastRow() - normalizedLimit + 1);
+  const rowCount = sheet.getLastRow() - startRow + 1;
+  const values = sheet.getRange(startRow, 1, rowCount, lastColumn).getDisplayValues();
+
+  const rows = values
+    .map((row, index) => ({
+      sheet_row: startRow + index,
+      timestamp: String(row[0] || ''),
+      batch_id: String(row[1] || ''),
+      trigger_source: String(row[2] || ''),
+      message_type: String(row[3] || ''),
+      function_name: String(row[4] || ''),
+      line_to_input: String(row[5] || ''),
+      resolved_target_count: Number(row[6] || 0),
+      target: String(row[7] || ''),
+      target_alias: String(row[8] || ''),
+      chunk_index: Number(row[9] || 0),
+      chunk_count: Number(row[10] || 0),
+      message_length: Number(row[11] || 0),
+      message_preview: String(row[12] || ''),
+      message_body: String(row[13] || ''),
+      sent: String(row[14] || '').toUpperCase() === 'TRUE',
+      http_status: Number(row[15] || 0),
+      error: String(row[16] || ''),
+      response_body: String(row[17] || '')
+    }))
+    .reverse();
+
+  return {
+    rows: rows,
+    total_count: totalRows,
+    returned_count: rows.length,
+    limit: normalizedLimit,
+    sheet_name: LINE_SEND_LOGS_SHEET_NAME
+  };
+}
+
+function deleteLineSendLog_(sheetRow) {
+  const rowNumber = Number(sheetRow || 0);
+  if (!Number.isInteger(rowNumber) || rowNumber < 2) {
+    return { status: 'error', error: '無效的 log 列號。' };
+  }
+
+  const sheet = ensureLineSendLogSheet_();
+  const lastRow = sheet.getLastRow();
+  if (rowNumber > lastRow) {
+    return { status: 'error', error: '指定的 log 不存在或已被刪除。' };
+  }
+
+  sheet.deleteRow(rowNumber);
+  SpreadsheetApp.flush();
+  return {
+    status: 'success',
+    deleted_row: rowNumber,
+    remaining_count: Math.max(sheet.getLastRow() - 1, 0)
+  };
+}
+
 function inferLineToType_(targetId) {
   const s = String(targetId || '');
   if (s.startsWith('U')) return 'user';
@@ -1148,20 +1227,32 @@ function sendLinePushSingle_(token, target, text) {
   };
 }
 
-function sendLineMessage(message, linTo) {
+function sendLineMessage(message, linTo, logContext) {
+  const context = Object.assign({
+    batch_id: Utilities.getUuid(),
+    trigger_source: '',
+    message_type: '',
+    function_name: 'sendLineMessage',
+    line_to_input: String(linTo || '')
+  }, logContext || {});
   const channelAccessToken = resolveLineToken();
   if (!channelAccessToken || channelAccessToken.includes('請在此貼上')) {
     const msg = 'LINE_CHANNEL_ACCESS_TOKEN 未設定。';
     console.error(msg);
+    logLineSendFailure_(Object.assign({}, context, { resolved_target_count: 0 }), message, msg);
     return { status: 'error', error: msg };
   }
   const targets = resolveLineTargetsForSend_(linTo);
   if (!targets.length || targets.some(t => t.includes('請在此貼上'))) {
     const msg = 'lin_to (LINE User ID / Group ID) 未設定。';
     console.error(msg);
+    logLineSendFailure_(Object.assign({}, context, { resolved_target_count: 0 }), message, msg);
     return { status: 'error', error: msg };
   }
   const results = targets.map(target => sendLinePushSingle_(channelAccessToken, target, message));
+  appendLineSendLogs_(buildLineSendLogRows_(Object.assign({}, context, {
+    resolved_target_count: targets.length
+  }), message, results));
   const successCount = results.filter(r => r && r.sent).length;
   if (successCount > 0) {
     return { status: 'success', target_count: targets.length, success_count: successCount, targets: targets, results: results };
@@ -1170,7 +1261,7 @@ function sendLineMessage(message, linTo) {
   return { status: 'error', error: firstError, target_count: targets.length, targets: targets, results: results };
 }
 
-function dailyNotifyTomorrow_MessageAPI(linTo) { // 函式名稱維持不變以相容前端
+function dailyNotifyTomorrow_MessageAPI(linTo, logContext) { // 函式名稱維持不變以相容前端
   try {
     const res = getSignupsAsTextForTomorrow();
     let msg = '';
@@ -1181,17 +1272,40 @@ function dailyNotifyTomorrow_MessageAPI(linTo) { // 函式名稱維持不變以�
     } else {
       msg = '\n' + res.text;
     }
-    return sendLineMessage(msg, linTo);
+    return sendLineMessage(msg, linTo, Object.assign({
+      trigger_source: 'manual_or_api',
+      message_type: 'tomorrow_signup',
+      function_name: 'dailyNotifyTomorrow_MessageAPI'
+    }, logContext || {}));
   } catch (e) {
     console.error('[dailyNotify] 例外: ' + e.toString());
+    logLineSendFailure_(Object.assign({
+      batch_id: Utilities.getUuid(),
+      trigger_source: 'manual_or_api',
+      message_type: 'tomorrow_signup',
+      function_name: 'dailyNotifyTomorrow_MessageAPI',
+      line_to_input: String(linTo || ''),
+      resolved_target_count: 0
+    }, logContext || {}), '', e.toString());
     return { status: 'error', error: e.toString() };
   }
 }
 
 function dailyNotifyTomorrowAndMarqueeSeparate_MessageAPI(linTo) {
   try {
-    const tomorrowResult = dailyNotifyTomorrow_MessageAPI(linTo);
-    const marqueeResult = sendMarqueeAnnouncementsToLine_MessageAPI(linTo);
+    const executionBatchId = Utilities.getUuid();
+    const tomorrowResult = dailyNotifyTomorrow_MessageAPI(linTo, {
+      batch_id: executionBatchId + '-tomorrow',
+      trigger_source: 'daily_auto_trigger',
+      message_type: 'tomorrow_signup',
+      function_name: 'dailyNotifyTomorrow_MessageAPI'
+    });
+    const marqueeResult = sendMarqueeAnnouncementsToLine_MessageAPI(linTo, {
+      batch_id: executionBatchId + '-marquee',
+      trigger_source: 'daily_auto_trigger',
+      message_type: 'marquee_announcement',
+      function_name: 'sendMarqueeAnnouncementsToLine_MessageAPI'
+    });
     const tomorrowOk = tomorrowResult && tomorrowResult.status === 'success';
     const marqueeOk = marqueeResult && marqueeResult.status === 'success';
 
@@ -1220,7 +1334,7 @@ function dailyNotifyTomorrowAndMarqueeSeparate_MessageAPI(linTo) {
   }
 }
 
-function sendMarqueeAnnouncementsToLine_MessageAPI(linTo) {
+function sendMarqueeAnnouncementsToLine_MessageAPI(linTo, logContext) {
   try {
     const announcements = getNewsAnnouncements();
     const list = Array.isArray(announcements) ? announcements : [];
@@ -1239,12 +1353,245 @@ function sendMarqueeAnnouncementsToLine_MessageAPI(linTo) {
       fullMessage = fullMessage.slice(0, 4868) + '\n...(內容過長已截斷)';
     }
 
-    const sendResult = sendLineMessage(fullMessage, linTo);
+    const sendResult = sendLineMessage(fullMessage, linTo, Object.assign({
+      trigger_source: 'manual_or_api',
+      message_type: 'marquee_announcement',
+      function_name: 'sendMarqueeAnnouncementsToLine_MessageAPI'
+    }, logContext || {}));
     sendResult.announcement_count = list.length;
     return sendResult;
   } catch (e) {
     console.error('[sendMarqueeAnnouncementsToLine] 失敗: ' + e.toString());
+    logLineSendFailure_(Object.assign({
+      batch_id: Utilities.getUuid(),
+      trigger_source: 'manual_or_api',
+      message_type: 'marquee_announcement',
+      function_name: 'sendMarqueeAnnouncementsToLine_MessageAPI',
+      line_to_input: String(linTo || ''),
+      resolved_target_count: 0
+    }, logContext || {}), '', e.toString());
     return { status: 'error', error: e.toString(), announcement_count: 0 };
+  }
+}
+
+function ensureLineSendLogSheet_() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  let sheet = ss.getSheetByName(LINE_SEND_LOGS_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(LINE_SEND_LOGS_SHEET_NAME);
+  }
+
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow([
+      'Timestamp',
+      'BatchId',
+      'TriggerSource',
+      'MessageType',
+      'FunctionName',
+      'LineToInput',
+      'ResolvedTargetCount',
+      'Target',
+      'TargetAlias',
+      'ChunkIndex',
+      'ChunkCount',
+      'MessageLength',
+      'MessagePreview',
+      'MessageBody',
+      'Sent',
+      'HttpStatus',
+      'Error',
+      'ResponseBody'
+    ]);
+    sheet.setFrozenRows(1);
+  }
+
+  return sheet;
+}
+
+function getLineTargetAliasMap_() {
+  const aliasMap = {};
+  getLineTargets_().forEach(item => {
+    const targetId = String(item && item.target_id || '').trim();
+    if (!targetId) return;
+    aliasMap[targetId] = String(item && item.alias || '');
+  });
+  return aliasMap;
+}
+
+function buildLineSendLogRows_(context, message, results) {
+  const list = Array.isArray(results) ? results : [];
+  if (!list.length) return [];
+
+  const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || 'Asia/Taipei', 'yyyy/MM/dd HH:mm:ss');
+  const aliasMap = getLineTargetAliasMap_();
+  const text = String(message || '');
+  const preview = text.length > 160 ? text.slice(0, 160) + '...' : text;
+  const batchId = String(context && context.batch_id || Utilities.getUuid());
+  const resolvedTargetCount = Number(context && context.resolved_target_count || list.length || 0);
+  const chunkIndex = Number(context && context.chunk_index || 1);
+  const chunkCount = Number(context && context.chunk_count || 1);
+
+  return list.map(result => {
+    const target = String(result && result.target || '');
+    return [
+      timestamp,
+      batchId,
+      String(context && context.trigger_source || ''),
+      String(context && context.message_type || ''),
+      String(context && context.function_name || ''),
+      String(context && context.line_to_input || ''),
+      resolvedTargetCount,
+      target,
+      String(aliasMap[target] || ''),
+      chunkIndex,
+      chunkCount,
+      text.length,
+      preview,
+      text,
+      result && result.sent ? 'TRUE' : 'FALSE',
+      Number(result && result.status || 0),
+      String(result && result.error || ''),
+      String(result && result.response_body || '')
+    ];
+  });
+}
+
+function appendLineSendLogs_(rows) {
+  const entries = Array.isArray(rows) ? rows : [];
+  if (!entries.length) return;
+
+  try {
+    const sheet = ensureLineSendLogSheet_();
+    const startRow = sheet.getLastRow() + 1;
+    sheet.getRange(startRow, 1, entries.length, entries[0].length).setValues(entries);
+    SpreadsheetApp.flush();
+  } catch (err) {
+    console.error(`Failed to write LINE send logs: ${err.message}\n${err.stack}`);
+  }
+}
+
+function logLineSendFailure_(context, message, errorText) {
+  appendLineSendLogs_(buildLineSendLogRows_(context, message, [{
+    target: '',
+    sent: false,
+    status: 0,
+    error: String(errorText || ''),
+    response_body: ''
+  }]));
+}
+
+function splitLineMessageChunks_(message, maxLength) {
+  const text = String(message || '').replace(/\r\n/g, '\n');
+  const limit = Math.max(1, Number(maxLength || 0));
+  if (!text) return [];
+
+  const chunks = [];
+  let remaining = text;
+  while (remaining.length > limit) {
+    let splitAt = remaining.lastIndexOf('\n', limit);
+    if (splitAt <= 0 || splitAt < Math.floor(limit * 0.6)) splitAt = limit;
+    chunks.push(remaining.slice(0, splitAt));
+    remaining = remaining.slice(splitAt).replace(/^\n+/, '');
+  }
+  if (remaining) chunks.push(remaining);
+  return chunks;
+}
+
+function sendCustomLineMessage_MessageAPI(message, linTo) {
+  const batchId = Utilities.getUuid();
+  try {
+    const normalizedMessage = String(message || '').replace(/\r\n/g, '\n');
+    if (!normalizedMessage.trim()) {
+      logLineSendFailure_({
+        batch_id: batchId,
+        trigger_source: 'manual_custom_message',
+        message_type: 'custom_message',
+        function_name: 'sendCustomLineMessage_MessageAPI',
+        line_to_input: String(linTo || ''),
+        resolved_target_count: 0
+      }, normalizedMessage, '訊息內容不可為空。');
+      return { status: 'error', error: '訊息內容不可為空。' };
+    }
+
+    const channelAccessToken = resolveLineToken();
+    if (!channelAccessToken || channelAccessToken.includes('請在此貼上')) {
+      logLineSendFailure_({
+        batch_id: batchId,
+        trigger_source: 'manual_custom_message',
+        message_type: 'custom_message',
+        function_name: 'sendCustomLineMessage_MessageAPI',
+        line_to_input: String(linTo || ''),
+        resolved_target_count: 0
+      }, normalizedMessage, 'LINE_CHANNEL_ACCESS_TOKEN 未設定。');
+      return { status: 'error', error: 'LINE_CHANNEL_ACCESS_TOKEN 未設定。' };
+    }
+
+    const targets = resolveLineTargetsForSend_(linTo);
+    if (!targets.length || targets.some(t => t.includes('請在此貼上'))) {
+      logLineSendFailure_({
+        batch_id: batchId,
+        trigger_source: 'manual_custom_message',
+        message_type: 'custom_message',
+        function_name: 'sendCustomLineMessage_MessageAPI',
+        line_to_input: String(linTo || ''),
+        resolved_target_count: 0
+      }, normalizedMessage, 'lin_to (LINE User ID / Group ID) 未設定。');
+      return { status: 'error', error: 'lin_to (LINE User ID / Group ID) 未設定。' };
+    }
+
+    const chunks = splitLineMessageChunks_(normalizedMessage, 4900);
+    const results = [];
+    chunks.forEach((chunk, chunkIndex) => {
+      const chunkResults = targets.map(target => {
+        const sendResult = sendLinePushSingle_(channelAccessToken, target, chunk);
+        sendResult.chunk_index = chunkIndex + 1;
+        return sendResult;
+      });
+      appendLineSendLogs_(buildLineSendLogRows_({
+        batch_id: batchId,
+        trigger_source: 'manual_custom_message',
+        message_type: 'custom_message',
+        function_name: 'sendCustomLineMessage_MessageAPI',
+        line_to_input: String(linTo || ''),
+        resolved_target_count: targets.length,
+        chunk_index: chunkIndex + 1,
+        chunk_count: chunks.length
+      }, chunk, chunkResults));
+      results.push.apply(results, chunkResults);
+    });
+
+    const successCount = results.filter(r => r && r.sent).length;
+    if (successCount > 0) {
+      return {
+        status: 'success',
+        chunk_count: chunks.length,
+        target_count: targets.length,
+        success_count: successCount,
+        targets: targets,
+        results: results
+      };
+    }
+
+    const firstError = results[0] && results[0].error ? results[0].error : '發送失敗';
+    return {
+      status: 'error',
+      error: firstError,
+      chunk_count: chunks.length,
+      target_count: targets.length,
+      targets: targets,
+      results: results
+    };
+  } catch (e) {
+    console.error('[sendCustomLineMessage] 失敗: ' + e.toString());
+    logLineSendFailure_({
+      batch_id: batchId,
+      trigger_source: 'manual_custom_message',
+      message_type: 'custom_message',
+      function_name: 'sendCustomLineMessage_MessageAPI',
+      line_to_input: String(linTo || ''),
+      resolved_target_count: 0
+    }, String(message || ''), e.toString());
+    return { status: 'error', error: e.toString() };
   }
 }
 
@@ -1255,6 +1602,7 @@ function setupDaily20Trigger_MessageAPI(linTo) {
     if (!targets.length || targets.some(t => t.includes('請在此貼上'))) {
       return { status: 'error', error: 'lin_to (LINE User ID / Group ID) 未設定。' };
     }
+    ensureLineSendLogSheet_();
     const triggers = ScriptApp.getProjectTriggers() || [];
     const managedHandlerNames = [
       'dailyNotifyTomorrow_MessageAPI',

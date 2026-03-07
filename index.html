@@ -773,7 +773,8 @@
         }
 
         .form-group input,
-        .form-group select {
+        .form-group select,
+        .form-group textarea {
             width: 100%;
             padding: 12px 14px;
             border: 1px solid var(--card-border);
@@ -785,12 +786,20 @@
             transition: var(--transition-fast);
         }
 
-        .form-group input::placeholder {
+        .form-group textarea {
+            min-height: 132px;
+            line-height: 1.6;
+            resize: vertical;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
             color: #94a3b8;
         }
 
         .form-group input:focus,
-        .form-group select:focus {
+        .form-group select:focus,
+        .form-group textarea:focus {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 4px var(--ring-color);
@@ -1381,6 +1390,8 @@
             #admin-tab .admin-form-row.row-linto,
             #admin-tab .admin-form-row.row-selector,
             #admin-tab .admin-form-row.row-alias,
+            #admin-tab .admin-form-row.row-message,
+            #admin-tab .admin-form-row.row-log-controls,
             #admin-tab .admin-form-row.row-remove {
                 grid-template-columns: 1fr;
                 max-width: 760px;
@@ -1592,7 +1603,8 @@
             }
 
             .inline-form .form-group>input,
-            .inline-form .form-group>select {
+            .inline-form .form-group>select,
+            .inline-form .form-group>textarea {
                 width: 100% !important;
                 max-width: 100% !important;
                 box-sizing: border-box;
@@ -1728,6 +1740,8 @@
             #admin-tab .admin-form-row.row-linto,
             #admin-tab .admin-form-row.row-selector,
             #admin-tab .admin-form-row.row-alias,
+            #admin-tab .admin-form-row.row-message,
+            #admin-tab .admin-form-row.row-log-controls,
             #admin-tab .admin-form-row.row-remove {
                 grid-template-columns: 1fr;
             }
@@ -2010,6 +2024,7 @@
 
         #admin-tab .admin-form-row.row-token,
         #admin-tab .admin-form-row.row-alias,
+        #admin-tab .admin-form-row.row-message,
         #admin-tab .admin-form-row.row-remove {
             grid-template-columns: minmax(0, 1fr) minmax(180px, 220px);
         }
@@ -2018,8 +2033,16 @@
             grid-template-columns: minmax(0, 1fr);
         }
 
+        #admin-tab .admin-form-row.row-log-controls {
+            grid-template-columns: minmax(160px, 220px) minmax(0, 1fr) minmax(180px, 220px);
+        }
+
         #admin-tab .admin-form-row.row-selector {
-            grid-template-columns: minmax(180px, 220px) minmax(180px, 220px) minmax(320px, 1fr) minmax(180px, 220px);
+            grid-template-columns: minmax(180px, 220px) minmax(120px, 150px) minmax(320px, 1fr) minmax(180px, 220px);
+        }
+
+        #admin-tab .admin-form-row.row-selector .line-filter-group {
+            max-width: 150px !important;
         }
 
         #admin-tab .admin-form-row .form-group {
@@ -2074,6 +2097,10 @@
             color: #fff;
         }
 
+        #apply-line-target-btn {
+            white-space: nowrap;
+        }
+
         #admin-tab h4::before {
             display: none;
         }
@@ -2120,12 +2147,149 @@
             min-height: 1.5em;
         }
 
+        #admin-tab .line-log-table-wrap {
+            width: 100%;
+            max-width: 1120px;
+            margin: 12px auto 6px;
+        }
+
+        #admin-tab .line-log-table-wrap .table-responsive {
+            max-height: 460px;
+            overflow: auto;
+        }
+
+        #admin-tab .line-log-empty {
+            border: 1px dashed #cbd5e1;
+            border-radius: 14px;
+            padding: 20px 16px;
+            background: #f8fbff;
+            color: #64748b;
+            text-align: center;
+        }
+
+        #admin-tab .line-log-table th,
+        #admin-tab .line-log-table td {
+            padding: 9px 10px;
+            font-size: 0.86rem;
+            vertical-align: top;
+            line-height: 1.35;
+        }
+
+        #admin-tab .line-log-table td code {
+            word-break: break-all;
+            white-space: pre-wrap;
+            font-size: 0.82rem;
+        }
+
+        .line-log-status-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 60px;
+            padding: 4px 8px;
+            border-radius: 999px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .line-log-status-badge.success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .line-log-status-badge.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .line-log-meta-cell {
+            color: #475569;
+            line-height: 1.4;
+        }
+
+        .line-log-message-body {
+            margin-top: 6px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            line-height: 1.45;
+            color: #334155;
+        }
+
+        .line-log-details summary {
+            cursor: pointer;
+            color: #2563eb;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .line-log-details[open] summary {
+            margin-bottom: 4px;
+        }
+
+        .line-log-action-cell {
+            white-space: nowrap;
+        }
+
+        .line-log-delete-btn {
+            min-width: 72px;
+            padding: 5px 10px;
+        }
+
+        .line-log-time-cell,
+        .line-log-chunk-cell,
+        .line-log-state-cell,
+        .line-log-action-cell {
+            white-space: nowrap;
+        }
+
+        .line-log-target-cell {
+            min-width: 170px;
+            max-width: 240px;
+        }
+
+        .line-log-target-text {
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 2;
+            overflow: hidden;
+            line-height: 1.35;
+        }
+
+        .line-log-target-text code {
+            white-space: normal !important;
+            word-break: break-all;
+        }
+
+        .line-log-content-cell,
+        .line-log-response-cell {
+            min-width: 132px;
+        }
+
+        #admin-tab .line-log-table thead th:nth-child(1) {
+            width: 132px;
+        }
+
+        #admin-tab .line-log-table thead th:nth-child(3) {
+            width: 58px;
+        }
+
+        #admin-tab .line-log-table thead th:nth-child(4) {
+            width: 74px;
+        }
+
+        #admin-tab .line-log-table thead th:nth-child(7) {
+            width: 84px;
+        }
+
         @media (max-width: 700px) {
             #admin-tab .admin-form-row,
             #admin-tab .admin-form-row.row-token,
             #admin-tab .admin-form-row.row-linto,
             #admin-tab .admin-form-row.row-selector,
             #admin-tab .admin-form-row.row-alias,
+            #admin-tab .admin-form-row.row-message,
+            #admin-tab .admin-form-row.row-log-controls,
             #admin-tab .admin-form-row.row-remove {
                 grid-template-columns: 1fr !important;
             }
@@ -2351,24 +2515,24 @@
         </div>
         <div id="admin-tab" class="tab-content">
             <div class="admin-panel">
-                <h4 style="margin-top: 0.25rem;"><span class="title-icon">&#x1F4E2;</span>LINE 機器人自動通知設定</h4>
-                <p class="admin-panel-note">掃描QR-Code加入好友並發一則測試訊息</p>
+                <h4 style="margin-top: 0.25rem;"><span class="title-icon">&#x1F4E2;</span>TWAV_Bot LINE 機器人自動通知設定</h4>
+                <p class="admin-panel-note">掃描以下QR-Code加入好友並發一則測試訊息即可自動收到相關訊息</p>
                 <div class="line-qrcode-card">
                     <p>掃描 QRCode 接收通知</p>
                     <img src="V_Bot_QRcode.png" alt="LINE 通知 QRCode" loading="lazy">
                 </div>
                 <div class="inline-form admin-form-row row-linto">
                     <div class="form-group">
-                        <label for="lin-to-input">line_to (User ID / Group ID)</label>
+                        <label for="lin-to-input">LINE_TO 發送給 (User ID / Group ID)</label>
                         <div id="lin-to-meta" class="line-target-meta">目前未指定 line_to。</div>
                         <input type="text" id="lin-to-input" placeholder="請輸入 LINE User ID 或 Group ID">
                     </div>
                 </div>
                 <div class="inline-form admin-form-row row-selector">
                     <button id="load-line-targets-btn" class="btn btn-icon-left" style="background-color: #6366f1; color: white;">
-                        <span class="icon">&#x1F4E5;</span><span>載入 LINE 對象清單</span>
+                        <span class="icon">&#x1F4E5;</span><span>載入LINE清單</span>
                     </button>
-                    <div class="form-group">
+                    <div class="form-group line-filter-group">
                         <label for="line-user-only-toggle">清單篩選</label>
                         <select id="line-user-only-toggle">
                             <option value="user-only" selected>只顯示 user</option>
@@ -2376,13 +2540,13 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="line-target-select">已記錄 line_to 清單（可多選）</label>
+                        <label for="line-target-select">已記錄 LINE_TO 清單（可多選）</label>
                         <select id="line-target-select" multiple size="1">
                             <option value="">-- 請先載入清單 --</option>
                         </select>
                     </div>
                     <button id="apply-line-target-btn" class="btn btn-icon-left" style="background-color: #0f766e; color: white;">
-                        <span class="icon">&#x2705;</span><span>套用到 line_to</span>
+                        <span class="icon">&#x2705;</span><span>套用到LINE_TO</span>
                     </button>
                 </div>
                 <div class="inline-form admin-form-row row-alias" style="margin-top: -8px;">
@@ -2393,6 +2557,15 @@
                     </div>
                     <button id="save-line-target-alias-btn" class="btn btn-icon-left" style="background-color: #7c3aed; color: white;">
                         <span class="icon">&#x1F4DD;</span><span>儲存標註</span>
+                    </button>
+                </div>
+                <div class="inline-form admin-form-row row-message" style="margin-top: -8px;">
+                    <div class="form-group">
+                        <label for="custom-line-message-input">自訂 LINE 訊息</label>
+                        <textarea id="custom-line-message-input" placeholder="請輸入要發送給目前 line_to 的文字內容"></textarea>
+                    </div>
+                    <button id="send-custom-line-message-btn" class="btn btn-icon-left" style="background-color: #2563eb; color: white;">
+                        <span class="icon">&#x1F4E8;</span><span>發送自訂訊息</span>
                     </button>
                 </div>
                 <div class="button-grid line-action-grid">
@@ -2415,7 +2588,7 @@
                 <div class="button-grid line-action-grid single-action">
                     <button id="clear-line-to-btn" class="btn btn-icon-left"
                         style="background-color: #dc3545; color: white;">
-                        <span class="icon">&#x1F5D1;</span><span>清除 line_to 設定值</span>
+                        <span class="icon">&#x1F5D1;</span><span>清除 LINE_TO 設定值</span>
                     </button>
                 </div>
                 <div class="inline-form admin-form-row row-remove" style="margin-top: 0.8rem;">
@@ -2429,6 +2602,32 @@
                         style="background-color: #dc3545; color: white;">
                         <span class="icon">&#x274C;</span><span>移除此對象</span>
                     </button>
+                </div>
+            </div>
+
+            <div class="admin-panel">
+                <h4 style="margin-top: 0.25rem;"><span class="title-icon">&#x1F4CB;</span>LINE 發送 View Log</h4>
+                <p class="admin-panel-note">查看最近 LINE 發送紀錄，包含每日自動通知、跑馬燈公告與自訂訊息。</p>
+                <div class="inline-form admin-form-row row-log-controls">
+                    <div class="form-group">
+                        <label for="line-log-limit">顯示筆數</label>
+                        <select id="line-log-limit">
+                            <option value="20">最近 20 筆</option>
+                            <option value="50" selected>最近 50 筆</option>
+                            <option value="100">最近 100 筆</option>
+                            <option value="200">最近 200 筆</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>View Log 摘要</label>
+                        <div id="line-send-log-summary" class="line-target-meta">尚未載入 LINE 發送紀錄。</div>
+                    </div>
+                    <button id="load-line-send-logs-btn" class="btn btn-icon-left" style="background-color: #475569; color: white;">
+                        <span class="icon">&#x1F504;</span><span>重新載入紀錄</span>
+                    </button>
+                </div>
+                <div id="line-send-log-table-wrap" class="line-log-table-wrap">
+                    <div class="line-log-empty">尚未載入 LINE 發送紀錄。</div>
                 </div>
             </div>
         </div>
@@ -3462,8 +3661,15 @@
             const lineTargetSelectEl = document.getElementById('line-target-select');
             const lineTargetAliasInputEl = document.getElementById('line-target-alias-input');
             const lineTargetAliasMetaEl = document.getElementById('line-target-alias-meta');
+            const customLineMessageInputEl = document.getElementById('custom-line-message-input');
             const lineUserOnlyToggleEl = document.getElementById('line-user-only-toggle');
+            const lineLogLimitEl = document.getElementById('line-log-limit');
+            const lineSendLogSummaryEl = document.getElementById('line-send-log-summary');
+            const lineSendLogTableWrapEl = document.getElementById('line-send-log-table-wrap');
+            const loadLineSendLogsBtnEl = document.getElementById('load-line-send-logs-btn');
             let cachedLineTargets = [];
+            let cachedLineSendLogs = [];
+            var hasLoadedLineSendLogs = false;
             const ADMIN_PASSWORD = '590314';
             let savedLinTo = '';
             if (lineTargetSelectEl && lineTargetSelectEl.multiple) {
@@ -3684,8 +3890,190 @@
                     hideLoading();
                 }
             };
+            const formatLineSendLogSummary = (payload) => {
+                const totalCount = Number(payload && payload.total_count || 0);
+                const returnedCount = Number(payload && payload.returned_count || 0);
+                const rows = Array.isArray(payload && payload.rows) ? payload.rows : [];
+                if (!rows.length || totalCount === 0) {
+                    return '目前沒有 LINE 發送紀錄。';
+                }
+                const latest = rows[0];
+                const latestTime = latest && latest.timestamp ? latest.timestamp : '未知時間';
+                return `共 ${totalCount} 筆紀錄，目前顯示最近 ${returnedCount} 筆。最新一筆：${latestTime}`;
+            };
+            const renderLineSendLogs = (payload) => {
+                const rows = Array.isArray(payload && payload.rows) ? payload.rows : [];
+                cachedLineSendLogs = rows;
+                if (lineSendLogSummaryEl) {
+                    lineSendLogSummaryEl.textContent = formatLineSendLogSummary(payload || {});
+                }
+                if (!lineSendLogTableWrapEl) return;
+                if (!rows.length) {
+                    lineSendLogTableWrapEl.innerHTML = '<div class="line-log-empty">目前沒有 LINE 發送紀錄。</div>';
+                    return;
+                }
+
+                let tableHtml = `
+                    <div class="table-responsive">
+                        <table class="line-log-table">
+                            <thead>
+                                <tr>
+                                    <th>時間</th>
+                                    <th>目標</th>
+                                    <th>分段</th>
+                                    <th>狀態</th>
+                                    <th>內容</th>
+                                    <th>錯誤 / 回應</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                rows.forEach(row => {
+                    const targetLabel = row.target_alias
+                        ? `<div class="line-log-target-text">【${escapeHtml(row.target_alias)}】</div>`
+                        : `<div class="line-log-target-text">-</div>`;
+                    const chunkLabel = Number(row.chunk_count || 0) > 1
+                        ? `${Number(row.chunk_index || 0)}/${Number(row.chunk_count || 0)}`
+                        : '1/1';
+                    const sentClass = row.sent ? 'success' : 'error';
+                    const sentText = row.sent ? '成功' : '失敗';
+                    const messageBody = String(row.message_body || row.message_preview || '').trim();
+                    const messageHtml = messageBody
+                        ? `
+                            <details class="line-log-details">
+                                <summary>查看內容 (${Number(row.message_length || messageBody.length)} 字)</summary>
+                                <div class="line-log-message-body">${escapeHtml(messageBody)}</div>
+                            </details>
+                          `
+                        : '-';
+                    const responseBits = [];
+                    if (row.error) responseBits.push(`<div class="line-log-message-body">${escapeHtml(row.error)}</div>`);
+                    if (Number(row.http_status || 0) > 0) responseBits.push(`<div class="line-log-meta-cell">HTTP ${Number(row.http_status || 0)}</div>`);
+                    if (row.response_body) {
+                        responseBits.push(`
+                            <details class="line-log-details">
+                                <summary>查看 LINE 回應</summary>
+                                <div class="line-log-message-body">${escapeHtml(row.response_body)}</div>
+                            </details>
+                        `);
+                    }
+                    const responseHtml = responseBits.length ? responseBits.join('') : '-';
+
+                    tableHtml += `
+                        <tr>
+                            <td class="line-log-time-cell">${escapeHtml(row.timestamp || '-')}</td>
+                            <td class="line-log-target-cell">${targetLabel}</td>
+                            <td class="line-log-chunk-cell">${escapeHtml(chunkLabel)}</td>
+                            <td class="line-log-state-cell">
+                                <span class="line-log-status-badge ${sentClass}">${sentText}</span>
+                            </td>
+                            <td class="line-log-content-cell">${messageHtml}</td>
+                            <td class="line-log-response-cell">${responseHtml}</td>
+                            <td class="line-log-action-cell">
+                                <button class="btn btn-danger btn-sm line-log-delete-btn" data-sheet-row="${Number(row.sheet_row || 0)}">刪除</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tableHtml += '</tbody></table></div>';
+                lineSendLogTableWrapEl.innerHTML = tableHtml;
+            };
+            const loadLineSendLogs = async ({ silent = false } = {}) => {
+                const limit = Number(lineLogLimitEl && lineLogLimitEl.value || 50);
+                if (loadLineSendLogsBtnEl) loadLineSendLogsBtnEl.disabled = true;
+                if (lineSendLogSummaryEl) {
+                    lineSendLogSummaryEl.textContent = '載入 LINE 發送紀錄中...';
+                }
+                if (!silent) showLoading();
+                try {
+                    const response = await callAppsScript('getLineSendLogs', { limit });
+                    const payload = response.data || {};
+                    renderLineSendLogs(payload);
+                    hasLoadedLineSendLogs = true;
+                    return payload;
+                } catch (e) {
+                    if (lineSendLogSummaryEl) {
+                        lineSendLogSummaryEl.textContent = `載入失敗：${e.message}`;
+                    }
+                    if (lineSendLogTableWrapEl) {
+                        lineSendLogTableWrapEl.innerHTML = `<div class="line-log-empty">載入失敗：${escapeHtml(e.message)}</div>`;
+                    }
+                    if (!silent) {
+                        Swal.fire('載入失敗', e.message, 'error');
+                    }
+                    return null;
+                } finally {
+                    if (loadLineSendLogsBtnEl) loadLineSendLogsBtnEl.disabled = false;
+                    if (!silent) hideLoading();
+                }
+            };
             if (lineUserOnlyToggleEl) {
                 lineUserOnlyToggleEl.addEventListener('change', () => renderLineTargetOptions(cachedLineTargets));
+            }
+            if (lineLogLimitEl) {
+                lineLogLimitEl.addEventListener('change', () => {
+                    if (hasLoadedLineSendLogs) {
+                        loadLineSendLogs({ silent: true });
+                    }
+                });
+            }
+            if (loadLineSendLogsBtnEl) {
+                loadLineSendLogsBtnEl.addEventListener('click', async () => {
+                    await loadLineSendLogs();
+                });
+            }
+            if (lineSendLogTableWrapEl) {
+                lineSendLogTableWrapEl.addEventListener('click', async (event) => {
+                    const deleteBtn = event.target.closest('.line-log-delete-btn');
+                    if (!deleteBtn) return;
+
+                    const sheetRow = Number(deleteBtn.dataset.sheetRow || 0);
+                    if (!sheetRow) {
+                        return Swal.fire('刪除失敗', '找不到對應的 log 列號。', 'error');
+                    }
+
+                    const { value: password, isConfirmed } = await Swal.fire({
+                        title: '刪除 LINE 發送 Log',
+                        html: `
+                            <p>這會刪除目前這筆 LINE 發送紀錄。</p>
+                            <p style="margin-top: 0.6em;">Sheet Row：<code>${sheetRow}</code></p>
+                            <p style="margin-top: 1em;">請輸入管理密碼以確認：</p>
+                            <input type="password" id="swal-password" class="swal2-input" placeholder="請輸入密碼">
+                        `,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: '確認刪除',
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonText: '取消',
+                        focusConfirm: false,
+                        preConfirm: () => {
+                            const pw = document.getElementById('swal-password').value;
+                            if (pw !== ADMIN_PASSWORD) {
+                                Swal.showValidationMessage('密碼錯誤！');
+                                return false;
+                            }
+                            return pw;
+                        }
+                    });
+                    if (!isConfirmed || !password) return;
+
+                    showLoading();
+                    try {
+                        const response = await callAppsScript('deleteLineSendLog', { sheet_row: sheetRow });
+                        if (!response.data || response.data.status !== 'success') {
+                            throw new Error((response.data && response.data.error) ? response.data.error : (response.message || '刪除失敗'));
+                        }
+                        await loadLineSendLogs({ silent: true });
+                        Swal.fire('已刪除', 'LINE 發送紀錄已刪除。', 'success');
+                    } catch (e) {
+                        Swal.fire('刪除失敗', e.message, 'error');
+                    } finally {
+                        hideLoading();
+                    }
+                });
             }
             if (lineTargetSelectEl) {
                 lineTargetSelectEl.addEventListener('change', syncLineTargetAliasEditor);
@@ -4193,6 +4581,65 @@
                 } catch (e) { console.error('[DEBUG] callAppsScript("setupDailyTrigger") 捕捉到錯誤:', e); Swal.fire('設定失敗', e.message, 'error'); } finally { hideLoading(); }
             });
 
+            document.getElementById('send-custom-line-message-btn').addEventListener('click', async () => {
+                const linTo = String(savedLinTo || '').trim();
+                const targetHint = linTo || '全部已記錄 LINE 對象';
+                const message = String(customLineMessageInputEl?.value || '');
+                if (!message.trim()) {
+                    return Swal.fire('提示', '請先輸入要發送的訊息內容。', 'info');
+                }
+
+                const { value: password, isConfirmed } = await Swal.fire({
+                    title: '發送自訂 LINE 訊息',
+                    html: `
+                        <p>這會把目前輸入的文字發送到 LINE。</p>
+                        <p style="margin-top: 0.6em;">發送對象：<code>${targetHint}</code></p>
+                        <p style="margin-top: 1em;">請輸入管理密碼以確認：</p>
+                        <input type="password" id="swal-password" class="swal2-input" placeholder="請輸入密碼">
+                    `,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: '確認發送',
+                    cancelButtonText: '取消',
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        const pw = document.getElementById('swal-password').value;
+                        if (pw !== ADMIN_PASSWORD) {
+                            Swal.showValidationMessage('密碼錯誤！');
+                            return false;
+                        }
+                        return pw;
+                    }
+                });
+                if (!isConfirmed || !password) return;
+
+                showLoading();
+                try {
+                    const response = await callAppsScript('sendCustomLineMessage', { message, lin_to: linTo });
+                    if (response.data && response.data.status === 'success') {
+                        const targetList = Array.isArray(response.data.targets) ? response.data.targets.filter(Boolean) : [];
+                        const targetHtml = targetList.length
+                            ? `<div style="margin-top:0.8em;text-align:left;"><strong>實際發送對象：</strong><br><code style="word-break:break-all;">${targetList.join('<br>')}</code></div>`
+                            : '';
+                        const chunkCount = Number(response.data.chunk_count || 1);
+                        if (customLineMessageInputEl) customLineMessageInputEl.value = '';
+                        if (hasLoadedLineSendLogs) loadLineSendLogs({ silent: true });
+                        Swal.fire({
+                            title: '發送成功',
+                            html: `<div>已送出自訂訊息${chunkCount > 1 ? `（共 ${chunkCount} 段）` : ''}。</div>${targetHtml}`,
+                            icon: 'success'
+                        });
+                    } else {
+                        const errorMessage = (response.data && response.data.error) ? response.data.error : (response.message || '發送失敗');
+                        throw new Error(errorMessage);
+                    }
+                } catch (e) {
+                    Swal.fire('發送失敗', e.message, 'error');
+                } finally {
+                    hideLoading();
+                }
+            });
+
             document.getElementById('test-line-notify-btn').addEventListener('click', async () => {
                 const linTo = String(savedLinTo || '').trim();
                 const targetHint = linTo || '全部已記錄 LINE 對象';
@@ -4242,6 +4689,7 @@
                         const targetHtml = targetList.length
                             ? `<div style="margin-top:0.8em;text-align:left;"><strong>實際發送對象：</strong><br><code style="word-break:break-all;">${targetList.join('<br>')}</code></div>`
                             : '';
+                        if (hasLoadedLineSendLogs) loadLineSendLogs({ silent: true });
                         Swal.fire({
                             title: '發送成功',
                             html: `<div>測試訊息已發送，請檢查 LINE。</div>${targetHtml}`,
@@ -4293,6 +4741,7 @@
                         const targetHtml = targetList.length
                             ? `<div style="margin-top:0.8em;text-align:left;"><strong>實際發送對象：</strong><br><code style="word-break:break-all;">${targetList.join('<br>')}</code></div>`
                             : '';
+                        if (hasLoadedLineSendLogs) loadLineSendLogs({ silent: true });
                         Swal.fire({
                             title: '發送成功',
                             html: `<div>已送出 ${sentCount} 則跑馬燈資訊（${successCount}/${targetCount}）。</div>${targetHtml}`,

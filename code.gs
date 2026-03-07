@@ -65,6 +65,8 @@ function doGet(e) {
       case 'getLineWebhookStatus': result = getLineWebhookStatus_(); break;
       case 'getLineSendLogs': result = getLineSendLogs_(params.limit); break;
       case 'deleteLineSendLog': result = deleteLineSendLog_(params.sheet_row); break;
+      case 'getCalendarDownloadLinks': result = getCalendarDownloadLinks_(); break;
+      case 'setCalendarDownloadLinks': result = setCalendarDownloadLinks_(params.current_month_url, params.next_month_url); break;
       case 'sendMarqueeAnnouncementsToLine': result = sendMarqueeAnnouncementsToLine_MessageAPI(params.lin_to); break;
       case 'sendCustomLineMessage': result = sendCustomLineMessage_MessageAPI(params.message, params.lin_to); break;
       default: throw new Error(`未知的函式名稱: ${functionName}`);
@@ -810,6 +812,8 @@ const PROP_LINE_WEBHOOK_LAST_AT = 'LINE_WEBHOOK_LAST_AT';
 const PROP_LINE_WEBHOOK_LAST_EVENT_COUNT = 'LINE_WEBHOOK_LAST_EVENT_COUNT';
 const PROP_LINE_WEBHOOK_LAST_ERROR = 'LINE_WEBHOOK_LAST_ERROR';
 const PROP_LINE_WEBHOOK_LAST_SOURCE = 'LINE_WEBHOOK_LAST_SOURCE';
+const CALENDAR_LINK_CURRENT_MONTH_KEY = 'AV_CALENDAR_LINK_CURRENT_MONTH';
+const CALENDAR_LINK_NEXT_MONTH_KEY = 'AV_CALENDAR_LINK_NEXT_MONTH';
 
 function resolveLineToken() {
   const fromProps = normalizeLineToken_(PropertiesService.getScriptProperties().getProperty(LINE_TOKEN_PROPERTY_KEY));
@@ -921,6 +925,45 @@ function getLineWebhookStatus_() {
     last_source: String(props.getProperty(PROP_LINE_WEBHOOK_LAST_SOURCE) || ''),
     last_error: String(props.getProperty(PROP_LINE_WEBHOOK_LAST_ERROR) || ''),
     targets_count: targets.length
+  };
+}
+
+function normalizeCalendarDownloadLink_(rawValue) {
+  return String(rawValue || '').trim();
+}
+
+function validateCalendarDownloadLink_(url, label) {
+  const value = normalizeCalendarDownloadLink_(url);
+  if (!value) return '';
+  if (!/^https?:\/\//i.test(value)) {
+    throw new Error(`${label} 連結格式不正確，請輸入完整的 https:// 或 http:// 網址。`);
+  }
+  return value;
+}
+
+function getCalendarDownloadLinks_() {
+  const props = PropertiesService.getScriptProperties();
+  return {
+    current_month_url: normalizeCalendarDownloadLink_(props.getProperty(CALENDAR_LINK_CURRENT_MONTH_KEY)),
+    next_month_url: normalizeCalendarDownloadLink_(props.getProperty(CALENDAR_LINK_NEXT_MONTH_KEY))
+  };
+}
+
+function setCalendarDownloadLinks_(currentMonthUrl, nextMonthUrl) {
+  const props = PropertiesService.getScriptProperties();
+  const normalizedCurrent = validateCalendarDownloadLink_(currentMonthUrl, '本月行事曆');
+  const normalizedNext = validateCalendarDownloadLink_(nextMonthUrl, '次月行事曆');
+
+  if (normalizedCurrent) props.setProperty(CALENDAR_LINK_CURRENT_MONTH_KEY, normalizedCurrent);
+  else props.deleteProperty(CALENDAR_LINK_CURRENT_MONTH_KEY);
+
+  if (normalizedNext) props.setProperty(CALENDAR_LINK_NEXT_MONTH_KEY, normalizedNext);
+  else props.deleteProperty(CALENDAR_LINK_NEXT_MONTH_KEY);
+
+  return {
+    status: 'success',
+    current_month_url: normalizedCurrent,
+    next_month_url: normalizedNext
   };
 }
 

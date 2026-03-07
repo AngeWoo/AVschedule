@@ -1391,6 +1391,7 @@
             #admin-tab .admin-form-row.row-selector,
             #admin-tab .admin-form-row.row-alias,
             #admin-tab .admin-form-row.row-message,
+            #admin-tab .admin-form-row.row-calendar-links,
             #admin-tab .admin-form-row.row-log-controls,
             #admin-tab .admin-form-row.row-remove {
                 grid-template-columns: 1fr;
@@ -1741,6 +1742,7 @@
             #admin-tab .admin-form-row.row-selector,
             #admin-tab .admin-form-row.row-alias,
             #admin-tab .admin-form-row.row-message,
+            #admin-tab .admin-form-row.row-calendar-links,
             #admin-tab .admin-form-row.row-log-controls,
             #admin-tab .admin-form-row.row-remove {
                 grid-template-columns: 1fr;
@@ -2025,6 +2027,7 @@
         #admin-tab .admin-form-row.row-token,
         #admin-tab .admin-form-row.row-alias,
         #admin-tab .admin-form-row.row-message,
+        #admin-tab .admin-form-row.row-calendar-links,
         #admin-tab .admin-form-row.row-remove {
             grid-template-columns: minmax(0, 1fr) minmax(180px, 220px);
         }
@@ -2035,6 +2038,10 @@
 
         #admin-tab .admin-form-row.row-log-controls {
             grid-template-columns: minmax(160px, 220px) minmax(0, 1fr) minmax(180px, 220px);
+        }
+
+        #admin-tab .admin-form-row.row-calendar-links {
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(180px, 220px);
         }
 
         #admin-tab .admin-form-row.row-selector {
@@ -2289,6 +2296,7 @@
             #admin-tab .admin-form-row.row-selector,
             #admin-tab .admin-form-row.row-alias,
             #admin-tab .admin-form-row.row-message,
+            #admin-tab .admin-form-row.row-calendar-links,
             #admin-tab .admin-form-row.row-log-controls,
             #admin-tab .admin-form-row.row-remove {
                 grid-template-columns: 1fr !important;
@@ -2471,6 +2479,10 @@
         <div id="download-tab" class="tab-content">
             <h4 style="justify-content:center;text-align:center;"><span class="title-icon">&#x1F4C2;</span>相關文件下載</h4>
             <div class="button-grid">
+                <button id="download-calendar-current" class="btn btn-primary btn-icon-left"><span
+                        class="icon">&#x1F4C5;</span><span>本月行事曆</span></button>
+                <button id="download-calendar-next" class="btn btn-primary btn-icon-left"><span
+                        class="icon">&#x1F4C6;</span><span>次月行事曆</span></button>
                 <button id="download-jobhtml" class="btn btn-primary btn-icon-left"><span
                         class="icon">&#x1F4D1;</span><span>奉仕崗位職掌（執掌）</span></button>
                 <button id="download-poster" class="btn btn-primary btn-icon-left"><span
@@ -2628,6 +2640,24 @@
                 </div>
                 <div id="line-send-log-table-wrap" class="line-log-table-wrap">
                     <div class="line-log-empty">尚未載入 LINE 發送紀錄。</div>
+                </div>
+            </div>
+
+            <div class="admin-panel">
+                <h4 style="margin-top: 0.25rem;"><span class="title-icon">&#x1F4C5;</span>行事曆連結維護</h4>
+                <p class="admin-panel-note">維護檔案區的「本月行事曆」與「次月行事曆」按鈕連結。儲存時需輸入管理密碼。</p>
+                <div class="inline-form admin-form-row row-calendar-links">
+                    <div class="form-group">
+                        <label for="calendar-link-current-input">本月行事曆連結</label>
+                        <input type="url" id="calendar-link-current-input" placeholder="請輸入本月行事曆 https:// 連結">
+                    </div>
+                    <div class="form-group">
+                        <label for="calendar-link-next-input">次月行事曆連結</label>
+                        <input type="url" id="calendar-link-next-input" placeholder="請輸入次月行事曆 https:// 連結">
+                    </div>
+                    <button id="save-calendar-links-btn" class="btn btn-icon-left" style="background-color: #2563eb; color: white;">
+                        <span class="icon">&#x1F4BE;</span><span>儲存行事曆連結</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -3667,9 +3697,14 @@
             const lineSendLogSummaryEl = document.getElementById('line-send-log-summary');
             const lineSendLogTableWrapEl = document.getElementById('line-send-log-table-wrap');
             const loadLineSendLogsBtnEl = document.getElementById('load-line-send-logs-btn');
+            const calendarLinkCurrentInputEl = document.getElementById('calendar-link-current-input');
+            const calendarLinkNextInputEl = document.getElementById('calendar-link-next-input');
+            const saveCalendarLinksBtnEl = document.getElementById('save-calendar-links-btn');
             let cachedLineTargets = [];
             let cachedLineSendLogs = [];
             var hasLoadedLineSendLogs = false;
+            let calendarDownloadLinks = { current_month_url: '', next_month_url: '' };
+            let hasLoadedCalendarDownloadLinks = false;
             const ADMIN_PASSWORD = '590314';
             let savedLinTo = '';
             if (lineTargetSelectEl && lineTargetSelectEl.multiple) {
@@ -3890,6 +3925,42 @@
                     hideLoading();
                 }
             };
+            const applyCalendarDownloadLinks = (payload) => {
+                const nextLinks = {
+                    current_month_url: String(payload && payload.current_month_url || '').trim(),
+                    next_month_url: String(payload && payload.next_month_url || '').trim()
+                };
+                calendarDownloadLinks = nextLinks;
+                if (calendarLinkCurrentInputEl) calendarLinkCurrentInputEl.value = nextLinks.current_month_url;
+                if (calendarLinkNextInputEl) calendarLinkNextInputEl.value = nextLinks.next_month_url;
+                return nextLinks;
+            };
+            const loadCalendarDownloadLinks = async ({ silent = true } = {}) => {
+                try {
+                    const response = await callAppsScript('getCalendarDownloadLinks');
+                    hasLoadedCalendarDownloadLinks = true;
+                    return applyCalendarDownloadLinks(response.data || {});
+                } catch (e) {
+                    if (!silent) {
+                        Swal.fire('載入失敗', e.message, 'error');
+                    }
+                    return applyCalendarDownloadLinks({});
+                }
+            };
+            const ensureCalendarDownloadLinksLoaded = async () => {
+                if (hasLoadedCalendarDownloadLinks) return calendarDownloadLinks;
+                return await loadCalendarDownloadLinks({ silent: true });
+            };
+            const openManagedCalendarLink = async (linkType) => {
+                const links = await ensureCalendarDownloadLinksLoaded();
+                const isCurrent = linkType === 'current';
+                const url = isCurrent ? String(links.current_month_url || '').trim() : String(links.next_month_url || '').trim();
+                const label = isCurrent ? '本月行事曆' : '次月行事曆';
+                if (!url) {
+                    return Swal.fire('尚未設定', `${label} 連結尚未設定，請先到管理區維護。`, 'info');
+                }
+                window.open(url, '_blank');
+            };
             const formatLineSendLogSummary = (payload) => {
                 const totalCount = Number(payload && payload.total_count || 0);
                 const returnedCount = Number(payload && payload.returned_count || 0);
@@ -4023,6 +4094,49 @@
             if (loadLineSendLogsBtnEl) {
                 loadLineSendLogsBtnEl.addEventListener('click', async () => {
                     await loadLineSendLogs();
+                });
+            }
+            if (saveCalendarLinksBtnEl) {
+                saveCalendarLinksBtnEl.addEventListener('click', async () => {
+                    const currentMonthUrl = String(calendarLinkCurrentInputEl && calendarLinkCurrentInputEl.value || '').trim();
+                    const nextMonthUrl = String(calendarLinkNextInputEl && calendarLinkNextInputEl.value || '').trim();
+                    const { value: password, isConfirmed } = await Swal.fire({
+                        title: '儲存行事曆連結',
+                        html: `
+                            <p>這會更新檔案區的「本月行事曆 / 次月行事曆」按鈕連結。</p>
+                            <p style="margin-top: 1em;">請輸入管理密碼以確認：</p>
+                            <input type="password" id="swal-password" class="swal2-input" placeholder="請輸入密碼">
+                        `,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: '確認儲存',
+                        cancelButtonText: '取消',
+                        focusConfirm: false,
+                        preConfirm: () => {
+                            const pw = document.getElementById('swal-password').value;
+                            if (pw !== ADMIN_PASSWORD) {
+                                Swal.showValidationMessage('密碼錯誤！');
+                                return false;
+                            }
+                            return pw;
+                        }
+                    });
+                    if (!isConfirmed || !password) return;
+
+                    showLoading();
+                    try {
+                        const response = await callAppsScript('setCalendarDownloadLinks', {
+                            current_month_url: currentMonthUrl,
+                            next_month_url: nextMonthUrl
+                        });
+                        applyCalendarDownloadLinks(response.data || {});
+                        hasLoadedCalendarDownloadLinks = true;
+                        Swal.fire('儲存成功', '行事曆連結已更新。', 'success');
+                    } catch (e) {
+                        Swal.fire('儲存失敗', e.message, 'error');
+                    } finally {
+                        hideLoading();
+                    }
                 });
             }
             if (lineSendLogTableWrapEl) {
@@ -4796,6 +4910,7 @@
             } else {
                 setupCalendarTab(false, true);
             }
+            loadCalendarDownloadLinks({ silent: true });
             const handleDocDownload = (docType) => {
                 const docMap = {
                     poster: { action: 'open', url: '01.pdf', filename: 'AV招生海報.pdf' },
@@ -4818,6 +4933,8 @@
                 if (doc.action === 'open') { window.open(doc.url, '_blank'); }
                 else { const link = document.createElement('a'); link.href = doc.url; link.download = doc.filename; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
             };
+            document.getElementById('download-calendar-current').addEventListener('click', () => openManagedCalendarLink('current'));
+            document.getElementById('download-calendar-next').addEventListener('click', () => openManagedCalendarLink('next'));
             document.getElementById('download-jobhtml').addEventListener('click', () => window.open('job.html', '_blank'));
             document.getElementById('download-poster').addEventListener('click', () => handleDocDownload('poster'));
             document.getElementById('download-manual-night').addEventListener('click', () => handleDocDownload('manualNight'));

@@ -631,7 +631,7 @@
         .event-mobile-card {
             display: flex;
             flex-direction: column;
-            min-height: 320px;
+            min-height: 0;
             transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
         }
 
@@ -665,12 +665,9 @@
             color: #1f2a44;
             line-height: 1.35;
             margin-bottom: 8px;
-            min-height: 2.7em;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            min-height: 0;
+            display: block;
+            overflow: visible;
         }
 
         .event-mobile-meta,
@@ -699,11 +696,10 @@
             color: #475569;
             font-size: 0.82rem;
             line-height: 1.45;
-            min-height: 48px;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+            min-height: 0;
+            display: block;
+            overflow: visible;
+            word-break: break-word;
         }
 
         .event-mobile-signups strong {
@@ -711,7 +707,7 @@
         }
 
         .simple-event-signup-btn {
-            margin-top: auto;
+            margin-top: 8px;
             align-self: center;
             width: min(220px, 100%);
             justify-content: center;
@@ -1042,6 +1038,7 @@
             background-color: var(--primary-light);
         }
 
+        #compact-list-view .table-responsive tbody tr:hover,
         #simple-list-view .table-responsive tbody tr:hover {
             background-color: var(--primary-light);
             cursor: pointer;
@@ -1550,31 +1547,48 @@
             }
 
             #custom-calendar-toolbar {
-                display: flex;
-                flex-wrap: nowrap;
-                justify-content: space-between;
+                display: grid;
+                grid-template-columns: auto 1fr auto;
                 align-items: center;
-                gap: 8px;
+                gap: 8px 6px;
             }
 
             #custom-calendar-title {
-                order: 0;
-                flex: 0 1 auto;
+                grid-column: 2;
                 font-size: 1.05rem;
                 text-align: center;
                 white-space: nowrap;
+                min-width: 0;
             }
 
             .toolbar-chunk {
-                order: 0;
-                flex: 0 1 auto;
+                min-width: 0;
                 justify-content: center;
+                gap: 6px;
+            }
+
+            #custom-calendar-toolbar>.toolbar-chunk:first-child {
+                grid-column: 1;
+                justify-self: start;
+            }
+
+            #custom-calendar-toolbar>.toolbar-chunk:last-child {
+                grid-column: 1 / -1;
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                width: 100%;
                 gap: 6px;
             }
 
             .toolbar-chunk .btn {
                 padding: 8px 10px;
                 font-size: 0.9rem;
+            }
+
+            #custom-calendar-toolbar>.toolbar-chunk:last-child .btn {
+                width: 100%;
+                min-width: 0;
+                padding: 8px 6px;
             }
 
             .inline-form {
@@ -1816,6 +1830,8 @@
                 opacity: 1;
             }
 
+            #compact-list-view .table-responsive th,
+            #compact-list-view .table-responsive td,
             #simple-list-view .table-responsive th,
             #simple-list-view .table-responsive td,
             #my-signups-result .table-responsive th,
@@ -1825,18 +1841,22 @@
             }
         }
 
+        #compact-list-view .table-responsive,
         #simple-list-view .table-responsive,
         #my-signups-result .table-responsive {
             overflow-x: auto !important;
             -webkit-overflow-scrolling: touch;
         }
 
+        #compact-list-view .table-responsive table,
         #simple-list-view .table-responsive table,
         #my-signups-result .table-responsive table {
             width: max-content !important;
             min-width: 100%;
         }
 
+        #compact-list-view .table-responsive th,
+        #compact-list-view .table-responsive td,
         #simple-list-view .table-responsive th,
         #simple-list-view .table-responsive td,
         #my-signups-result .table-responsive th,
@@ -2392,13 +2412,15 @@
                 <h3 id="custom-calendar-title"></h3>
                 <div class="toolbar-chunk">
                     <button id="show-full-view-btn" class="btn view-switcher-btn">完整</button>
-                    <button id="show-simple-view-btn" class="btn view-switcher-btn">簡易</button>
+                    <button id="show-simple-view-btn" class="btn view-switcher-btn">卡片</button>
+                    <button id="show-compact-view-btn" class="btn view-switcher-btn">簡易</button>
                 </div>
             </div>
             <div id="full-calendar-view">
                 <div id="calendar"></div>
             </div>
             <div id="simple-list-view" style="display: none;"></div>
+            <div id="compact-list-view" style="display: none;"></div>
         </div>
 
         <div id="my-signups-tab" class="tab-content">
@@ -3175,10 +3197,96 @@
             };
             container.addEventListener('click', container._mobileEventClickHandler);
         }
+        function renderCompactListView() {
+            const container = document.getElementById('compact-list-view');
+            document.getElementById('custom-calendar-title').textContent = `${currentDisplayDate.getFullYear()}年 ${currentDisplayDate.getMonth() + 1}月`;
+
+            const viewStart = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth(), 1);
+            const viewEnd = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth() + 1, 0);
+            viewEnd.setHours(23, 59, 59, 999);
+
+            const currentMonthEvents = allCalendarEvents
+                .filter(e => new Date(e.start) >= viewStart && new Date(e.start) <= viewEnd)
+                .sort((a, b) => new Date(a.start) - new Date(b.start));
+
+            if (simpleListObserver) {
+                simpleListObserver.disconnect();
+                simpleListObserver = null;
+            }
+            if (container._scrollBtnHandler) {
+                container.removeEventListener('click', container._scrollBtnHandler);
+                container._scrollBtnHandler = null;
+            }
+            if (container._tableEventClickHandler) {
+                container.removeEventListener('click', container._tableEventClickHandler);
+                container._tableEventClickHandler = null;
+            }
+
+            if (!currentMonthEvents.length) {
+                container.innerHTML = '<div class="table-responsive" style="margin-top:0;"><p style="text-align:center; padding: 20px;">本月尚無活動。</p></div>';
+                return;
+            }
+
+            let tableHtml = `<div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><div class="table-responsive" id="compact-list-table-container" style="margin-top:0;"><table><thead><tr><th>日期</th><th>星期</th><th>標題</th><th>開始</th><th>結束</th><th>上限 (已報)</th><th>報名詳情</th></tr></thead><tbody>`;
+            currentMonthEvents.forEach(event => {
+                const props = event.extendedProps || {};
+                const startDate = new Date(event.start);
+                const dateString = DATE_FMT_CA_TW.format(startDate);
+                const dayOfWeek = DATE_FMT_WEEKDAY_ZH_TW.format(startDate).replace('週', '');
+                const signupCount = props.signups ? props.signups.length : 0;
+                const signupsDetail = props.signups && props.signups.length > 0
+                    ? props.signups.map(s => `${s.position}：${s.user}`).join('，')
+                    : '';
+                tableHtml += `<tr data-event-id="${event.id}"><td><span class="status-dot" style="background-color: ${event.backgroundColor};"></span>${dateString.substring(5)}</td><td>${dayOfWeek}</td><td class="event-title-cell">${escapeHtml(event.title || '')}</td><td>${escapeHtml(props.startTime || '')}</td><td>${escapeHtml(props.endTime || '')}</td><td>${escapeHtml(String(props.maxAttendees || 0))} (${signupCount})</td><td>${escapeHtml(signupsDetail)}</td></tr>`;
+            });
+            tableHtml += `</tbody></table></div><div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><button class="floating-scroll-btn left" data-scroll-target="compact-list-table-container" data-scroll-dir="left">&#8592;</button><button class="floating-scroll-btn right" data-scroll-target="compact-list-table-container" data-scroll-dir="right">&#8594;</button>`;
+            container.innerHTML = tableHtml;
+
+            container._tableEventClickHandler = (e) => {
+                const row = e.target.closest('tbody tr[data-event-id]');
+                if (!row || !container.contains(row)) return;
+                const eventId = row.dataset.eventId || '';
+                if (!eventId) return;
+                const eventObject = getCalendarEventById(eventId);
+                if (!eventObject) return;
+                handleEventClick({ event: { id: eventId, ...eventObject }, jsEvent: e });
+            };
+            container.addEventListener('click', container._tableEventClickHandler);
+
+            container._scrollBtnHandler = (e) => {
+                const btn = e.target.closest('.floating-scroll-btn[data-scroll-target][data-scroll-dir]');
+                if (!btn || !container.contains(btn)) return;
+                const target = container.querySelector(`#${btn.dataset.scrollTarget}`);
+                if (!target) return;
+                const dir = btn.dataset.scrollDir === 'left' ? -1 : 1;
+                target.scrollBy({ left: dir * 200, behavior: 'smooth' });
+            };
+            container.addEventListener('click', container._scrollBtnHandler);
+
+            const tableContainer = document.getElementById('compact-list-table-container');
+            const floatBtns = container.querySelectorAll('.floating-scroll-btn');
+            if (tableContainer && floatBtns.length > 0) {
+                simpleListObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        floatBtns.forEach(btn => {
+                            if (entry.intersectionRatio >= 0.55) {
+                                btn.classList.add('visible');
+                            } else {
+                                btn.classList.remove('visible');
+                            }
+                        });
+                    });
+                }, { threshold: 0.55 });
+                simpleListObserver.observe(tableContainer);
+            }
+        }
         function isCalendarTabVisible() {
             const calendarTab = document.getElementById('calendar-tab');
             if (!calendarTab) return false;
             return calendarTab.style.display !== 'none';
+        }
+        function shouldDefaultCalendarToCardView() {
+            return window.innerWidth <= 980;
         }
         async function initializeFullCalendar() {
             await ensureFullCalendarReady();
@@ -3195,6 +3303,9 @@
                     if (document.getElementById('simple-list-view').style.display === 'block') {
                         renderSimpleListView();
                     }
+                    if (document.getElementById('compact-list-view').style.display === 'block') {
+                        renderCompactListView();
+                    }
                 },
                 eventClick: handleEventClick,
                 eventMouseEnter: showEventPopover,
@@ -3207,24 +3318,42 @@
         async function switchCalendarView(mode, rebuildCalendar = false) {
             const fullView = document.getElementById('full-calendar-view');
             const simpleView = document.getElementById('simple-list-view');
+            const compactView = document.getElementById('compact-list-view');
             const fullViewBtn = document.getElementById('show-full-view-btn');
             const simpleViewBtn = document.getElementById('show-simple-view-btn');
-            if (!fullView || !simpleView || !fullViewBtn || !simpleViewBtn) return;
+            const compactViewBtn = document.getElementById('show-compact-view-btn');
+            if (!fullView || !simpleView || !compactView || !fullViewBtn || !simpleViewBtn || !compactViewBtn) return;
 
             if (mode === 'simple') {
                 fullView.style.display = 'none';
+                compactView.style.display = 'none';
                 simpleView.style.display = 'block';
                 simpleViewBtn.classList.add('active');
                 fullViewBtn.classList.remove('active');
+                compactViewBtn.classList.remove('active');
                 renderSimpleListView();
+                return;
+            }
+
+            if (mode === 'compact') {
+                fullView.style.display = 'none';
+                simpleView.style.display = 'none';
+                compactView.style.display = 'block';
+                compactViewBtn.classList.add('active');
+                fullViewBtn.classList.remove('active');
+                simpleViewBtn.classList.remove('active');
+                renderCompactListView();
                 return;
             }
 
             simpleView.style.display = 'none';
             simpleView.innerHTML = '';
+            compactView.style.display = 'none';
+            compactView.innerHTML = '';
             fullView.style.display = 'block';
             fullViewBtn.classList.add('active');
             simpleViewBtn.classList.remove('active');
+            compactViewBtn.classList.remove('active');
             currentCalendarOptions = { height: isMobile ? 'auto' : undefined, aspectRatio: isMobile ? 0.8 : 1.35 };
             if (rebuildCalendar || !calendar) {
                 await initializeFullCalendar();
@@ -3239,6 +3368,7 @@
             const todayBtn = document.getElementById('custom-today-btn');
             const fullViewBtn = document.getElementById('show-full-view-btn');
             const simpleViewBtn = document.getElementById('show-simple-view-btn');
+            const compactViewBtn = document.getElementById('show-compact-view-btn');
 
             prevBtn.addEventListener('click', () => {
                 if (calendar) {
@@ -3246,7 +3376,11 @@
                     return;
                 }
                 currentDisplayDate = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth() - 1, 1);
-                renderSimpleListView();
+                if (document.getElementById('compact-list-view').style.display === 'block') {
+                    renderCompactListView();
+                } else {
+                    renderSimpleListView();
+                }
             });
             nextBtn.addEventListener('click', () => {
                 if (calendar) {
@@ -3254,7 +3388,11 @@
                     return;
                 }
                 currentDisplayDate = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth() + 1, 1);
-                renderSimpleListView();
+                if (document.getElementById('compact-list-view').style.display === 'block') {
+                    renderCompactListView();
+                } else {
+                    renderSimpleListView();
+                }
             });
             todayBtn.addEventListener('click', () => {
                 if (calendar) {
@@ -3263,13 +3401,20 @@
                 }
                 const now = new Date();
                 currentDisplayDate = new Date(now.getFullYear(), now.getMonth(), 1);
-                renderSimpleListView();
+                if (document.getElementById('compact-list-view').style.display === 'block') {
+                    renderCompactListView();
+                } else {
+                    renderSimpleListView();
+                }
             });
             fullViewBtn.addEventListener('click', async () => {
                 await switchCalendarView('full', true);
             });
             simpleViewBtn.addEventListener('click', () => {
                 switchCalendarView('simple');
+            });
+            compactViewBtn.addEventListener('click', () => {
+                switchCalendarView('compact');
             });
 
             prevBtn._isInitialized = true;
@@ -3294,11 +3439,14 @@
             const shouldRenderCalendar = renderCalendar === null ? isCalendarTabVisible() : Boolean(renderCalendar);
             const fullViewVisible = document.getElementById('full-calendar-view').style.display !== 'none';
             const simpleViewVisible = document.getElementById('simple-list-view').style.display === 'block';
+            const compactViewVisible = document.getElementById('compact-list-view').style.display === 'block';
 
             if (!forceRefresh && allCalendarEvents.length > 0) {
                 if (shouldRenderCalendar) {
                     ensureCalendarToolbarInitialized();
-                    if (simpleViewVisible || isMobile) {
+                    if (compactViewVisible) {
+                        await switchCalendarView('compact');
+                    } else if (simpleViewVisible || shouldDefaultCalendarToCardView()) {
                         await switchCalendarView('simple');
                     } else {
                         await switchCalendarView('full', !calendar);
@@ -3320,7 +3468,13 @@
 
                 if (shouldRenderCalendar) {
                     ensureCalendarToolbarInitialized();
-                    if (simpleViewVisible || isMobile) {
+                    if (compactViewVisible) {
+                        if (forceRefresh && calendar) {
+                            calendar.destroy();
+                            calendar = null;
+                        }
+                        await switchCalendarView('compact');
+                    } else if (simpleViewVisible || shouldDefaultCalendarToCardView()) {
                         if (forceRefresh && calendar) {
                             calendar.destroy();
                             calendar = null;
@@ -4900,7 +5054,7 @@
             const tabBtn = document.querySelector(`.tab-button[data-tab="${savedTab}"]`);
             if (tabBtn) {
                 openTab({ currentTarget: tabBtn }, savedTab);
-                if (savedTab === 'calendar-tab' && window.innerWidth > MOBILE_BREAKPOINT) {
+                if (savedTab === 'calendar-tab' && !shouldDefaultCalendarToCardView()) {
                     setTimeout(() => {
                         if (activeTabName === 'calendar-tab') {
                             switchCalendarView('full', true).catch(() => { });

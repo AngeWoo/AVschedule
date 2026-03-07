@@ -43,6 +43,7 @@ function doGet(e) {
       case 'getUnifiedSignups': result = getUnifiedSignups(params.searchText, params.startDateStr, params.endDateStr); break;
       case 'getStatsData': result = getStatsData(params.startDateStr, params.endDateStr); break;
       // --- 以下為寫入操作，維持使用 SpreadsheetApp ---
+      case 'batchAddSignups': result = batchAddSignups(params.userName, params.entries); break;
       case 'addSignup': result = addSignup(params.eventId, params.userName, params.position); break;
       case 'addBackupSignup': result = addBackupSignup(params.eventId, params.userName, params.position); break;
       case 'removeSignup': result = removeSignup(params.eventId, params.userName); break;
@@ -177,6 +178,12 @@ function fetchAndParseCsvWithCache(url, cacheKey) {
   }
 }
 
+function invalidateMasterDataCache_() {
+  const cache = CacheService.getScriptCache();
+  ['events_data', 'signups_data'].forEach(cacheKey => cache.remove(cacheKey));
+  console.log('invalidateMasterDataCache_: 已清除 events_data / signups_data 快取。');
+}
+
 
 // -------------------- 資料獲取與處理函式 (已修改為 CSV 模式) --------------------
 
@@ -232,28 +239,34 @@ function getNewsAnnouncements() {
 }
 
 /**
- * 從 CSV 網址獲取 Events 和 Signups 的主要資料。
+ * 從 Google Sheet 直接讀取 Events 和 Signups 的主要資料。
+ * 查詢 / 刪除後重查需要即時反映，不能依賴發布 CSV 的刷新延遲。
  */
 function getMasterData() {
   try {
-    const eventsData = fetchAndParseCsvWithCache(EVENTS_CSV_URL, 'events_data');
-    const signupsData = fetchAndParseCsvWithCache(SIGNUPS_CSV_URL, 'signups_data');
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    const eventsSheet = ss.getSheetByName(EVENTS_SHEET_NAME);
+    const signupsSheet = ss.getSheetByName(SIGNUPS_SHEET_NAME);
 
-    console.log(`getMasterData (CSV): 成功讀取資料。`);
-    console.log(`getMasterData: Events CSV 讀取到 ${eventsData.length} 行 (含標頭)。`);
-    console.log(`getMasterData: Signups CSV 讀取到 ${signupsData.length} 行 (含標頭)。`);
+    if (!eventsSheet || !signupsSheet) {
+      throw new Error(`找不到必要工作表：${EVENTS_SHEET_NAME} / ${SIGNUPS_SHEET_NAME}`);
+    }
 
-    // 移除標頭，回傳純資料部分
+    const eventsData = eventsSheet.getDataRange().getValues();
+    const signupsData = signupsSheet.getDataRange().getValues();
+
+    console.log(`getMasterData (Sheet): 成功讀取資料。`);
+    console.log(`getMasterData: Events Sheet 讀取到 ${eventsData.length} 行 (含標頭)。`);
+    console.log(`getMasterData: Signups Sheet 讀取到 ${signupsData.length} 行 (含標頭)。`);
+
     const eventsDataWithoutHeader = eventsData.slice(1);
     const signupsDataWithoutHeader = signupsData.slice(1);
-
     const scriptTimeZone = Session.getScriptTimeZone();
     const eventsMap = new Map();
 
     eventsDataWithoutHeader.forEach(row => {
-      // CSV Columns: ID,Title,Date,StartTime,EndTime,MaxAttendees,Positions,Description
       const eventId = row[0];
-      if (eventId && row[2]) { // 檢查 ID 和 Date 存在
+      if (eventId && row[2]) {
         try {
           const dateObj = new Date(row[2]);
           if (isNaN(dateObj.getTime())) {
@@ -277,8 +290,8 @@ function getMasterData() {
 
     return { eventsData: eventsDataWithoutHeader, signupsData: signupsDataWithoutHeader, eventsMap };
   } catch (err) {
-    console.error(`getMasterData (CSV) 失敗: ${err.message}`, err.stack);
-    throw new Error(`從 CSV 讀取資料時發生錯誤: ${err.message}`);
+    console.error(`getMasterData (Sheet) 失敗: ${err.message}`, err.stack);
+    throw new Error(`從 Google Sheet 讀取資料時發生錯誤: ${err.message}`);
   }
 }
 
@@ -549,6 +562,229 @@ function sendSignupsToEmail(startDateStr, endDateStr, targetEmail, customBody) {
 
 // -------------------- 主要資料寫入函式 (維持不變，繼續使用 SpreadsheetApp) --------------------
 
+function getEventEndDateTimeInfo_(eventData) {
+  const eventTitle = String(eventData && eventData[1] || '');
+  const eventDatePart = new Date(eventData && eventData[2]);
+  if (isNaN(eventDatePart.getTime())) {
+    return { error: `活動 (${eventTitle || '未知活動'}) 的日期格式無效，請管理者檢查。` };
+  }
+  const endTimeStr = padTime(eventData && eventData[4] || '23:59');
+  if (!/^\d\d:\d\d$/.test(endTimeStr)) {
+    return { error: `活動 (${eventTitle || '未知活動'}) 的結束時間格式錯誤，請管理者檢查。應為 HH:mm 格式。` };
+  }
+  const timeParts = endTimeStr.split(':').map(Number);
+  return {
+    endTimeStr: endTimeStr,
+    eventEndDateTime: new Date(
+      eventDatePart.getFullYear(),
+      eventDatePart.getMonth(),
+      eventDatePart.getDate(),
+      timeParts[0],
+      timeParts[1],
+      0
+    )
+  };
+}
+
+function batchAddSignups(userName, entries) {
+  const normalizedUserName = String(userName || '').trim();
+  const normalizedEntries = Array.isArray(entries)
+    ? entries.map((entry, index) => ({
+      request_index: index,
+      eventId: String(entry && entry.eventId || '').trim(),
+      position: String(entry && entry.position || '').trim()
+    }))
+    : [];
+
+  if (!normalizedUserName) {
+    return { status: 'error', message: '缺少姓名。', results: [] };
+  }
+  if (!normalizedEntries.length) {
+    return { status: 'error', message: '未提供任何批次立願項目。', results: [] };
+  }
+
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(15000)) {
+    normalizedEntries.forEach(entry => {
+      logOperation('batchAddSignup', entry.eventId, normalizedUserName, entry.position, '失敗', '系統忙碌中，鎖定失敗');
+    });
+    return { status: 'error', message: '系統忙碌中，請稍後再試。', results: [] };
+  }
+
+  const results = [];
+  const pendingRows = [];
+  const pendingMetas = [];
+  let writeCompleted = false;
+
+  try {
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    const eventsSheet = ss.getSheetByName(EVENTS_SHEET_NAME);
+    const signupsSheet = ss.getSheetByName(SIGNUPS_SHEET_NAME);
+    const eventRows = eventsSheet.getDataRange().getValues();
+    const signupsData = signupsSheet.getDataRange().getValues();
+    const eventsById = new Map();
+    const signupsByEventId = new Map();
+    const requestedEventIds = new Set();
+
+    eventRows.forEach(row => {
+      const eventId = String(row && row[0] || '').trim();
+      if (eventId) {
+        eventsById.set(eventId, row);
+      }
+    });
+    signupsData.forEach(row => {
+      const eventId = String(row && row[1] || '').trim();
+      if (!eventId) return;
+      if (!signupsByEventId.has(eventId)) {
+        signupsByEventId.set(eventId, []);
+      }
+      signupsByEventId.get(eventId).push(row);
+    });
+
+    normalizedEntries.forEach((entry, index) => {
+      const resultItem = {
+        request_index: index,
+        event_id: entry.eventId,
+        event_title: '',
+        position: entry.position,
+        status: 'error',
+        message: ''
+      };
+
+      if (!entry.eventId || !entry.position) {
+        resultItem.message = '缺少活動或崗位資訊。';
+        results.push(resultItem);
+        logOperation('batchAddSignup', entry.eventId, normalizedUserName, entry.position, '失敗', resultItem.message);
+        return;
+      }
+
+      const eventData = eventsById.get(entry.eventId);
+      if (!eventData) {
+        resultItem.message = '找不到此活動。';
+        results.push(resultItem);
+        logOperation('batchAddSignup', entry.eventId, normalizedUserName, entry.position, '失敗', resultItem.message);
+        return;
+      }
+
+      resultItem.event_title = String(eventData[1] || '');
+
+      if (requestedEventIds.has(entry.eventId)) {
+        resultItem.message = '同一法會僅能批次立願一個崗位。';
+        results.push(resultItem);
+        logOperation('batchAddSignup', entry.eventId, normalizedUserName, entry.position, '失敗', resultItem.message);
+        return;
+      }
+      requestedEventIds.add(entry.eventId);
+
+      const eventEndInfo = getEventEndDateTimeInfo_(eventData);
+      if (eventEndInfo.error) {
+        resultItem.message = eventEndInfo.error;
+        results.push(resultItem);
+        logOperation('batchAddSignup', entry.eventId, normalizedUserName, entry.position, '失敗', resultItem.message);
+        return;
+      }
+
+      if (new Date() > eventEndInfo.eventEndDateTime) {
+        resultItem.message = '此活動已結束，無法報名。';
+        results.push(resultItem);
+        logOperation('batchAddSignup', entry.eventId, normalizedUserName, entry.position, '失敗', resultItem.message);
+        return;
+      }
+
+      const currentSignups = signupsByEventId.get(entry.eventId) || [];
+      if (currentSignups.some(row => String(row && row[2] || '').trim() === normalizedUserName)) {
+        resultItem.message = '您已經報名過此活動了。';
+        results.push(resultItem);
+        logOperation('batchAddSignup', entry.eventId, normalizedUserName, entry.position, '失敗', resultItem.message);
+        return;
+      }
+
+      const existingPositionHolder = currentSignups.find(row => String(row && row[4] || '').trim() === entry.position);
+      if (existingPositionHolder) {
+        resultItem.message = `此崗位目前由 [${existingPositionHolder[2]}] 報名。`;
+        results.push(resultItem);
+        logOperation('batchAddSignup', entry.eventId, normalizedUserName, entry.position, '失敗', resultItem.message);
+        return;
+      }
+
+      const maxAttendees = parseInt(eventData[5], 10) || 999;
+      if (currentSignups.length >= maxAttendees) {
+        resultItem.message = '活動總人數已額滿。';
+        results.push(resultItem);
+        logOperation('batchAddSignup', entry.eventId, normalizedUserName, entry.position, '失敗', resultItem.message);
+        return;
+      }
+
+      const newSignupId = 'su' + new Date().getTime() + '_' + index;
+      const newRowData = [newSignupId, entry.eventId, normalizedUserName, new Date(), entry.position];
+      pendingRows.push(newRowData);
+      pendingMetas.push({
+        eventId: entry.eventId,
+        eventTitle: resultItem.event_title,
+        position: entry.position,
+        signupId: newSignupId
+      });
+      currentSignups.push(newRowData);
+      signupsByEventId.set(entry.eventId, currentSignups);
+      results.push(Object.assign({}, resultItem, {
+        status: 'success',
+        message: '報名成功！'
+      }));
+    });
+
+    if (pendingRows.length > 0) {
+      const startRow = signupsSheet.getLastRow() + 1;
+      signupsSheet.getRange(startRow, 1, pendingRows.length, 5).setValues(pendingRows);
+      SpreadsheetApp.flush();
+
+      const writtenRows = signupsSheet.getRange(startRow, 1, pendingRows.length, 5).getValues();
+      const isVerified = writtenRows.length === pendingRows.length && writtenRows.every((row, index) =>
+        String(row && row[0] || '') === String(pendingRows[index][0]) &&
+        String(row && row[1] || '') === String(pendingRows[index][1]) &&
+        String(row && row[2] || '') === String(pendingRows[index][2]) &&
+        String(row && row[4] || '') === String(pendingRows[index][4])
+      );
+
+      if (!isVerified) {
+        for (let i = 0; i < pendingRows.length; i++) {
+          signupsSheet.deleteRow(startRow);
+        }
+        SpreadsheetApp.flush();
+        pendingMetas.forEach(meta => {
+          logOperation('batchAddSignup', meta.eventId, normalizedUserName, meta.position, '失敗', '批次立願資料寫入驗證失敗，已回滾');
+        });
+        throw new Error('批次立願資料寫入驗證失敗，請稍後再試。');
+      }
+
+      writeCompleted = true;
+      invalidateMasterDataCache_();
+      pendingMetas.forEach(meta => {
+        logOperation('batchAddSignup', meta.eventId, normalizedUserName, meta.position, '成功', `批次立願成功 (${meta.eventTitle || meta.eventId})`);
+      });
+    }
+
+    const successCount = results.filter(item => item.status === 'success').length;
+    const failedCount = results.length - successCount;
+    return {
+      status: 'success',
+      requested_count: normalizedEntries.length,
+      success_count: successCount,
+      failed_count: failedCount,
+      results: results
+    };
+  } catch (err) {
+    console.error('batchAddSignups 失敗:', err.message, err.stack);
+    if (!writeCompleted) {
+      pendingMetas.forEach(meta => {
+        logOperation('batchAddSignup', meta.eventId, normalizedUserName, meta.position, '失敗', `後端錯誤: ${err.message}`);
+      });
+    }
+    throw new Error('批次立願時發生後端錯誤，請稍後再試。');
+  } finally {
+    lock.releaseLock();
+  }
+}
+
 function addSignup(eventId, userName, position) {
   if (!eventId || !userName || !position) {
     logOperation('addSignup', eventId, userName, position, '失敗', '缺少必要資訊');
@@ -613,6 +849,7 @@ function addSignup(eventId, userName, position) {
 
     const lastRowValues = signupsSheet.getRange(signupsSheet.getLastRow(), 1, 1, 5).getValues()[0];
     if (lastRowValues[0] === newSignupId && lastRowValues[2] === userName) {
+      invalidateMasterDataCache_();
       logOperation('addSignup', eventId, userName, position, '成功', '報名資料寫入並驗證成功');
       return { status: 'success', message: '報名成功！' };
     } else {
@@ -652,6 +889,7 @@ function addBackupSignup(eventId, userName, position) {
 
     const lastRowValues = signupsSheet.getRange(signupsSheet.getLastRow(), 1, 1, 5).getValues()[0];
     if (lastRowValues[0] === newSignupId && lastRowValues[2] === userName) {
+      invalidateMasterDataCache_();
       logOperation('addBackupSignup', eventId, userName, backupPosition, '成功', '備援報名資料寫入並驗證成功');
       return { status: 'success' };
     } else {
@@ -691,6 +929,8 @@ function removeSignup(eventId, userName) {
         let rowToDeleteIndex = i + 1;
         removedPosition = signupsData[i][4];
         signupsSheet.deleteRow(rowToDeleteIndex);
+        SpreadsheetApp.flush();
+        invalidateMasterDataCache_();
         logOperation('removeSignup', eventId, userName, removedPosition, '成功', `已刪除行 ${rowToDeleteIndex}`);
         return { status: 'success', message: '已為您取消報名。' };
       }
@@ -751,6 +991,7 @@ function modifySignup(signupId, newPosition) {
     signupsSheet.getRange(targetRowIndex, 5).setValue(newPosition);
     SpreadsheetApp.flush();
 
+    invalidateMasterDataCache_();
     logOperation('modifySignup', eventId, userName, `${oldPosition} -> ${newPosition}`, '成功', '崗位已成功修改');
     return { status: 'success', message: '崗位已成功修改！' };
   } catch (err) {

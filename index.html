@@ -1921,6 +1921,322 @@
             right: 10px;
         }
 
+        body.batch-signup-modal-open {
+            overflow: hidden;
+        }
+
+        .compact-list-actions {
+            margin-top: 14px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 14px 16px;
+            border: 1px solid #dfe6f3;
+            border-radius: 14px;
+            background: linear-gradient(180deg, #ffffff, #f7fbff);
+            box-shadow: 0 10px 24px rgba(15, 76, 163, 0.08);
+        }
+
+        .compact-list-actions-note {
+            color: #5d6c86;
+            font-size: 0.95rem;
+        }
+
+        .batch-signup-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 5000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            background: rgba(8, 24, 52, 0.5);
+            backdrop-filter: blur(2px);
+        }
+
+        .batch-signup-modal.is-open {
+            display: flex;
+        }
+
+        .batch-signup-dialog {
+            width: min(1120px, 100%);
+            max-height: min(92vh, 920px);
+            display: flex;
+            flex-direction: column;
+            border-radius: 22px;
+            background: linear-gradient(180deg, #ffffff, #f8fbff);
+            box-shadow: 0 28px 60px rgba(8, 24, 52, 0.24);
+            overflow: hidden;
+        }
+
+        .batch-signup-header,
+        .batch-signup-footer {
+            padding: 18px 22px;
+            background: rgba(247, 251, 255, 0.96);
+            border-bottom: 1px solid rgba(15, 76, 163, 0.12);
+        }
+
+        .batch-signup-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .batch-signup-header h3 {
+            margin: 0;
+            color: #163258;
+            font-size: 1.35rem;
+        }
+
+        .batch-signup-header p {
+            margin: 6px 0 0;
+            color: #5d6c86;
+            font-size: 0.96rem;
+        }
+
+        .batch-signup-toolbar {
+            display: grid;
+            grid-template-columns: minmax(150px, 190px) minmax(160px, 220px) minmax(220px, 1fr) auto;
+            gap: 12px;
+            padding: 16px 22px 10px;
+            align-items: end;
+        }
+
+        .batch-signup-toolbar .form-group {
+            margin-bottom: 0;
+        }
+
+        .batch-signup-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 42px;
+            padding: 0 4px 8px 0;
+            color: #26415f;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .batch-signup-toggle input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary-color);
+        }
+
+        .batch-signup-summary {
+            padding: 0 22px 12px;
+            color: #5d6c86;
+            font-size: 0.95rem;
+        }
+
+        .batch-signup-summary strong {
+            color: #163258;
+        }
+
+        .batch-signup-body {
+            flex: 1;
+            overflow: auto;
+            padding: 0 22px 18px;
+        }
+
+        .batch-signup-empty {
+            padding: 36px 18px;
+            text-align: center;
+            color: #5d6c86;
+            border: 1px dashed rgba(15, 76, 163, 0.2);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.78);
+        }
+
+        .batch-signup-group {
+            margin-bottom: 18px;
+        }
+
+        .batch-signup-group-header {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+            padding: 10px 12px;
+            border-radius: 12px;
+            background: rgba(227, 239, 252, 0.94);
+            color: #163258;
+            font-weight: 700;
+        }
+
+        .batch-signup-group-meta {
+            font-size: 0.88rem;
+            color: #4f688a;
+            font-weight: 600;
+        }
+
+        .batch-signup-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .batch-signup-item {
+            display: block;
+            padding: 14px 16px;
+            border: 1px solid #dfe6f3;
+            border-radius: 16px;
+            background: linear-gradient(180deg, #ffffff, #fbfdff);
+            box-shadow: 0 8px 18px rgba(15, 76, 163, 0.06);
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+        }
+
+        .batch-signup-item:hover {
+            border-color: #bfd3f0;
+            box-shadow: 0 12px 22px rgba(15, 76, 163, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .batch-signup-item.is-selected {
+            border-color: #2f7cf6;
+            box-shadow: 0 14px 28px rgba(47, 124, 246, 0.16);
+        }
+
+        .batch-signup-item.is-disabled {
+            opacity: 0.72;
+            background: linear-gradient(180deg, #f9fafc, #f3f6fb);
+        }
+
+        .batch-signup-check {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary-color);
+        }
+
+        .batch-signup-item-main {
+            min-width: 0;
+        }
+
+        .batch-signup-item-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 6px;
+        }
+
+        .batch-signup-item-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #163258;
+            line-height: 1.45;
+        }
+
+        .batch-signup-status {
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 72px;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .batch-signup-status.is-available {
+            background: rgba(28, 150, 95, 0.12);
+            color: #0f7a4b;
+        }
+
+        .batch-signup-status.is-taken,
+        .batch-signup-status.is-full,
+        .batch-signup-status.is-closed,
+        .batch-signup-status.is-already {
+            background: rgba(220, 53, 69, 0.12);
+            color: #b02a37;
+        }
+
+        .batch-signup-item-meta,
+        .batch-signup-item-detail {
+            color: #4d6280;
+            font-size: 0.93rem;
+            line-height: 1.55;
+            word-break: break-word;
+        }
+
+        .batch-signup-item-detail {
+            margin-top: 5px;
+        }
+
+        .batch-signup-position-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .batch-signup-position-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 46px;
+            padding: 10px 12px;
+            border: 1px solid #d8e3f4;
+            border-radius: 12px;
+            background: #fff;
+            color: #204061;
+            font-weight: 600;
+            line-height: 1.4;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+        }
+
+        .batch-signup-position-option:hover {
+            border-color: #9fc0ef;
+            box-shadow: 0 8px 16px rgba(47, 124, 246, 0.1);
+        }
+
+        .batch-signup-position-option.is-selected {
+            border-color: #2f7cf6;
+            background: rgba(47, 124, 246, 0.08);
+            box-shadow: 0 10px 18px rgba(47, 124, 246, 0.16);
+        }
+
+        .batch-signup-position-option span {
+            min-width: 0;
+            word-break: break-word;
+        }
+
+        .batch-signup-item-note {
+            margin-top: 10px;
+            color: #5d6c86;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .batch-signup-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border-top: 1px solid rgba(15, 76, 163, 0.12);
+            border-bottom: 0;
+        }
+
+        .batch-signup-footer-note {
+            color: #5d6c86;
+            font-size: 0.92rem;
+        }
+
+        .batch-signup-footer-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
         @media (max-width: 700px) {
             .scroll-hint {
                 display: block;
@@ -1932,6 +2248,85 @@
 
             .floating-scroll-btn.visible {
                 display: flex;
+            }
+
+            .compact-list-actions {
+                align-items: stretch;
+            }
+
+            .compact-list-actions .btn {
+                width: 100%;
+            }
+
+            .batch-signup-modal {
+                padding: 10px;
+            }
+
+            .batch-signup-dialog {
+                width: 100%;
+                max-height: 94vh;
+                border-radius: 18px;
+            }
+
+            .batch-signup-header,
+            .batch-signup-toolbar,
+            .batch-signup-summary,
+            .batch-signup-body,
+            .batch-signup-footer {
+                padding-left: 14px;
+                padding-right: 14px;
+            }
+
+            .batch-signup-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .batch-signup-header .btn {
+                width: 100%;
+            }
+
+            .batch-signup-toolbar {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                padding-top: 14px;
+            }
+
+            .batch-signup-toggle {
+                min-height: 0;
+                padding-bottom: 0;
+            }
+
+            .batch-signup-group-header {
+                position: static;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .batch-signup-item {
+                padding: 12px;
+            }
+
+            .batch-signup-item-head {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .batch-signup-status {
+                min-width: 0;
+            }
+
+            .batch-signup-footer {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .batch-signup-footer-actions {
+                width: 100%;
+            }
+
+            .batch-signup-footer-actions .btn {
+                width: 100%;
             }
         }
 
@@ -2698,6 +3093,44 @@
         <span id="backend-version" style="display:none;"></span>
     </footer>
     <div id="loading" class="loading-overlay" style="display: none;"></div>
+    <div id="batch-signup-modal" class="batch-signup-modal" aria-hidden="true">
+        <div class="batch-signup-dialog" role="dialog" aria-modal="true" aria-labelledby="batch-signup-modal-title">
+            <div class="batch-signup-header">
+                <div>
+                    <h3 id="batch-signup-modal-title">全月批次立願</h3>
+                    <p id="batch-signup-modal-subtitle">勾選本月各法會崗位後一次送出。同一法會僅能選擇一個崗位。</p>
+                </div>
+                <button type="button" id="close-batch-signup-modal-btn" class="btn">關閉</button>
+            </div>
+            <div class="batch-signup-toolbar">
+                <div class="form-group">
+                    <label for="batch-signup-month-select">月份</label>
+                    <select id="batch-signup-month-select"></select>
+                </div>
+                <div class="form-group">
+                    <label for="batch-signup-name-input">姓名</label>
+                    <input type="text" id="batch-signup-name-input" placeholder="請輸入姓名">
+                </div>
+                <div class="form-group">
+                    <label for="batch-signup-filter-input">篩選</label>
+                    <input type="text" id="batch-signup-filter-input" placeholder="法會名稱 / 崗位 / 日期">
+                </div>
+                <label class="batch-signup-toggle" for="batch-signup-available-only">
+                    <input type="checkbox" id="batch-signup-available-only">
+                    只顯示可立願
+                </label>
+            </div>
+            <div id="batch-signup-modal-summary" class="batch-signup-summary"></div>
+            <div id="batch-signup-modal-body" class="batch-signup-body"></div>
+            <div class="batch-signup-footer">
+                <div class="batch-signup-footer-note">送出前會依最新資料再次檢查已立願、額滿與崗位占用狀態。</div>
+                <div class="batch-signup-footer-actions">
+                    <button type="button" id="clear-batch-signup-selection-btn" class="btn">全清</button>
+                    <button type="button" id="submit-batch-signup-btn" class="btn btn-primary">送出批次立願</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         const FRONTEND_VERSION = "0717";
@@ -2733,6 +3166,17 @@
         const unifiedSignupsCache = new Map();
         const unifiedSignupsCacheTime = new Map();
         const unifiedSignupsPromiseCache = new Map();
+        let batchSignupState = {
+            isOpen: false,
+            months: [],
+            selectedMonthKey: '',
+            monthLabel: '',
+            userName: '',
+            keyword: '',
+            availableOnly: false,
+            items: [],
+            selectedKeys: new Set()
+        };
         function showLoading() {
             const loadingEl = document.getElementById('loading');
             if (!loadingEl) return;
@@ -2845,8 +3289,11 @@
             if (!forceRefresh && unifiedSignupsCache.has(key) && (Date.now() - cachedAt) < UNIFIED_SIGNUPS_CACHE_TTL_MS) {
                 return unifiedSignupsCache.get(key);
             }
-            if (unifiedSignupsPromiseCache.has(key)) {
+            if (!forceRefresh && unifiedSignupsPromiseCache.has(key)) {
                 return unifiedSignupsPromiseCache.get(key);
+            }
+            if (forceRefresh) {
+                unifiedSignupsPromiseCache.delete(key);
             }
             const promise = (async () => {
                 const response = await callAppsScriptWithRetry('getUnifiedSignups', { searchText, startDateStr, endDateStr });
@@ -3197,17 +3644,401 @@
             };
             container.addEventListener('click', container._mobileEventClickHandler);
         }
+        function getCurrentCalendarMonthEvents() {
+            const viewStart = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth(), 1);
+            const viewEnd = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth() + 1, 0);
+            viewEnd.setHours(23, 59, 59, 999);
+            return allCalendarEvents
+                .filter(e => new Date(e.start) >= viewStart && new Date(e.start) <= viewEnd)
+                .sort((a, b) => new Date(a.start) - new Date(b.start));
+        }
+        function getBatchSignupMonthKey(dateLike) {
+            const dateObj = new Date(dateLike);
+            if (Number.isNaN(dateObj.getTime())) return '';
+            return `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}`;
+        }
+        function getBatchSignupMonthLabel(monthKey) {
+            const match = String(monthKey || '').match(/^(\d{4})-(\d{2})$/);
+            if (!match) return '';
+            return `${match[1]}年 ${Number(match[2])}月`;
+        }
+        function buildBatchSignupMonthOptions() {
+            const monthMap = new Map();
+            (allCalendarEvents || []).forEach(event => {
+                const monthKey = getBatchSignupMonthKey(event && event.start);
+                if (!monthKey || monthMap.has(monthKey)) return;
+                monthMap.set(monthKey, {
+                    key: monthKey,
+                    label: getBatchSignupMonthLabel(monthKey)
+                });
+            });
+            return [...monthMap.values()].sort((a, b) => a.key.localeCompare(b.key, 'en'));
+        }
+        function getBatchSignupEventsForMonth(monthKey) {
+            return (allCalendarEvents || [])
+                .filter(event => getBatchSignupMonthKey(event && event.start) === monthKey)
+                .sort((a, b) => new Date(a.start) - new Date(b.start));
+        }
+        function buildBatchSignupItemsForMonth(monthKey) {
+            return getBatchSignupEventsForMonth(monthKey).flatMap(event => {
+                const props = event.extendedProps || {};
+                const positions = Array.isArray(props.positions) ? props.positions.filter(Boolean) : [];
+                if (!positions.length) return [];
+                const startDate = new Date(event.start);
+                const dateString = DATE_FMT_CA_TW.format(startDate);
+                const dayOfWeek = DATE_FMT_WEEKDAY_ZH_TW.format(startDate).replace('週', '');
+                return positions.map((position, index) => ({
+                    key: `${event.id}__${position}`,
+                    eventId: String(event.id),
+                    eventTitle: String(event.title || props.full_title || ''),
+                    eventStart: event.start,
+                    eventEnd: event.end || null,
+                    dateString,
+                    dayOfWeek,
+                    startTime: props.startTime || '',
+                    endTime: props.endTime || '',
+                    maxAttendees: Number(props.maxAttendees || 0) || 999,
+                    signupCount: Array.isArray(props.signups) ? props.signups.length : 0,
+                    signups: Array.isArray(props.signups) ? props.signups.slice() : [],
+                    position: String(position || '').trim(),
+                    sortIndex: index
+                }));
+            });
+        }
+        function syncBatchSignupMonthData(resetSelection = false) {
+            const availableMonths = Array.isArray(batchSignupState.months) ? batchSignupState.months : [];
+            const fallbackMonth = availableMonths[0] && availableMonths[0].key ? availableMonths[0].key : getBatchSignupMonthKey(currentDisplayDate);
+            if (!availableMonths.some(item => item.key === batchSignupState.selectedMonthKey)) {
+                batchSignupState.selectedMonthKey = fallbackMonth;
+            }
+            batchSignupState.monthLabel = getBatchSignupMonthLabel(batchSignupState.selectedMonthKey) || `${currentDisplayDate.getFullYear()}年 ${currentDisplayDate.getMonth() + 1}月`;
+            batchSignupState.items = buildBatchSignupItemsForMonth(batchSignupState.selectedMonthKey);
+            if (resetSelection) {
+                batchSignupState.selectedKeys = new Set();
+            } else {
+                const validKeys = new Set((batchSignupState.items || []).map(item => item.key));
+                batchSignupState.selectedKeys = new Set([...batchSignupState.selectedKeys].filter(key => validKeys.has(key)));
+            }
+        }
+        function getBatchSignupItemStatus(item, userName) {
+            const normalizedName = String(userName || '').trim();
+            const eventEndDateTime = item && item.eventEnd ? new Date(item.eventEnd) : new Date(item.eventStart);
+            if (!(item && item.eventEnd)) {
+                eventEndDateTime.setHours(23, 59, 59, 999);
+            }
+            const positionHolder = Array.isArray(item.signups)
+                ? item.signups.find(signup => String(signup && signup.position || '').trim() === item.position)
+                : null;
+            const userSignup = normalizedName && Array.isArray(item.signups)
+                ? item.signups.find(signup => String(signup && signup.user || '').trim() === normalizedName)
+                : null;
+
+            if (new Date() > eventEndDateTime) {
+                return { key: 'closed', label: '已截止', disabled: true, detail: '活動已結束，無法立願。' };
+            }
+            if (userSignup) {
+                return { key: 'already', label: '已立願', disabled: true, detail: `您已在此法會立願：${userSignup.position}` };
+            }
+            if (positionHolder) {
+                return { key: 'taken', label: '已有人', disabled: true, detail: `目前由 ${positionHolder.user} 立願此崗位。` };
+            }
+            if (Number(item.signupCount || 0) >= Number(item.maxAttendees || 0)) {
+                return { key: 'full', label: '已滿額', disabled: true, detail: '活動總人數已滿，暫不可立願。' };
+            }
+            return { key: 'available', label: '可立願', disabled: false, detail: '此崗位目前可立願。' };
+        }
+        function getBatchSignupItemSearchText(item) {
+            const signupText = Array.isArray(item.signups)
+                ? item.signups.map(signup => `${signup.position || ''} ${signup.user || ''}`).join(' ')
+                : '';
+            return [
+                item.dateString,
+                item.dayOfWeek,
+                item.eventTitle,
+                item.position,
+                item.startTime,
+                item.endTime,
+                signupText
+            ].join(' ').toLowerCase();
+        }
+        function buildBatchSignupEventGroups() {
+            const eventMap = new Map();
+            (batchSignupState.items || []).forEach(item => {
+                const eventId = String(item && item.eventId || '').trim();
+                if (!eventId) return;
+                if (!eventMap.has(eventId)) {
+                    eventMap.set(eventId, {
+                        eventId,
+                        eventTitle: item.eventTitle,
+                        eventStart: item.eventStart,
+                        eventEnd: item.eventEnd,
+                        dateString: item.dateString,
+                        dayOfWeek: item.dayOfWeek,
+                        startTime: item.startTime,
+                        endTime: item.endTime,
+                        maxAttendees: item.maxAttendees,
+                        signupCount: item.signupCount,
+                        signups: Array.isArray(item.signups) ? item.signups.slice() : [],
+                        items: []
+                    });
+                }
+                eventMap.get(eventId).items.push(item);
+            });
+            return [...eventMap.values()].sort((a, b) => new Date(a.eventStart) - new Date(b.eventStart));
+        }
+        function getBatchSignupEventSearchText(eventGroup) {
+            return [
+                eventGroup.dateString,
+                eventGroup.dayOfWeek,
+                eventGroup.eventTitle,
+                ...(eventGroup.items || []).map(item => getBatchSignupItemSearchText(item))
+            ].join(' ').toLowerCase();
+        }
+        function collectVisibleBatchSignupEventGroups() {
+            const keyword = String(batchSignupState.keyword || '').trim().toLowerCase();
+            return buildBatchSignupEventGroups().filter(eventGroup => {
+                const availableItems = (eventGroup.items || []).filter(item => getBatchSignupItemStatus(item, batchSignupState.userName).key === 'available');
+                if (batchSignupState.availableOnly && !availableItems.length) return false;
+                if (!keyword) return true;
+                return getBatchSignupEventSearchText(eventGroup).includes(keyword);
+            });
+        }
+        function getBatchSignupSelectionCount() {
+            return batchSignupState.selectedKeys instanceof Set ? batchSignupState.selectedKeys.size : 0;
+        }
+        function renderBatchSignupModal() {
+            const modal = document.getElementById('batch-signup-modal');
+            const summaryEl = document.getElementById('batch-signup-modal-summary');
+            const bodyEl = document.getElementById('batch-signup-modal-body');
+            const subtitleEl = document.getElementById('batch-signup-modal-subtitle');
+            const monthSelectEl = document.getElementById('batch-signup-month-select');
+            const nameInputEl = document.getElementById('batch-signup-name-input');
+            const filterInputEl = document.getElementById('batch-signup-filter-input');
+            const availableOnlyEl = document.getElementById('batch-signup-available-only');
+            const submitBtnEl = document.getElementById('submit-batch-signup-btn');
+            if (!modal || !summaryEl || !bodyEl) return;
+
+            if (monthSelectEl) {
+                const monthOptionsHtml = (Array.isArray(batchSignupState.months) ? batchSignupState.months : [])
+                    .map(item => `<option value="${escapeHtml(item.key)}">${escapeHtml(item.label)}</option>`)
+                    .join('');
+                if (monthSelectEl.innerHTML !== monthOptionsHtml) {
+                    monthSelectEl.innerHTML = monthOptionsHtml;
+                }
+                if (monthSelectEl.value !== batchSignupState.selectedMonthKey) {
+                    monthSelectEl.value = batchSignupState.selectedMonthKey;
+                }
+            }
+
+            if (nameInputEl && nameInputEl.value !== batchSignupState.userName) {
+                nameInputEl.value = batchSignupState.userName;
+            }
+            if (filterInputEl && filterInputEl.value !== batchSignupState.keyword) {
+                filterInputEl.value = batchSignupState.keyword;
+            }
+            if (availableOnlyEl) {
+                availableOnlyEl.checked = Boolean(batchSignupState.availableOnly);
+            }
+
+            const availableKeys = new Set((batchSignupState.items || [])
+                .filter(item => getBatchSignupItemStatus(item, batchSignupState.userName).key === 'available')
+                .map(item => item.key));
+            batchSignupState.selectedKeys = new Set([...batchSignupState.selectedKeys].filter(key => availableKeys.has(key)));
+
+            const allEventGroups = buildBatchSignupEventGroups();
+            const visibleEventGroups = collectVisibleBatchSignupEventGroups();
+            const visibleAvailableCount = visibleEventGroups.reduce((total, eventGroup) => {
+                return total + (eventGroup.items || []).filter(item => getBatchSignupItemStatus(item, batchSignupState.userName).key === 'available').length;
+            }, 0);
+            const selectedCount = getBatchSignupSelectionCount();
+            if (subtitleEl) {
+                subtitleEl.textContent = `${batchSignupState.monthLabel}各法會崗位清單。同一法會僅能選擇一個崗位。`;
+            }
+            summaryEl.innerHTML = `<strong>${batchSignupState.monthLabel}</strong> 共 ${allEventGroups.length} 場法會 / ${batchSignupState.items.length} 個崗位，畫面目前顯示 ${visibleEventGroups.length} 場法會，${visibleAvailableCount} 個可立願崗位，已勾選 ${selectedCount} 個。`;
+            if (submitBtnEl) {
+                submitBtnEl.disabled = selectedCount === 0;
+            }
+
+            if (!visibleEventGroups.length) {
+                bodyEl.innerHTML = `<div class="batch-signup-empty">目前沒有符合條件的法會。請調整篩選條件，或切換到其他月份再試。</div>`;
+                return;
+            }
+
+            const groupedItems = visibleEventGroups.reduce((map, eventGroup) => {
+                if (!map.has(eventGroup.dateString)) {
+                    map.set(eventGroup.dateString, {
+                        dateString: eventGroup.dateString,
+                        dayOfWeek: eventGroup.dayOfWeek,
+                        events: []
+                    });
+                }
+                map.get(eventGroup.dateString).events.push(eventGroup);
+                return map;
+            }, new Map());
+
+            let html = '';
+            groupedItems.forEach(group => {
+                const availableCount = group.events.reduce((total, eventGroup) => {
+                    return total + (eventGroup.items || []).filter(item => getBatchSignupItemStatus(item, batchSignupState.userName).key === 'available').length;
+                }, 0);
+                html += `
+                    <section class="batch-signup-group">
+                        <div class="batch-signup-group-header">
+                            <span>${group.dateString} (${group.dayOfWeek})</span>
+                            <span class="batch-signup-group-meta">${group.events.length} 場法會 / ${availableCount} 個可立願崗位</span>
+                        </div>
+                        <div class="batch-signup-list">
+                `;
+                group.events.forEach(eventGroup => {
+                    const availableItems = (eventGroup.items || []).filter(item => getBatchSignupItemStatus(item, batchSignupState.userName).key === 'available');
+                    const selectedItem = availableItems.find(item => batchSignupState.selectedKeys.has(item.key)) || null;
+                    const assignedText = Array.isArray(eventGroup.signups) && eventGroup.signups.length > 0
+                        ? eventGroup.signups.map(signup => `${signup.position}：${signup.user}`).join('、')
+                        : '目前尚無人立願';
+                    const unavailableSummary = (eventGroup.items || [])
+                        .filter(item => getBatchSignupItemStatus(item, batchSignupState.userName).key !== 'available')
+                        .map(item => {
+                            const status = getBatchSignupItemStatus(item, batchSignupState.userName);
+                            if (status.key === 'taken') {
+                                const holderName = String(status.detail || '')
+                                    .replace(/^目前由\s*/, '')
+                                    .replace(/\s*立願此崗位。$/, '')
+                                    .trim();
+                                return `${item.position}(${holderName || status.label})`;
+                            }
+                            return `${item.position}(${status.label})`;
+                        });
+                    const eventStatusLabel = availableItems.length > 0 ? `可立願 ${availableItems.length}` : '目前無可立願崗位';
+                    html += `
+                        <div class="batch-signup-item ${selectedItem ? 'is-selected' : ''} ${availableItems.length === 0 ? 'is-disabled' : ''}">
+                            <div class="batch-signup-item-main">
+                                <div class="batch-signup-item-head">
+                                    <div class="batch-signup-item-title">${escapeHtml(eventGroup.eventTitle)}</div>
+                                    <span class="batch-signup-status is-${availableItems.length > 0 ? 'available' : 'full'}">${escapeHtml(eventStatusLabel)}</span>
+                                </div>
+                                <div class="batch-signup-item-meta">時間：${escapeHtml(eventGroup.startTime || '-')} ${eventGroup.endTime ? `- ${escapeHtml(eventGroup.endTime)}` : ''} ・ 名額：${escapeHtml(String(eventGroup.maxAttendees || 0))} ・ 已報：${escapeHtml(String(eventGroup.signupCount || 0))}</div>
+                                <div class="batch-signup-item-detail">目前名單：${escapeHtml(assignedText)}</div>
+                                ${availableItems.length > 0 ? `
+                                    <div class="batch-signup-position-list">
+                                        ${availableItems.map(item => `
+                                            <label class="batch-signup-position-option ${selectedItem && selectedItem.key === item.key ? 'is-selected' : ''}">
+                                                <input type="radio" name="batch-signup-event-${escapeHtml(eventGroup.eventId)}" class="batch-signup-check" data-batch-key="${escapeHtml(item.key)}" ${selectedItem && selectedItem.key === item.key ? 'checked' : ''}>
+                                                <span>${escapeHtml(item.position)}</span>
+                                            </label>
+                                        `).join('')}
+                                    </div>
+                                ` : ''}
+                                ${unavailableSummary.length > 0 ? `<div class="batch-signup-item-note">目前不可立願崗位：${escapeHtml(unavailableSummary.join('、'))}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += `</div></section>`;
+            });
+            bodyEl.innerHTML = html;
+        }
+        function closeBatchSignupModal() {
+            const modal = document.getElementById('batch-signup-modal');
+            if (!modal) return;
+            batchSignupState.isOpen = false;
+            modal.classList.remove('is-open');
+            modal.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('batch-signup-modal-open');
+        }
+        async function openBatchSignupModal() {
+            const modal = document.getElementById('batch-signup-modal');
+            const nameInputEl = document.getElementById('batch-signup-name-input');
+            if (!modal) return;
+            if (!allCalendarEvents.length) {
+                showLoading();
+                try {
+                    await fetchCalendarEvents(false);
+                } catch (error) {
+                    Swal.fire('載入失敗', error.message, 'error');
+                    return;
+                } finally {
+                    hideLoading();
+                }
+            }
+            const months = buildBatchSignupMonthOptions();
+            const currentMonthKey = getBatchSignupMonthKey(currentDisplayDate);
+            const initialMonthKey = months.some(item => item.key === currentMonthKey)
+                ? currentMonthKey
+                : (months[0] && months[0].key ? months[0].key : currentMonthKey);
+            batchSignupState = {
+                isOpen: true,
+                months,
+                selectedMonthKey: initialMonthKey,
+                monthLabel: '',
+                userName: String(localStorage.getItem('av_signup_username') || '').trim(),
+                keyword: '',
+                availableOnly: true,
+                items: [],
+                selectedKeys: new Set()
+            };
+            syncBatchSignupMonthData(true);
+            renderBatchSignupModal();
+            modal.classList.add('is-open');
+            modal.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('batch-signup-modal-open');
+            if (nameInputEl) {
+                setTimeout(() => {
+                    nameInputEl.focus();
+                    if (!nameInputEl.value.trim()) {
+                        nameInputEl.select();
+                    }
+                }, 0);
+            }
+        }
+        async function submitBatchSignupSelection() {
+            const nameInputEl = document.getElementById('batch-signup-name-input');
+            const userName = String(nameInputEl && nameInputEl.value || batchSignupState.userName || '').trim();
+            const selectedItems = (batchSignupState.items || []).filter(item => batchSignupState.selectedKeys.has(item.key));
+            if (!userName) {
+                if (nameInputEl) nameInputEl.focus();
+                return Swal.fire('請輸入姓名', '批次立願前請先輸入姓名。', 'info');
+            }
+            if (!selectedItems.length) {
+                return Swal.fire('尚未勾選', '請先勾選至少一個要立願的崗位。', 'info');
+            }
+            localStorage.setItem('av_signup_username', userName);
+            batchSignupState.userName = userName;
+
+            showLoading();
+            try {
+                const response = await callAppsScript('batchAddSignups', {
+                    userName,
+                    entries: selectedItems.map(item => ({ eventId: item.eventId, position: item.position }))
+                });
+                const payload = response.data || {};
+                const results = Array.isArray(payload.results) ? payload.results : [];
+                const successResults = results.filter(item => item && item.status === 'success');
+                const failedResults = results.filter(item => !item || item.status !== 'success');
+                const successHtml = successResults.length
+                    ? `<div style="text-align:left;margin-top:1em;"><strong>成功 ${successResults.length} 筆</strong><br>${successResults.map(item => `・${escapeHtml(item.event_title || '')} / ${escapeHtml(item.position || '')}`).join('<br>')}</div>`
+                    : '';
+                const failureHtml = failedResults.length
+                    ? `<div style="text-align:left;margin-top:1em;"><strong>失敗 ${failedResults.length} 筆</strong><br>${failedResults.map(item => `・${escapeHtml(item.event_title || '')} / ${escapeHtml(item.position || '')}：${escapeHtml(item.message || '處理失敗')}`).join('<br>')}</div>`
+                    : '';
+                closeBatchSignupModal();
+                await Swal.fire({
+                    icon: successResults.length > 0 ? 'success' : 'warning',
+                    title: successResults.length > 0 ? '批次立願完成' : '批次立願未成功',
+                    html: `${successHtml}${failureHtml || '<div style="margin-top:1em;">沒有失敗項目。</div>'}`
+                });
+                invalidateUnifiedSignupsCache();
+                await setupCalendarTab(true);
+            } catch (error) {
+                Swal.fire('批次立願失敗', error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
         function renderCompactListView() {
             const container = document.getElementById('compact-list-view');
             document.getElementById('custom-calendar-title').textContent = `${currentDisplayDate.getFullYear()}年 ${currentDisplayDate.getMonth() + 1}月`;
 
-            const viewStart = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth(), 1);
-            const viewEnd = new Date(currentDisplayDate.getFullYear(), currentDisplayDate.getMonth() + 1, 0);
-            viewEnd.setHours(23, 59, 59, 999);
-
-            const currentMonthEvents = allCalendarEvents
-                .filter(e => new Date(e.start) >= viewStart && new Date(e.start) <= viewEnd)
-                .sort((a, b) => new Date(a.start) - new Date(b.start));
+            const currentMonthEvents = getCurrentCalendarMonthEvents();
 
             if (simpleListObserver) {
                 simpleListObserver.disconnect();
@@ -3223,7 +4054,13 @@
             }
 
             if (!currentMonthEvents.length) {
-                container.innerHTML = '<div class="table-responsive" style="margin-top:0;"><p style="text-align:center; padding: 20px;">本月尚無活動。</p></div>';
+                container.innerHTML = `
+                    <div class="table-responsive" style="margin-top:0;"><p style="text-align:center; padding: 20px;">本月尚無活動。</p></div>
+                    <div class="compact-list-actions">
+                        <div class="compact-list-actions-note">本月沒有可供批次立願的法會崗位。</div>
+                        <button type="button" class="btn btn-primary open-batch-signup-btn" disabled>全月批次立願</button>
+                    </div>
+                `;
                 return;
             }
 
@@ -3239,10 +4076,15 @@
                     : '';
                 tableHtml += `<tr data-event-id="${event.id}"><td><span class="status-dot" style="background-color: ${event.backgroundColor};"></span>${dateString.substring(5)}</td><td>${dayOfWeek}</td><td class="event-title-cell">${escapeHtml(event.title || '')}</td><td>${escapeHtml(props.startTime || '')}</td><td>${escapeHtml(props.endTime || '')}</td><td>${escapeHtml(String(props.maxAttendees || 0))} (${signupCount})</td><td>${escapeHtml(signupsDetail)}</td></tr>`;
             });
-            tableHtml += `</tbody></table></div><div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><button class="floating-scroll-btn left" data-scroll-target="compact-list-table-container" data-scroll-dir="left">&#8592;</button><button class="floating-scroll-btn right" data-scroll-target="compact-list-table-container" data-scroll-dir="right">&#8594;</button>`;
+            tableHtml += `</tbody></table></div><div class="scroll-hint">← 左右滑動以查看更多資訊 →</div><button class="floating-scroll-btn left" data-scroll-target="compact-list-table-container" data-scroll-dir="left">&#8592;</button><button class="floating-scroll-btn right" data-scroll-target="compact-list-table-container" data-scroll-dir="right">&#8594;</button><div class="compact-list-actions"><div class="compact-list-actions-note">一次勾選本月每場法會的崗位後統一送出。</div><button type="button" class="btn btn-primary open-batch-signup-btn">全月批次立願</button></div>`;
             container.innerHTML = tableHtml;
 
             container._tableEventClickHandler = (e) => {
+                const batchBtn = e.target.closest('.open-batch-signup-btn');
+                if (batchBtn && container.contains(batchBtn) && !batchBtn.disabled) {
+                    openBatchSignupModal();
+                    return;
+                }
                 const row = e.target.closest('tbody tr[data-event-id]');
                 if (!row || !container.contains(row)) return;
                 const eventId = row.dataset.eventId || '';
@@ -3642,12 +4484,12 @@
             }
             return rowsToRender.length;
         }
-        async function promptToModifySignup(signup) { const eventDetails = getCalendarEventById(signup.eventId); if (!eventDetails) { return Swal.fire('錯誤', '找不到此報名的相關活動資訊，無法修改。', 'error'); } const allPositions = eventDetails.extendedProps.positions; if (!allPositions || allPositions.length === 0) { return Swal.fire('錯誤', '此活動沒有可用的崗位列表。', 'error'); } let optionsHtml = allPositions.map(pos => `<option value="${pos}" ${pos === signup.position ? 'selected' : ''}>${pos}</option>`).join(''); const { value: newPosition } = await Swal.fire({ title: '修改報名崗位', html: ` <div style="text-align: left; margin: 1em 0; line-height: 1.8;"><p><strong>活動:</strong> ${signup.eventTitle}</p><p><strong>日期:</strong> ${signup.eventDate}</p><p><strong>時間:</strong> ${eventDetails.extendedProps.startTime || ''}${eventDetails.extendedProps.endTime ? ' - ' + eventDetails.extendedProps.endTime : ''}</p><p><strong>姓名:</strong> ${signup.user}</p><hr style="margin: 1rem 0; height: 1px; background: #ddd; border: none;"><p style="margin-top: 1em;"><strong>修改崗位為:</strong></p><select id="swal-position-select" class="swal2-select" style="width: 100%; max-width: 300px; margin-top: 0.5em;">${optionsHtml}</select></div>`, width: isMobile ? '90vw' : '500px', focusConfirm: false, showCancelButton: true, confirmButtonText: '確認修改', cancelButtonText: '取消', preConfirm: () => document.getElementById('swal-position-select').value }); if (newPosition && newPosition !== signup.position) { showLoading(); try { const response = await callAppsScript('modifySignup', { signupId: signup.signupId, newPosition: newPosition }); await Swal.fire('修改成功', response.data.message, 'success'); invalidateUnifiedSignupsCache(); executeUnifiedSignupQuery(lastQuery.params.searchText, lastQuery.params.startDateStr, lastQuery.params.endDateStr, lastQuery.params.eventDate || '', lastQuery.params.eventTitle || '', lastQuery.params.startTime || '', lastQuery.params.keyword || ''); setupCalendarTab(true); } catch (e) { Swal.fire('修改失敗', e.message, 'error'); } finally { hideLoading(); } } }
+        async function promptToModifySignup(signup) { const eventDetails = getCalendarEventById(signup.eventId); if (!eventDetails) { return Swal.fire('錯誤', '找不到此報名的相關活動資訊，無法修改。', 'error'); } const allPositions = eventDetails.extendedProps.positions; if (!allPositions || allPositions.length === 0) { return Swal.fire('錯誤', '此活動沒有可用的崗位列表。', 'error'); } let optionsHtml = allPositions.map(pos => `<option value="${pos}" ${pos === signup.position ? 'selected' : ''}>${pos}</option>`).join(''); const { value: newPosition } = await Swal.fire({ title: '修改報名崗位', html: ` <div style="text-align: left; margin: 1em 0; line-height: 1.8;"><p><strong>活動:</strong> ${signup.eventTitle}</p><p><strong>日期:</strong> ${signup.eventDate}</p><p><strong>時間:</strong> ${eventDetails.extendedProps.startTime || ''}${eventDetails.extendedProps.endTime ? ' - ' + eventDetails.extendedProps.endTime : ''}</p><p><strong>姓名:</strong> ${signup.user}</p><hr style="margin: 1rem 0; height: 1px; background: #ddd; border: none;"><p style="margin-top: 1em;"><strong>修改崗位為:</strong></p><select id="swal-position-select" class="swal2-select" style="width: 100%; max-width: 300px; margin-top: 0.5em;">${optionsHtml}</select></div>`, width: isMobile ? '90vw' : '500px', focusConfirm: false, showCancelButton: true, confirmButtonText: '確認修改', cancelButtonText: '取消', preConfirm: () => document.getElementById('swal-position-select').value }); if (newPosition && newPosition !== signup.position) { showLoading(); try { const response = await callAppsScript('modifySignup', { signupId: signup.signupId, newPosition: newPosition }); await Swal.fire('修改成功', response.data.message, 'success'); invalidateUnifiedSignupsCache(); await executeUnifiedSignupQuery(lastQuery.params.searchText, lastQuery.params.startDateStr, lastQuery.params.endDateStr, lastQuery.params.eventDate || '', lastQuery.params.eventTitle || '', lastQuery.params.startTime || '', lastQuery.params.keyword || '', true); setupCalendarTab(true); } catch (e) { Swal.fire('修改失敗', e.message, 'error'); } finally { hideLoading(); } } }
         function normalizeDateStr(input) { if (!input) return ''; const sanitized = input.replace(/[./]/g, '-'); const parsed = new Date(sanitized); if (isNaN(parsed.getTime())) { return sanitized.slice(0, 10); } return DATE_FMT_CA_TW.format(parsed); }
-        async function executeUnifiedSignupQuery(searchText, startDateStr, endDateStr, eventDate = '', eventTitle = '', startTime = '', keyword = '') {
+        async function executeUnifiedSignupQuery(searchText, startDateStr, endDateStr, eventDate = '', eventTitle = '', startTime = '', keyword = '', forceRefresh = false) {
             showLoading();
             try {
-                const sourceRows = await getUnifiedSignups(searchText, startDateStr, endDateStr);
+                const sourceRows = await getUnifiedSignups(searchText, startDateStr, endDateStr, forceRefresh);
                 const keywordTokens = (keyword || '').split(/\s+/).filter(Boolean).map(s => s.toLowerCase());
                 let results = sourceRows.slice();
                 const targetDate = normalizeDateStr(eventDate);
@@ -3710,7 +4552,7 @@
                 eventSelect.appendChild(option);
             });
         }
-        async function promptToDeleteSignup(signup) { const { value: password } = await Swal.fire({ title: '確定要刪除此筆報名嗎？', html: `<div style="text-align: left; margin: 1em auto; background: #f8f9fa; border-left: 4px solid #e74c3c; padding: 1em; border-radius: 4px; width: 90%;"><p><strong>活動日期:</strong> ${signup.eventDate || 'N/A'}</p><p><strong>活動名稱:</strong> ${signup.eventTitle || 'N/A'}</p><p><strong>報名人員:</strong> ${signup.user || 'N/A'}</p><p><strong>報名崗位:</strong> ${signup.position || 'N/A'}</p><p><strong>報名時間:</strong> ${signup.timestamp || 'N/A'}</p></div><div style="text-align: center; margin-top: 1.5em;"><p style="margin-bottom: 0.5em;">請輸入密碼以確認刪除：</p><input type="password" id="password-input" class="swal2-input" placeholder="請輸入密碼" style="width: 90%; margin: 0 auto;"></div>`, icon: 'warning', showCancelButton: true, confirmButtonText: '確認刪除', cancelButtonText: '取消', preConfirm: () => { const pw = document.getElementById('password-input').value; if (pw !== '0425') { Swal.showValidationMessage('密碼錯誤！'); return false; } return pw; } }); if (password) { showLoading(); try { const response = await callAppsScript('removeSignup', { eventId: signup.eventId, userName: signup.user }); await Swal.fire('刪除成功', response.data.message, 'success'); invalidateUnifiedSignupsCache(); if (lastQuery.type === 'unified') { await executeUnifiedSignupQuery(lastQuery.params.searchText, lastQuery.params.startDateStr, lastQuery.params.endDateStr, lastQuery.params.eventDate || '', lastQuery.params.eventTitle || '', lastQuery.params.startTime || '', lastQuery.params.keyword || ''); } setupCalendarTab(true); } catch (e) { Swal.fire('刪除失敗', e.message, 'error'); } finally { hideLoading(); } } }
+        async function promptToDeleteSignup(signup) { const { value: password } = await Swal.fire({ title: '確定要刪除此筆報名嗎？', html: `<div style="text-align: left; margin: 1em auto; background: #f8f9fa; border-left: 4px solid #e74c3c; padding: 1em; border-radius: 4px; width: 90%;"><p><strong>活動日期:</strong> ${signup.eventDate || 'N/A'}</p><p><strong>活動名稱:</strong> ${signup.eventTitle || 'N/A'}</p><p><strong>報名人員:</strong> ${signup.user || 'N/A'}</p><p><strong>報名崗位:</strong> ${signup.position || 'N/A'}</p><p><strong>報名時間:</strong> ${signup.timestamp || 'N/A'}</p></div><div style="text-align: center; margin-top: 1.5em;"><p style="margin-bottom: 0.5em;">請輸入密碼以確認刪除：</p><input type="password" id="password-input" class="swal2-input" placeholder="請輸入密碼" style="width: 90%; margin: 0 auto;"></div>`, icon: 'warning', showCancelButton: true, confirmButtonText: '確認刪除', cancelButtonText: '取消', preConfirm: () => { const pw = document.getElementById('password-input').value; if (pw !== '0425') { Swal.showValidationMessage('密碼錯誤！'); return false; } return pw; } }); if (password) { showLoading(); try { const response = await callAppsScript('removeSignup', { eventId: signup.eventId, userName: signup.user }); await Swal.fire('刪除成功', response.data.message, 'success'); invalidateUnifiedSignupsCache(); if (lastQuery.type === 'unified') { await executeUnifiedSignupQuery(lastQuery.params.searchText, lastQuery.params.startDateStr, lastQuery.params.endDateStr, lastQuery.params.eventDate || '', lastQuery.params.eventTitle || '', lastQuery.params.startTime || '', lastQuery.params.keyword || '', true); } setupCalendarTab(true); } catch (e) { Swal.fire('刪除失敗', e.message, 'error'); } finally { hideLoading(); } } }
         function getMobileStatsChartMetrics(labels) { const safeLabels = Array.isArray(labels) ? labels : []; const longestLabelLength = safeLabels.reduce((max, label) => Math.max(max, String(label || '').trim().length), 0); const itemCount = safeLabels.length; const dynamicBottomPadding = Math.max(72, Math.min(132, 58 + Math.round(longestLabelLength * 3.1) + Math.max(0, itemCount - 8) * 2)); const dynamicHeight = Math.max(380, Math.min(500, 300 + dynamicBottomPadding + Math.max(0, itemCount - 8) * 5)); return { height: dynamicHeight, bottomPadding: dynamicBottomPadding, tickFontSize: longestLabelLength >= 15 ? 12 : 13, maxBarThickness: itemCount >= 10 ? 28 : 32 }; }
         async function generateStatsReport() { showLoading(); const detailsContainer = document.getElementById('stats-details-container'); const statsCanvas = document.getElementById('stats-chart'); const statsChartContainer = document.getElementById('stats-chart-container'); detailsContainer.innerHTML = ''; try { await ensureChartLibReady(); const response = await callAppsScriptWithRetry('getStatsData', { startDateStr: document.getElementById('stats-start-date').value, endDateStr: document.getElementById('stats-end-date').value }); const data = response.data; lastStatsData = data; const ctx = statsCanvas.getContext('2d'); if (statsChart) statsChart.destroy(); if (!data || data.labels.length === 0) { statsCanvas.style.display = 'none'; if (statsChartContainer) { statsChartContainer.style.minWidth = '100%'; statsChartContainer.style.height = ''; } detailsContainer.innerHTML = '<p style="text-align:center; padding: 20px;">在選定的日期範圍?沒有任何報名記錄可供統計。</p>'; Swal.fire('提示', '在選定的日期範圍?沒有任何報名記錄可供統計。', 'info'); return; } statsCanvas.style.display = 'block'; const backgroundColors = data.labels.map(() => `rgba(${Math.floor(Math.random() * 200) + 50},${Math.floor(Math.random() * 200) + 50},${Math.floor(Math.random() * 200) + 50},0.8)`); const chartLabels = data.labels.map(label => { const parts = label.match(/(.*?)\s*\((.*?)\)/); return (parts && parts.length === 3) ? (isMobile ? parts[1].trim() : [parts[1].trim(), `(${parts[2]})`]) : label; }); const mobileMetrics = isMobile ? getMobileStatsChartMetrics(chartLabels) : null; if (statsChartContainer) { statsChartContainer.style.minWidth = '100%'; statsChartContainer.style.height = isMobile ? `${mobileMetrics.height}px` : '40vh'; } const chartOptions = { responsive: true, maintainAspectRatio: false, backgroundColor: 'white', plugins: { datalabels: { anchor: 'end', align: 'top', offset: 4, color: '#444', font: { weight: 'bold', size: 14 } }, tooltip: { callbacks: { title: (items) => data.fullDetails[items[0].dataIndex].eventInfo.title, label: (item) => { const d = data.fullDetails[item.dataIndex]; let l = [`日期: ${d.eventInfo.date}`, `時間: ${d.eventInfo.startTime}${d.eventInfo.endTime ? ' - ' + d.eventInfo.endTime : ''}`, `已報名: ${item.raw} / ${d.eventInfo.maxAttendees} 人`, '--- 崗位人員 ---']; d.signups.forEach(s => l.push(`${s.position}: ${s.user}`)); return l; } } } }, scales: { x: { ticks: { autoSkip: false } }, y: { grace: '10%' } }, layout: { padding: { top: 30, bottom: isMobile ? mobileMetrics.bottomPadding : 40 } } }; if (isMobile) { chartOptions.scales.x.ticks.maxRotation = 45; chartOptions.scales.x.ticks.minRotation = 45; chartOptions.scales.x.ticks.font = { size: mobileMetrics.tickFontSize }; } statsChart = new Chart(ctx, { type: 'bar', data: { labels: chartLabels, datasets: [{ label: '報名人數', data: data.data, backgroundColor: backgroundColors, borderColor: backgroundColors.map(c => c.replace('0.8', '1')), borderWidth: 1, maxBarThickness: isMobile ? mobileMetrics.maxBarThickness : 56 }] }, options: chartOptions }); let detailsHtml = '<h2>詳細活動報名資訊</h2>'; data.fullDetails.forEach((eventData, index) => { const dayOfWeekText = eventData.eventInfo.dayOfWeek ? `(${eventData.eventInfo.dayOfWeek})` : ''; detailsHtml += `<div class="stats-event-block"><h3>${index + 1}. ${eventData.eventInfo.title}</h3><p><strong>日期:</strong> ${eventData.eventInfo.date} ${dayOfWeekText}</p><p><strong>時間:</strong> ${eventData.eventInfo.startTime}${eventData.eventInfo.endTime ? ' - ' + eventData.eventInfo.endTime : ''}</p><p><strong>報名狀況:</strong> ${eventData.signups.length} / ${eventData.eventInfo.maxAttendees}</p>`; if (eventData.signups && eventData.signups.length > 0) { detailsHtml += '<ul>'; eventData.signups.forEach(signup => { detailsHtml += `<li><strong>${signup.position}:</strong> ${signup.user}</li>`; }); detailsHtml += '</ul>'; } else { detailsHtml += '<p>無人報名</p>'; } detailsHtml += '</div>'; }); detailsContainer.innerHTML = detailsHtml; setTimeout(() => { if (statsCanvas) statsCanvas.style.backgroundColor = 'white'; if (statsChart) statsChart.resize(); }, 100); } catch (e) { Swal.fire('產生失敗', e.message, 'error'); } finally { hideLoading(); } }
         async function generatePerformanceReport() {
@@ -3854,6 +4696,14 @@
             const calendarLinkCurrentInputEl = document.getElementById('calendar-link-current-input');
             const calendarLinkNextInputEl = document.getElementById('calendar-link-next-input');
             const saveCalendarLinksBtnEl = document.getElementById('save-calendar-links-btn');
+            const batchSignupModalEl = document.getElementById('batch-signup-modal');
+            const closeBatchSignupModalBtnEl = document.getElementById('close-batch-signup-modal-btn');
+            const batchSignupMonthSelectEl = document.getElementById('batch-signup-month-select');
+            const batchSignupNameInputEl = document.getElementById('batch-signup-name-input');
+            const batchSignupFilterInputEl = document.getElementById('batch-signup-filter-input');
+            const batchSignupAvailableOnlyEl = document.getElementById('batch-signup-available-only');
+            const clearBatchSignupSelectionBtnEl = document.getElementById('clear-batch-signup-selection-btn');
+            const submitBatchSignupBtnEl = document.getElementById('submit-batch-signup-btn');
             let cachedLineTargets = [];
             let cachedLineSendLogs = [];
             var hasLoadedLineSendLogs = false;
@@ -3864,6 +4714,72 @@
             if (lineTargetSelectEl && lineTargetSelectEl.multiple) {
                 lineTargetSelectEl.size = isMobile ? 4 : 1;
             }
+            if (closeBatchSignupModalBtnEl) {
+                closeBatchSignupModalBtnEl.addEventListener('click', closeBatchSignupModal);
+            }
+            if (batchSignupModalEl) {
+                batchSignupModalEl.addEventListener('click', (event) => {
+                    if (event.target === batchSignupModalEl) {
+                        closeBatchSignupModal();
+                    }
+                });
+                batchSignupModalEl.addEventListener('change', (event) => {
+                    const checkbox = event.target.closest('.batch-signup-check');
+                    if (!checkbox) return;
+                    const itemKey = String(checkbox.dataset.batchKey || '');
+                    const targetItem = (batchSignupState.items || []).find(item => item.key === itemKey);
+                    if (!targetItem) return;
+                    if (checkbox.checked) {
+                        batchSignupState.selectedKeys = new Set([...batchSignupState.selectedKeys].filter(key => {
+                            const item = (batchSignupState.items || []).find(entry => entry.key === key);
+                            return !(item && item.eventId === targetItem.eventId);
+                        }));
+                        batchSignupState.selectedKeys.add(itemKey);
+                    } else {
+                        batchSignupState.selectedKeys.delete(itemKey);
+                    }
+                    renderBatchSignupModal();
+                });
+            }
+            if (batchSignupNameInputEl) {
+                batchSignupNameInputEl.addEventListener('input', () => {
+                    batchSignupState.userName = String(batchSignupNameInputEl.value || '').trim();
+                    renderBatchSignupModal();
+                });
+            }
+            if (batchSignupMonthSelectEl) {
+                batchSignupMonthSelectEl.addEventListener('change', () => {
+                    batchSignupState.selectedMonthKey = String(batchSignupMonthSelectEl.value || '');
+                    syncBatchSignupMonthData(true);
+                    renderBatchSignupModal();
+                });
+            }
+            if (batchSignupFilterInputEl) {
+                batchSignupFilterInputEl.addEventListener('input', () => {
+                    batchSignupState.keyword = String(batchSignupFilterInputEl.value || '');
+                    renderBatchSignupModal();
+                });
+            }
+            if (batchSignupAvailableOnlyEl) {
+                batchSignupAvailableOnlyEl.addEventListener('change', () => {
+                    batchSignupState.availableOnly = Boolean(batchSignupAvailableOnlyEl.checked);
+                    renderBatchSignupModal();
+                });
+            }
+            if (clearBatchSignupSelectionBtnEl) {
+                clearBatchSignupSelectionBtnEl.addEventListener('click', () => {
+                    batchSignupState.selectedKeys = new Set();
+                    renderBatchSignupModal();
+                });
+            }
+            if (submitBatchSignupBtnEl) {
+                submitBatchSignupBtnEl.addEventListener('click', submitBatchSignupSelection);
+            }
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && batchSignupState.isOpen) {
+                    closeBatchSignupModal();
+                }
+            });
             const promptAdminPasswordForLineToChange = async (nextValue, sourceLabel) => {
                 const safeValue = String(nextValue || '').trim() || '(空白)';
                 const { value: password, isConfirmed } = await Swal.fire({

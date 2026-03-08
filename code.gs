@@ -90,24 +90,29 @@ function doGet(e) {
 }
 
 function doPost(e) {
+  const props = PropertiesService.getScriptProperties();
   try {
-    const props = PropertiesService.getScriptProperties();
     props.setProperty(PROP_LINE_WEBHOOK_LAST_AT, new Date().toISOString());
     const rawBody = e && e.postData && e.postData.contents ? e.postData.contents : '';
-    if (rawBody) {
-      let body = null;
-      try { body = JSON.parse(rawBody); } catch (parseErr) { body = null; }
-      if (body && Array.isArray(body.events)) {
-        const result = lineWebhook_(body);
-        return ContentService.createTextOutput(JSON.stringify(result))
-          .setMimeType(ContentService.MimeType.JSON);
-      }
+    if (!rawBody) {
+      return ContentService.createTextOutput(JSON.stringify({ ok: true, ignored: true, reason: 'empty_body' }))
+        .setMimeType(ContentService.MimeType.JSON);
     }
+    let body = null;
+    try { body = JSON.parse(rawBody); } catch (parseErr) { body = null; }
+    if (body && Array.isArray(body.events)) {
+      const result = lineWebhook_(body);
+      return ContentService.createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    return ContentService.createTextOutput(JSON.stringify({ ok: true, ignored: true, reason: 'unsupported_post_payload' }))
+      .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
-    PropertiesService.getScriptProperties().setProperty(PROP_LINE_WEBHOOK_LAST_ERROR, String(err && err.message ? err.message : err));
+    props.setProperty(PROP_LINE_WEBHOOK_LAST_ERROR, String(err && err.message ? err.message : err));
     console.error(`doPost webhook 失敗: ${err.message}\n${err.stack}`);
+    return ContentService.createTextOutput(JSON.stringify({ ok: false, error: String(err && err.message ? err.message : err) }))
+      .setMimeType(ContentService.MimeType.JSON);
   }
-  return doGet(e);
 }
 
 // -------------------- 輔助函式 --------------------
@@ -1053,8 +1058,20 @@ const PROP_LINE_WEBHOOK_LAST_AT = 'LINE_WEBHOOK_LAST_AT';
 const PROP_LINE_WEBHOOK_LAST_EVENT_COUNT = 'LINE_WEBHOOK_LAST_EVENT_COUNT';
 const PROP_LINE_WEBHOOK_LAST_ERROR = 'LINE_WEBHOOK_LAST_ERROR';
 const PROP_LINE_WEBHOOK_LAST_SOURCE = 'LINE_WEBHOOK_LAST_SOURCE';
+const PROP_LINE_WEBHOOK_LAST_REPLY_STATUS = 'LINE_WEBHOOK_LAST_REPLY_STATUS';
+const PROP_LINE_WEBHOOK_LAST_REPLY_ERROR = 'LINE_WEBHOOK_LAST_REPLY_ERROR';
 const CALENDAR_LINK_CURRENT_MONTH_KEY = 'AV_CALENDAR_LINK_CURRENT_MONTH';
 const CALENDAR_LINK_NEXT_MONTH_KEY = 'AV_CALENDAR_LINK_NEXT_MONTH';
+const LINE_SUBSCRIPTION_MESSAGE_TYPES = ['tomorrow_signup', 'marquee_announcement'];
+const LINE_EVENT_CACHE_TTL_SEC = 6 * 60 * 60;
+
+function getScriptTimeZone_() {
+  return Session.getScriptTimeZone() || 'Asia/Taipei';
+}
+
+function formatInScriptTimeZone_(date, pattern) {
+  return Utilities.formatDate(date, getScriptTimeZone_(), pattern);
+}
 
 function resolveLineToken() {
   const fromProps = normalizeLineToken_(PropertiesService.getScriptProperties().getProperty(LINE_TOKEN_PROPERTY_KEY));
@@ -1083,35 +1100,104 @@ function parseLineTargets_(lineToRaw) {
     .filter(Boolean);
 }
 
-function getRecordedLineTargetIds_() {
-  return getLineTargets_()
-    .map(item => String(item && item.target_id ? item.target_id : '').trim())
-    .filter(Boolean);
+function dedupeLineTargetIds_(items) {
+  const out = [];
+  const seen = {};
+  (Array.isArray(items) ? items : []).forEach(item => {
+    const value = String(item || '').trim();
+    if (!value || seen[value]) return;
+    seen[value] = true;
+    out.push(value);
+  });
+  return out;
 }
 
-function resolveLineTargetsForSend_(linTo) {
+function normalizeLineSubscribedMessageTypes_(types) {
+  let list = [];
+  if (Array.isArray(types)) {
+    list = types;
+  } else if (typeof types === 'string') {
+    list = types.split(/[\s,;|/]+/);
+  }
+  const normalized = dedupeLineTargetIds_(list.map(item => {
+    const raw = String(item || '').trim().toLowerCase();
+    if (!raw) return '';
+    if (raw === 'all' || raw === '全部') return 'all';
+    if (raw === 'tomorrow_signup' || raw === '明天' || raw === '明天名單') return 'tomorrow_signup';
+    if (raw === 'marquee_announcement' || raw === '公告' || raw === '跑馬燈' || raw === '跑馬燈公告') return 'marquee_announcement';
+    return '';
+  }));
+  if (normalized.indexOf('all') >= 0 || normalized.length === 0) {
+    return LINE_SUBSCRIPTION_MESSAGE_TYPES.slice();
+  }
+  return normalized.filter(type => LINE_SUBSCRIPTION_MESSAGE_TYPES.indexOf(type) >= 0);
+}
+
+function normalizeLineSourceStatus_(value) {
+  const normalized = String(value || '').trim().toLowerCase();
+  if (normalized === 'blocked' || normalized === 'left' || normalized === 'inactive') return normalized;
+  return 'active';
+}
+
+function normalizeLineTargetRecord_(item) {
+  const row = item || {};
+  const status = normalizeLineSourceStatus_(row.source_status || (row.notifications_enabled === false ? 'inactive' : 'active'));
+  const notificationsEnabled = status === 'active' ? row.notifications_enabled !== false : false;
+  return {
+    target_id: String(row.target_id || '').trim(),
+    source_type: String(row.source_type || '').trim(),
+    user_id: String(row.user_id || '').trim(),
+    group_id: String(row.group_id || '').trim(),
+    room_id: String(row.room_id || '').trim(),
+    bound_user_name: normalizeLineBoundUserName_(row.bound_user_name || ''),
+    last_seen_at: String(row.last_seen_at || '').trim(),
+    last_interaction_at: String(row.last_interaction_at || row.last_seen_at || '').trim(),
+    last_event_type: String(row.last_event_type || '').trim(),
+    source_status: status,
+    notifications_enabled: notificationsEnabled,
+    subscribed_message_types: normalizeLineSubscribedMessageTypes_(row.subscribed_message_types),
+    alias: normalizeLineTargetAlias_(row.alias || '')
+  };
+}
+
+function getRecordedLineTargets_() {
+  return getLineTargets_();
+}
+
+function resolveLineTargetsForSend_(linTo, options) {
+  const opts = options || {};
+  const messageType = String(opts.message_type || '').trim();
+  const respectPreferences = Boolean(opts.respect_preferences);
   const directTargets = parseLineTargets_(linTo);
   if (directTargets.length) {
-    return directTargets.filter((target, index, arr) => arr.indexOf(target) === index);
+    return dedupeLineTargetIds_(directTargets);
   }
 
   const savedTargetLineToRaw = String(PropertiesService.getScriptProperties().getProperty(LINE_TO_PROPERTY_KEY) || '').trim();
   const configuredTargets = parseLineTargets_(savedTargetLineToRaw);
   if (configuredTargets.length) {
-    return configuredTargets.filter((target, index, arr) => arr.indexOf(target) === index);
+    return dedupeLineTargetIds_(configuredTargets);
   }
 
-  const recordedTargets = getRecordedLineTargetIds_();
-  const fallbackTargets = recordedTargets.length ? recordedTargets : parseLineTargets_(String(LINE_USER_ID || '').trim());
-  const deduped = [];
-  const seen = {};
-  fallbackTargets.forEach(t => {
-    const key = String(t || '').trim();
-    if (!key || seen[key]) return;
-    seen[key] = true;
-    deduped.push(key);
-  });
-  return deduped;
+  const recordedTargets = getRecordedLineTargets_();
+  if (recordedTargets.length) {
+    const filteredTargets = recordedTargets
+      .filter(item => {
+        const targetId = String(item && item.target_id || '').trim();
+        if (!targetId) return false;
+        const status = normalizeLineSourceStatus_(item && item.source_status || '');
+        if (status === 'blocked' || status === 'left') return false;
+        if (!respectPreferences) return true;
+        if (item && item.notifications_enabled === false) return false;
+        if (!messageType) return true;
+        const subscribedTypes = normalizeLineSubscribedMessageTypes_(item && item.subscribed_message_types);
+        return subscribedTypes.indexOf(messageType) >= 0;
+      })
+      .map(item => String(item && item.target_id || '').trim());
+    return dedupeLineTargetIds_(filteredTargets);
+  }
+
+  return dedupeLineTargetIds_(parseLineTargets_(String(LINE_USER_ID || '').trim()));
 }
 
 function getLineTargets_() {
@@ -1119,15 +1205,9 @@ function getLineTargets_() {
   if (!raw) return [];
   try {
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed.map(item => ({
-      target_id: String(item && item.target_id || '').trim(),
-      source_type: String(item && item.source_type || '').trim(),
-      user_id: String(item && item.user_id || '').trim(),
-      group_id: String(item && item.group_id || '').trim(),
-      room_id: String(item && item.room_id || '').trim(),
-      last_seen_at: String(item && item.last_seen_at || '').trim(),
-      alias: normalizeLineTargetAlias_(item && item.alias || '')
-    })).filter(item => item.target_id) : [];
+    return Array.isArray(parsed)
+      ? parsed.map(item => normalizeLineTargetRecord_(item)).filter(item => item.target_id)
+      : [];
   } catch (e) {
     console.error('解析 LINE_TARGETS 失敗: ' + e.toString());
     return [];
@@ -1135,18 +1215,9 @@ function getLineTargets_() {
 }
 
 function setLineTargets_(items) {
-  const arr = Array.isArray(items) ? items.map(item => {
-    const row = item || {};
-    return {
-      target_id: String(row.target_id || '').trim(),
-      source_type: String(row.source_type || '').trim(),
-      user_id: String(row.user_id || '').trim(),
-      group_id: String(row.group_id || '').trim(),
-      room_id: String(row.room_id || '').trim(),
-      last_seen_at: String(row.last_seen_at || '').trim(),
-      alias: normalizeLineTargetAlias_(row.alias || '')
-    };
-  }).filter(item => item.target_id) : [];
+  const arr = Array.isArray(items)
+    ? items.map(item => normalizeLineTargetRecord_(item)).filter(item => item.target_id)
+    : [];
   PropertiesService.getScriptProperties().setProperty(PROP_LINE_TARGETS, JSON.stringify(arr));
 }
 
@@ -1157,15 +1228,28 @@ function normalizeLineTargetAlias_(rawAlias) {
     .slice(0, 80);
 }
 
+function normalizeLineBoundUserName_(rawValue) {
+  return String(rawValue || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 40);
+}
+
 function getLineWebhookStatus_() {
   const props = PropertiesService.getScriptProperties();
   const targets = getLineTargets_();
+  const activeTargets = targets.filter(item => normalizeLineSourceStatus_(item.source_status) === 'active');
+  const notificationsEnabledTargets = activeTargets.filter(item => item.notifications_enabled !== false);
   return {
     last_at: String(props.getProperty(PROP_LINE_WEBHOOK_LAST_AT) || ''),
     last_event_count: Number(props.getProperty(PROP_LINE_WEBHOOK_LAST_EVENT_COUNT) || 0),
     last_source: String(props.getProperty(PROP_LINE_WEBHOOK_LAST_SOURCE) || ''),
     last_error: String(props.getProperty(PROP_LINE_WEBHOOK_LAST_ERROR) || ''),
-    targets_count: targets.length
+    last_reply_status: String(props.getProperty(PROP_LINE_WEBHOOK_LAST_REPLY_STATUS) || ''),
+    last_reply_error: String(props.getProperty(PROP_LINE_WEBHOOK_LAST_REPLY_ERROR) || ''),
+    targets_count: targets.length,
+    active_targets_count: activeTargets.length,
+    notifications_enabled_count: notificationsEnabledTargets.length
   };
 }
 
@@ -1291,51 +1375,674 @@ function inferLineToType_(targetId) {
   return 'unknown';
 }
 
+function getLineEventTargetId_(event) {
+  const source = (event && event.source) || {};
+  return String(source.groupId || source.roomId || source.userId || '').trim();
+}
+
+function buildLineEventCacheKey_(event) {
+  if (!event) return '';
+  const webhookEventId = String(event.webhookEventId || '').trim();
+  if (webhookEventId) return `line_evt_${webhookEventId}`;
+  const parts = [
+    String(event.type || ''),
+    String(event.timestamp || ''),
+    String(event.replyToken || ''),
+    getLineEventTargetId_(event),
+    String(event && event.message && event.message.id || ''),
+    String(event && event.postback && event.postback.data || '')
+  ];
+  const digest = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, parts.join('|'));
+  return `line_evt_${Utilities.base64EncodeWebSafe(digest).replace(/=+$/g, '')}`;
+}
+
+function shouldProcessLineEvent_(event) {
+  const cacheKey = buildLineEventCacheKey_(event);
+  if (!cacheKey) return true;
+  const cache = CacheService.getScriptCache();
+  if (cache.get(cacheKey)) return false;
+  cache.put(cacheKey, '1', LINE_EVENT_CACHE_TTL_SEC);
+  return true;
+}
+
+function resolveLineTargetStatusFromEvent_(eventType, previousStatus) {
+  if (eventType === 'unfollow') return 'blocked';
+  if (eventType === 'leave') return 'left';
+  if (eventType === 'follow' || eventType === 'join' || eventType === 'message' || eventType === 'postback') return 'active';
+  return normalizeLineSourceStatus_(previousStatus);
+}
+
+function buildLineTargetFromEvent_(event, existingRecord, nowIso) {
+  const source = (event && event.source) || {};
+  const targetId = getLineEventTargetId_(event);
+  if (!targetId) return null;
+  const existing = normalizeLineTargetRecord_(existingRecord || { target_id: targetId });
+  const nextStatus = resolveLineTargetStatusFromEvent_(String(event && event.type || '').trim(), existing.source_status);
+  return normalizeLineTargetRecord_(Object.assign({}, existing, {
+    target_id: targetId,
+    source_type: String(source.type || inferLineToType_(targetId)),
+    user_id: String(source.userId || existing.user_id || ''),
+    group_id: String(source.groupId || existing.group_id || ''),
+    room_id: String(source.roomId || existing.room_id || ''),
+    last_seen_at: nowIso,
+    last_interaction_at: nowIso,
+    last_event_type: String(event && event.type || ''),
+    source_status: nextStatus,
+    notifications_enabled: nextStatus === 'active' ? existing.notifications_enabled !== false : false,
+    subscribed_message_types: existing.subscribed_message_types
+  }));
+}
+
+function normalizeLineCommandText_(text) {
+  return String(text || '')
+    .replace(/\u3000/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function normalizeLineDateInput_(rawDate) {
+  const normalized = String(rawDate || '').trim().replace(/[./]/g, '-');
+  const parsed = new Date(normalized);
+  if (isNaN(parsed.getTime())) return '';
+  return formatInScriptTimeZone_(parsed, 'yyyy-MM-dd');
+}
+
+function getCurrentWeekDateRange_() {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const day = today.getDay();
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  const start = new Date(today);
+  start.setDate(today.getDate() + diffToMonday);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  return {
+    startDateStr: formatInScriptTimeZone_(start, 'yyyy-MM-dd'),
+    endDateStr: formatInScriptTimeZone_(end, 'yyyy-MM-dd')
+  };
+}
+
+function getCurrentMonthDateRange_() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  return {
+    startDateStr: formatInScriptTimeZone_(start, 'yyyy-MM-dd'),
+    endDateStr: formatInScriptTimeZone_(end, 'yyyy-MM-dd')
+  };
+}
+
+function buildLineQuickReplyItem_(label, text) {
+  return {
+    type: 'action',
+    action: {
+      type: 'message',
+      label: String(label || '').slice(0, 20),
+      text: String(text || '').slice(0, 300)
+    }
+  };
+}
+
+function buildLineTextMessage_(text, quickReplyItems) {
+  const message = { type: 'text', text: String(text || '').slice(0, 5000) };
+  const items = Array.isArray(quickReplyItems) ? quickReplyItems.filter(Boolean).slice(0, 13) : [];
+  if (items.length) {
+    message.quickReply = { items: items };
+  }
+  return message;
+}
+
+function buildLineMenuTemplateMessage_() {
+  return {
+    type: 'template',
+    altText: 'AV 放送 Bot 功能選單',
+    template: {
+      type: 'buttons',
+      title: 'AV 放送 Bot',
+      text: '快速查名單與通知設定',
+      actions: [
+        { type: 'message', label: '今天名單', text: '今天名單' },
+        { type: 'message', label: '明天名單', text: '明天名單' },
+        { type: 'message', label: '本週名單', text: '本週名單' },
+        { type: 'message', label: '通知設定', text: '通知設定' }
+      ]
+    }
+  };
+}
+
+function buildLineNotificationTemplateMessage_() {
+  return {
+    type: 'template',
+    altText: '通知設定',
+    template: {
+      type: 'buttons',
+      title: '通知設定',
+      text: '快速切換通知偏好',
+      actions: [
+        { type: 'message', label: '啟用通知', text: '啟用通知' },
+        { type: 'message', label: '停止通知', text: '停止通知' },
+        { type: 'message', label: '只收明天名單', text: '只收明天名單' },
+        { type: 'message', label: '只收公告', text: '只收公告' }
+      ]
+    }
+  };
+}
+
+function summarizeLineTargetPreferences_(targetRecord) {
+  const target = normalizeLineTargetRecord_(targetRecord);
+  const typeLabels = target.subscribed_message_types.map(type => type === 'tomorrow_signup' ? '明天名單' : '公告');
+  const statusLabel = target.notifications_enabled ? '啟用' : '停用';
+  const sourceStatus = target.source_status === 'blocked'
+    ? '已封鎖'
+    : (target.source_status === 'left' ? '已離開' : (target.source_status === 'inactive' ? '未啟用' : '正常'));
+  return `通知：${statusLabel}\n訂閱：${typeLabels.join('、') || '無'}\n來源狀態：${sourceStatus}${target.bound_user_name ? `\n綁定姓名：${target.bound_user_name}` : ''}${target.alias ? `\n標註：${target.alias}` : ''}`;
+}
+
+function buildLineMenuMessages_(targetRecord) {
+  const summary = summarizeLineTargetPreferences_(targetRecord);
+  const intro = [
+    '可用指令：',
+    '1. 今天名單 / 明天名單 / 本週名單 / 本月名單',
+    '2. 查詢 2026-03-08 或 查詢 2026-03-08 2026-03-12',
+    '3. 今天有什麼法會 / 本週有哪些法會 / 本月有哪些法會 / 查活動 2026-03-08',
+    '4. 我是 王小明 / 解除綁定 / 我的報名 / 我的本週報名',
+    '5. 公告 / 本月行事曆 / 次月行事曆',
+    '6. 通知設定 / 啟用通知 / 停止通知 / 訂閱全部 / 只收明天名單 / 只收公告',
+    '',
+    summary
+  ].join('\n');
+  return [
+    buildLineTextMessage_(intro, [
+      buildLineQuickReplyItem_('今天名單', '今天名單'),
+      buildLineQuickReplyItem_('明天名單', '明天名單'),
+      buildLineQuickReplyItem_('本週名單', '本週名單'),
+      buildLineQuickReplyItem_('本月名單', '本月名單'),
+      buildLineQuickReplyItem_('今天有什麼法會', '今天有什麼法會'),
+      buildLineQuickReplyItem_('我的報名', '我的報名'),
+      buildLineQuickReplyItem_('公告', '公告'),
+      buildLineQuickReplyItem_('本月行事曆', '本月行事曆'),
+      buildLineQuickReplyItem_('次月行事曆', '次月行事曆'),
+      buildLineQuickReplyItem_('通知設定', '通知設定')
+    ]),
+    buildLineMenuTemplateMessage_()
+  ];
+}
+
+function buildLineNotificationMessages_(targetRecord, leadText) {
+  return [
+    buildLineTextMessage_(`${leadText ? leadText + '\n\n' : ''}${summarizeLineTargetPreferences_(targetRecord)}`, [
+      buildLineQuickReplyItem_('啟用通知', '啟用通知'),
+      buildLineQuickReplyItem_('停止通知', '停止通知'),
+      buildLineQuickReplyItem_('訂閱全部', '訂閱全部'),
+      buildLineQuickReplyItem_('只收明天名單', '只收明天名單'),
+      buildLineQuickReplyItem_('只收公告', '只收公告')
+    ]),
+    buildLineNotificationTemplateMessage_()
+  ];
+}
+
+function canBindLineUserName_(targetRecord) {
+  return String(targetRecord && targetRecord.source_type || '').trim() === 'user';
+}
+
+function applyLineTargetBoundUserName_(targetRecord, userName) {
+  const target = normalizeLineTargetRecord_(targetRecord);
+  target.bound_user_name = normalizeLineBoundUserName_(userName);
+  target.last_interaction_at = new Date().toISOString();
+  target.last_event_type = target.bound_user_name ? 'bind_user_name' : 'unbind_user_name';
+  return target;
+}
+
+function getUserSignupsInRange_(userName, startDateStr, endDateStr) {
+  const normalizedUserName = normalizeLineBoundUserName_(userName);
+  if (!normalizedUserName) return [];
+  return getUnifiedSignups('', startDateStr, endDateStr)
+    .filter(item => normalizeLineBoundUserName_(item && item.user || '') === normalizedUserName);
+}
+
+function getEventsInRange_(startDateStr, endDateStr) {
+  const start = startDateStr ? new Date(startDateStr) : null;
+  const end = endDateStr ? new Date(endDateStr) : null;
+  if (start) start.setHours(0, 0, 0, 0);
+  if (end) end.setHours(23, 59, 59, 999);
+  return getEventsAndSignups().filter(event => {
+    const eventDate = new Date(event && event.start || '');
+    if (isNaN(eventDate.getTime())) return false;
+    if (start && eventDate < start) return false;
+    if (end && eventDate > end) return false;
+    return true;
+  });
+}
+
+function buildMySignupsReplyMessages_(targetRecord, label, startDateStr, endDateStr) {
+  const target = normalizeLineTargetRecord_(targetRecord);
+  if (!canBindLineUserName_(target)) {
+    return [buildLineTextMessage_('「我的報名」只支援 1 對 1 私訊使用。請改在個人聊天室中操作。')];
+  }
+  if (!target.bound_user_name) {
+    return [buildLineTextMessage_('尚未綁定姓名。請先輸入「我是 王小明」。', [
+      buildLineQuickReplyItem_('我是 王小明', '我是 王小明'),
+      buildLineQuickReplyItem_('通知設定', '通知設定'),
+      buildLineQuickReplyItem_('選單', '選單')
+    ])];
+  }
+  const signups = getUserSignupsInRange_(target.bound_user_name, startDateStr, endDateStr);
+  if (!signups.length) {
+    return [buildLineTextMessage_(`${label}沒有 ${target.bound_user_name} 的報名資料。`, [
+      buildLineQuickReplyItem_('今天名單', '今天名單'),
+      buildLineQuickReplyItem_('本週有哪些法會', '本週有哪些法會'),
+      buildLineQuickReplyItem_('通知設定', '通知設定')
+    ])];
+  }
+  const body = [
+    `【${label}】`,
+    `姓名：${target.bound_user_name}`,
+    `區間：${startDateStr} ~ ${endDateStr}`,
+    '----------',
+    ''
+  ].join('\n') + signups.map((item, index) => (
+    `${index + 1}. ${item.eventDate} (${item.eventDayOfWeek || '-'}) ${item.startTime || ''}${item.endTime ? ' - ' + item.endTime : ''}\n${item.eventTitle}\n崗位：${item.position}`
+  )).join('\n\n');
+  return buildLineTextMessagesFromLongText_(body, [
+    buildLineQuickReplyItem_('我的本週報名', '我的本週報名'),
+    buildLineQuickReplyItem_('本週有哪些法會', '本週有哪些法會'),
+    buildLineQuickReplyItem_('通知設定', '通知設定')
+  ]);
+}
+
+function buildEventsInRangeReplyMessages_(label, startDateStr, endDateStr) {
+  const events = getEventsInRange_(startDateStr, endDateStr);
+  if (!events.length) {
+    return [buildLineTextMessage_(`${label}沒有法會資料。`, [
+      buildLineQuickReplyItem_('今天名單', '今天名單'),
+      buildLineQuickReplyItem_('公告', '公告'),
+      buildLineQuickReplyItem_('選單', '選單')
+    ])];
+  }
+  const body = [
+    `【${label}】`,
+    `區間：${startDateStr} ~ ${endDateStr}`,
+    '----------',
+    ''
+  ].join('\n') + events.map((event, index) => {
+    const startAt = new Date(event.start);
+    const dateText = isNaN(startAt.getTime()) ? '' : formatInScriptTimeZone_(startAt, 'yyyy-MM-dd');
+    const positions = Array.isArray(event.extendedProps && event.extendedProps.positions)
+      ? event.extendedProps.positions.join('、')
+      : '';
+    const signupCount = Array.isArray(event.extendedProps && event.extendedProps.signups)
+      ? event.extendedProps.signups.length
+      : 0;
+    const maxAttendees = Number(event.extendedProps && event.extendedProps.maxAttendees || 999);
+    return `${index + 1}. ${dateText} ${event.extendedProps.startTime || ''}${event.extendedProps.endTime ? ' - ' + event.extendedProps.endTime : ''}\n${event.extendedProps.full_title || event.title}\n已報 ${signupCount}/${maxAttendees}${positions ? `\n崗位：${positions}` : ''}`;
+  }).join('\n\n');
+  return buildLineTextMessagesFromLongText_(body, [
+    buildLineQuickReplyItem_('今天有什麼法會', '今天有什麼法會'),
+    buildLineQuickReplyItem_('本週有哪些法會', '本週有哪些法會'),
+    buildLineQuickReplyItem_('本月有哪些法會', '本月有哪些法會')
+  ]);
+}
+
+function buildLineTextMessagesFromLongText_(text, quickReplyItems) {
+  const chunks = splitLineMessageChunks_(String(text || '').trim(), 4500);
+  if (!chunks.length) return [buildLineTextMessage_('目前沒有可顯示的內容。', quickReplyItems)];
+  const limitedChunks = chunks.slice(0, 5);
+  if (chunks.length > 5) {
+    limitedChunks[4] = `${limitedChunks[4].slice(0, 4300)}\n\n...(內容過長，請改用網站查看完整資料)`;
+  }
+  return limitedChunks.map((chunk, index) => buildLineTextMessage_(
+    chunk,
+    index === limitedChunks.length - 1 ? quickReplyItems : null
+  ));
+}
+
+function buildSignupsReplyMessages_(result, emptyText) {
+  if (!result || result.status === 'nodata') {
+    return [buildLineTextMessage_(emptyText || '查無資料。', [
+      buildLineQuickReplyItem_('明天名單', '明天名單'),
+      buildLineQuickReplyItem_('本週名單', '本週名單'),
+      buildLineQuickReplyItem_('通知設定', '通知設定')
+    ])];
+  }
+  if (result.status !== 'success' || !result.text) {
+    return [buildLineTextMessage_('查詢失敗，請稍後再試。')];
+  }
+  return buildLineTextMessagesFromLongText_(result.text, [
+    buildLineQuickReplyItem_('今天名單', '今天名單'),
+    buildLineQuickReplyItem_('明天名單', '明天名單'),
+    buildLineQuickReplyItem_('本週名單', '本週名單'),
+    buildLineQuickReplyItem_('本月名單', '本月名單')
+  ]);
+}
+
+function buildAnnouncementsReplyMessages_() {
+  const announcements = getNewsAnnouncements();
+  if (!announcements.length) {
+    return [buildLineTextMessage_('目前沒有最新公告。')];
+  }
+  const body = `【跑馬燈公告】\n更新時間：${formatInScriptTimeZone_(new Date(), 'yyyy/MM/dd HH:mm')}\n\n${announcements.map((item, index) => `${index + 1}. ${item}`).join('\n')}`;
+  return buildLineTextMessagesFromLongText_(body, [
+    buildLineQuickReplyItem_('本月行事曆', '本月行事曆'),
+    buildLineQuickReplyItem_('次月行事曆', '次月行事曆'),
+    buildLineQuickReplyItem_('通知設定', '通知設定')
+  ]);
+}
+
+function buildCalendarLinkReplyMessages_(linkType) {
+  const links = getCalendarDownloadLinks_();
+  const isCurrent = linkType !== 'next';
+  const label = isCurrent ? '本月行事曆' : '次月行事曆';
+  const url = isCurrent ? String(links.current_month_url || '') : String(links.next_month_url || '');
+  if (!url) {
+    return [buildLineTextMessage_(`${label} 連結尚未設定。`)];
+  }
+  return [buildLineTextMessage_(`【${label}】\n${url}`, [
+    buildLineQuickReplyItem_('本月行事曆', '本月行事曆'),
+    buildLineQuickReplyItem_('次月行事曆', '次月行事曆'),
+    buildLineQuickReplyItem_('公告', '公告')
+  ])];
+}
+
+function parseLineCommand_(text) {
+  const normalized = normalizeLineCommandText_(text);
+  const lower = normalized.toLowerCase();
+  if (!normalized) return null;
+  if (lower === 'help' || lower === 'menu' || normalized === '幫助' || normalized === '選單' || normalized === '功能') {
+    return { type: 'menu' };
+  }
+  if (normalized === '今天名單') return { type: 'today' };
+  if (normalized === '明天名單') return { type: 'tomorrow' };
+  if (normalized === '本週名單') return { type: 'week' };
+  if (normalized === '本月名單') return { type: 'month' };
+  if (normalized === '我的報名') return { type: 'my_signups' };
+  if (normalized === '我的本週報名') return { type: 'my_week_signups' };
+  if (normalized === '今天有什麼法會') return { type: 'events_today' };
+  if (normalized === '本週有哪些法會') return { type: 'events_week' };
+  if (normalized === '本月有哪些法會') return { type: 'events_month' };
+  if (normalized === '公告' || normalized === '最新公告') return { type: 'announcements' };
+  if (normalized === '本月行事曆') return { type: 'calendar_current' };
+  if (normalized === '次月行事曆') return { type: 'calendar_next' };
+  if (normalized === '通知設定') return { type: 'notification_status' };
+  if (normalized === '啟用通知') return { type: 'notification_update', mode: 'enable' };
+  if (normalized === '停止通知' || normalized === '停用通知') return { type: 'notification_update', mode: 'disable' };
+  if (normalized === '訂閱全部') return { type: 'notification_update', mode: 'all' };
+  if (normalized === '只收明天名單') return { type: 'notification_update', mode: 'tomorrow_only' };
+  if (normalized === '只收公告') return { type: 'notification_update', mode: 'marquee_only' };
+  if (normalized === '解除綁定') return { type: 'unbind_user_name' };
+  const bindMatch = normalized.match(/^(?:我是|綁定姓名|姓名綁定)\s+(.+)$/);
+  if (bindMatch) {
+    return { type: 'bind_user_name', userName: normalizeLineBoundUserName_(bindMatch[1]) };
+  }
+  const eventRangeMatch = normalized.match(/^查活動\s+(\d{4}[-/.]\d{1,2}[-/.]\d{1,2})(?:\s+(\d{4}[-/.]\d{1,2}[-/.]\d{1,2}))?$/);
+  if (eventRangeMatch) {
+    const startDateStr = normalizeLineDateInput_(eventRangeMatch[1]);
+    const endDateStr = normalizeLineDateInput_(eventRangeMatch[2] || eventRangeMatch[1]);
+    if (startDateStr && endDateStr) {
+      return { type: 'events_range', startDateStr: startDateStr, endDateStr: endDateStr };
+    }
+  }
+  const rangeMatch = normalized.match(/^(?:查詢|名單)\s+(\d{4}[-/.]\d{1,2}[-/.]\d{1,2})(?:\s+(\d{4}[-/.]\d{1,2}[-/.]\d{1,2}))?$/);
+  if (rangeMatch) {
+    const startDateStr = normalizeLineDateInput_(rangeMatch[1]);
+    const endDateStr = normalizeLineDateInput_(rangeMatch[2] || rangeMatch[1]);
+    if (startDateStr && endDateStr) {
+      return { type: 'date_range', startDateStr: startDateStr, endDateStr: endDateStr };
+    }
+  }
+  return null;
+}
+
+function applyLineTargetNotificationMode_(targetRecord, mode) {
+  const target = normalizeLineTargetRecord_(targetRecord);
+  if (mode === 'disable') {
+    target.notifications_enabled = false;
+  } else if (mode === 'enable') {
+    target.notifications_enabled = true;
+    if (!target.subscribed_message_types.length) {
+      target.subscribed_message_types = LINE_SUBSCRIPTION_MESSAGE_TYPES.slice();
+    }
+    target.source_status = 'active';
+  } else if (mode === 'tomorrow_only') {
+    target.notifications_enabled = true;
+    target.subscribed_message_types = ['tomorrow_signup'];
+    target.source_status = 'active';
+  } else if (mode === 'marquee_only') {
+    target.notifications_enabled = true;
+    target.subscribed_message_types = ['marquee_announcement'];
+    target.source_status = 'active';
+  } else {
+    target.notifications_enabled = true;
+    target.subscribed_message_types = LINE_SUBSCRIPTION_MESSAGE_TYPES.slice();
+    target.source_status = 'active';
+  }
+  target.last_interaction_at = new Date().toISOString();
+  target.last_event_type = 'preference_update';
+  return target;
+}
+
+function buildLineCommandReplyMessages_(command, targetRecord) {
+  if (!command) return [];
+  if (command.type === 'menu') {
+    return buildLineMenuMessages_(targetRecord);
+  }
+  if (command.type === 'today') {
+    return buildSignupsReplyMessages_(getSignupsAsTextForToday(), '今天沒有報名資料。');
+  }
+  if (command.type === 'tomorrow') {
+    return buildSignupsReplyMessages_(getSignupsAsTextForTomorrow(), '明天沒有報名資料。');
+  }
+  if (command.type === 'week') {
+    const range = getCurrentWeekDateRange_();
+    return buildSignupsReplyMessages_(getSignupsAsText(range.startDateStr, range.endDateStr), '本週沒有報名資料。');
+  }
+  if (command.type === 'month') {
+    const range = getCurrentMonthDateRange_();
+    return buildSignupsReplyMessages_(getSignupsAsText(range.startDateStr, range.endDateStr), '本月沒有報名資料。');
+  }
+  if (command.type === 'my_signups') {
+    const range = getCurrentMonthDateRange_();
+    return buildMySignupsReplyMessages_(targetRecord, '我的本月報名', range.startDateStr, range.endDateStr);
+  }
+  if (command.type === 'my_week_signups') {
+    const range = getCurrentWeekDateRange_();
+    return buildMySignupsReplyMessages_(targetRecord, '我的本週報名', range.startDateStr, range.endDateStr);
+  }
+  if (command.type === 'date_range') {
+    return buildSignupsReplyMessages_(getSignupsAsText(command.startDateStr, command.endDateStr), '指定日期區間沒有報名資料。');
+  }
+  if (command.type === 'events_today') {
+    const today = formatInScriptTimeZone_(new Date(), 'yyyy-MM-dd');
+    return buildEventsInRangeReplyMessages_('今天法會', today, today);
+  }
+  if (command.type === 'events_week') {
+    const range = getCurrentWeekDateRange_();
+    return buildEventsInRangeReplyMessages_('本週法會', range.startDateStr, range.endDateStr);
+  }
+  if (command.type === 'events_month') {
+    const range = getCurrentMonthDateRange_();
+    return buildEventsInRangeReplyMessages_('本月法會', range.startDateStr, range.endDateStr);
+  }
+  if (command.type === 'events_range') {
+    return buildEventsInRangeReplyMessages_('指定區間法會', command.startDateStr, command.endDateStr);
+  }
+  if (command.type === 'announcements') {
+    return buildAnnouncementsReplyMessages_();
+  }
+  if (command.type === 'calendar_current') {
+    return buildCalendarLinkReplyMessages_('current');
+  }
+  if (command.type === 'calendar_next') {
+    return buildCalendarLinkReplyMessages_('next');
+  }
+  if (command.type === 'bind_user_name') {
+    if (!canBindLineUserName_(targetRecord)) {
+      return [buildLineTextMessage_('姓名綁定只支援 1 對 1 私訊。請改在個人聊天室中輸入。')];
+    }
+    if (!command.userName) {
+      return [buildLineTextMessage_('請用「我是 王小明」這種格式綁定姓名。')];
+    }
+    const updatedTarget = applyLineTargetBoundUserName_(targetRecord, command.userName);
+    return [buildLineTextMessage_(`已綁定姓名：${updatedTarget.bound_user_name}\n之後可直接輸入「我的報名」或「我的本週報名」。`, [
+      buildLineQuickReplyItem_('我的報名', '我的報名'),
+      buildLineQuickReplyItem_('我的本週報名', '我的本週報名'),
+      buildLineQuickReplyItem_('通知設定', '通知設定')
+    ])];
+  }
+  if (command.type === 'unbind_user_name') {
+    if (!canBindLineUserName_(targetRecord)) {
+      return [buildLineTextMessage_('解除綁定只支援 1 對 1 私訊。請改在個人聊天室中操作。')];
+    }
+    const updatedTarget = applyLineTargetBoundUserName_(targetRecord, '');
+    return [buildLineTextMessage_(`已解除姓名綁定。${updatedTarget.bound_user_name ? '' : '\n如需重新設定，請輸入「我是 王小明」。'}`)];
+  }
+  if (command.type === 'notification_status') {
+    return buildLineNotificationMessages_(targetRecord, '這是目前聊天室 / 對話的通知設定。');
+  }
+  if (command.type === 'notification_update') {
+    const updatedTarget = applyLineTargetNotificationMode_(targetRecord, command.mode);
+    const labelMap = {
+      enable: '已啟用通知。',
+      disable: '已停止此聊天室 / 對話的自動通知。',
+      all: '已改為接收全部通知。',
+      tomorrow_only: '已改為只接收明天名單。',
+      marquee_only: '已改為只接收公告。'
+    };
+    return buildLineNotificationMessages_(updatedTarget, labelMap[command.mode] || '通知設定已更新。');
+  }
+  return [];
+}
+
+function buildLineWelcomeMessages_(event, targetRecord) {
+  const eventType = String(event && event.type || '');
+  const greeting = eventType === 'join'
+    ? '已加入此群組 / 聊天室。'
+    : '感謝加入 AV 放送 Bot。';
+  return [
+    buildLineTextMessage_(`${greeting}\n輸入「選單」可查看常用指令；也可以直接輸入「明天名單」、「公告」或「通知設定」。`, [
+      buildLineQuickReplyItem_('選單', '選單'),
+      buildLineQuickReplyItem_('明天名單', '明天名單'),
+      buildLineQuickReplyItem_('公告', '公告'),
+      buildLineQuickReplyItem_('通知設定', '通知設定')
+    ]),
+    buildLineMenuTemplateMessage_()
+  ];
+}
+
 function lineWebhook_(payload) {
   const events = (payload && Array.isArray(payload.events)) ? payload.events : [];
   const props = PropertiesService.getScriptProperties();
   props.setProperty(PROP_LINE_WEBHOOK_LAST_EVENT_COUNT, String(events.length));
   props.deleteProperty(PROP_LINE_WEBHOOK_LAST_ERROR);
+  props.deleteProperty(PROP_LINE_WEBHOOK_LAST_REPLY_ERROR);
   if (!events.length) {
-    return { ok: true, received_events: 0, recorded: 0, data: getLineTargets_() };
+    return { ok: true, received_events: 0, processed_events: 0, recorded: 0, replied_events: 0, data: getLineTargets_() };
   }
 
   const current = getLineTargets_();
   const map = {};
   current.forEach(item => {
     if (!item || !item.target_id) return;
-    map[String(item.target_id)] = item;
+    map[String(item.target_id)] = normalizeLineTargetRecord_(item);
   });
 
   let recorded = 0;
+  let processedEvents = 0;
+  let repliedEvents = 0;
+  let skippedEvents = 0;
   const nowIso = new Date().toISOString();
-  events.forEach(ev => {
-    const source = (ev && ev.source) || {};
-    const targetId = String(source.groupId || source.roomId || source.userId || '').trim();
-    if (!targetId) return;
-    props.setProperty(PROP_LINE_WEBHOOK_LAST_SOURCE, targetId);
 
-    const sourceType = String(source.type || inferLineToType_(targetId));
-    const existing = map[targetId] || {};
-    map[targetId] = {
-      target_id: targetId,
-      source_type: sourceType,
-      user_id: String(source.userId || ''),
-      group_id: String(source.groupId || ''),
-      room_id: String(source.roomId || ''),
-      last_seen_at: nowIso,
-      alias: normalizeLineTargetAlias_(existing.alias || '')
-    };
-    if (!existing.target_id) recorded += 1;
+  events.forEach(ev => {
+    try {
+      if (!shouldProcessLineEvent_(ev)) {
+        skippedEvents += 1;
+        return;
+      }
+      processedEvents += 1;
+      const targetId = getLineEventTargetId_(ev);
+      if (targetId) {
+        props.setProperty(PROP_LINE_WEBHOOK_LAST_SOURCE, targetId);
+        const existing = map[targetId] || null;
+        const mergedTarget = buildLineTargetFromEvent_(ev, existing, nowIso);
+        if (mergedTarget) {
+          map[targetId] = mergedTarget;
+          if (!existing || !existing.target_id) recorded += 1;
+        }
+      }
+
+      const eventType = String(ev && ev.type || '').trim();
+      let replyMessages = [];
+      if (eventType === 'follow' || eventType === 'join') {
+        replyMessages = buildLineWelcomeMessages_(ev, map[targetId] || {});
+      } else if (eventType === 'message') {
+        const message = ev && ev.message || {};
+        if (String(message.type || '') === 'text') {
+          const command = parseLineCommand_(message.text);
+          if (command) {
+            if (command.type === 'notification_update' && targetId && map[targetId]) {
+              map[targetId] = applyLineTargetNotificationMode_(map[targetId], command.mode);
+            } else if (command.type === 'bind_user_name' && targetId && map[targetId]) {
+              map[targetId] = applyLineTargetBoundUserName_(map[targetId], command.userName);
+            } else if (command.type === 'unbind_user_name' && targetId && map[targetId]) {
+              map[targetId] = applyLineTargetBoundUserName_(map[targetId], '');
+            }
+            replyMessages = buildLineCommandReplyMessages_(command, map[targetId] || {});
+          }
+        }
+      } else if (eventType === 'postback') {
+        const command = parseLineCommand_(String(ev && ev.postback && ev.postback.data || '').replace(/^cmd:/, ''));
+        if (command) {
+          if (command.type === 'notification_update' && targetId && map[targetId]) {
+            map[targetId] = applyLineTargetNotificationMode_(map[targetId], command.mode);
+          } else if (command.type === 'bind_user_name' && targetId && map[targetId]) {
+            map[targetId] = applyLineTargetBoundUserName_(map[targetId], command.userName);
+          } else if (command.type === 'unbind_user_name' && targetId && map[targetId]) {
+            map[targetId] = applyLineTargetBoundUserName_(map[targetId], '');
+          }
+          replyMessages = buildLineCommandReplyMessages_(command, map[targetId] || {});
+        }
+      }
+
+      const replyToken = String(ev && ev.replyToken || '').trim();
+      if (replyToken && replyMessages.length) {
+        const replyResult = sendLineReplyMessages_(replyToken, replyMessages, {
+          batch_id: Utilities.getUuid(),
+          trigger_source: 'line_webhook',
+          message_type: 'webhook_reply',
+          function_name: 'lineWebhook_',
+          line_to_input: targetId,
+          resolved_target_count: targetId ? 1 : 0,
+          target_id: targetId
+        });
+        if (replyResult && replyResult.sent) {
+          repliedEvents += 1;
+          props.setProperty(PROP_LINE_WEBHOOK_LAST_REPLY_STATUS, String(replyResult.status || 200));
+          props.deleteProperty(PROP_LINE_WEBHOOK_LAST_REPLY_ERROR);
+        } else if (replyResult && replyResult.error) {
+          props.setProperty(PROP_LINE_WEBHOOK_LAST_REPLY_ERROR, String(replyResult.error));
+        }
+      }
+    } catch (eventErr) {
+      props.setProperty(PROP_LINE_WEBHOOK_LAST_ERROR, String(eventErr && eventErr.message ? eventErr.message : eventErr));
+      console.error(`lineWebhook event 處理失敗: ${eventErr.message}\n${eventErr.stack}`);
+    }
   });
 
-  const merged = Object.keys(map).map(k => map[k]).sort((a, b) => {
+  const merged = Object.keys(map).map(k => normalizeLineTargetRecord_(map[k])).sort((a, b) => {
     const aTs = new Date(a.last_seen_at || 0).getTime();
     const bTs = new Date(b.last_seen_at || 0).getTime();
     return bTs - aTs;
   });
   setLineTargets_(merged);
-  return { ok: true, received_events: events.length, recorded: recorded, total: merged.length, data: merged };
+  return {
+    ok: true,
+    received_events: events.length,
+    processed_events: processedEvents,
+    skipped_events: skippedEvents,
+    recorded: recorded,
+    replied_events: repliedEvents,
+    total: merged.length,
+    data: merged
+  };
 }
 
 function maskToken_(token) {
@@ -1476,6 +2183,76 @@ function updateLineTargetAlias(targetId, rawAlias) {
   };
 }
 
+function summarizeLineMessagesForLog_(messages) {
+  const list = Array.isArray(messages) ? messages : [];
+  const parts = list.map(message => {
+    if (!message || typeof message !== 'object') return '';
+    if (message.type === 'text') return String(message.text || '');
+    if (message.type === 'template') return `[template] ${String(message.altText || '')}`;
+    if (message.type === 'flex') return `[flex] ${String(message.altText || '')}`;
+    return `[${String(message.type || 'message')}]`;
+  }).filter(Boolean);
+  return parts.join('\n---\n');
+}
+
+function sendLineReplyMessages_(replyToken, messages, logContext) {
+  const token = resolveLineToken();
+  const normalizedReplyToken = String(replyToken || '').trim();
+  const messageList = (Array.isArray(messages) ? messages : []).filter(Boolean).slice(0, 5);
+  const context = Object.assign({
+    batch_id: Utilities.getUuid(),
+    trigger_source: 'line_webhook',
+    message_type: 'webhook_reply',
+    function_name: 'sendLineReplyMessages_',
+    line_to_input: String(logContext && logContext.target_id || ''),
+    resolved_target_count: 1,
+    target_id: String(logContext && logContext.target_id || '')
+  }, logContext || {});
+  const logMessage = summarizeLineMessagesForLog_(messageList);
+
+  if (!token || token.includes('請在此貼上')) {
+    const errorText = 'LINE_CHANNEL_ACCESS_TOKEN 未設定。';
+    logLineSendFailure_(context, logMessage, errorText);
+    return { sent: false, status: 0, error: errorText };
+  }
+  if (!normalizedReplyToken) {
+    const errorText = 'replyToken 不存在。';
+    logLineSendFailure_(context, logMessage, errorText);
+    return { sent: false, status: 0, error: errorText };
+  }
+  if (!messageList.length) {
+    return { sent: false, status: 0, error: '無可回覆訊息。' };
+  }
+
+  let response;
+  try {
+    response = UrlFetchApp.fetch('https://api.line.me/v2/bot/message/reply', {
+      method: 'post',
+      contentType: 'application/json',
+      headers: { Authorization: 'Bearer ' + token },
+      payload: JSON.stringify({ replyToken: normalizedReplyToken, messages: messageList }),
+      muteHttpExceptions: true
+    });
+  } catch (err) {
+    const errorText = 'LINE reply request failed: ' + String(err);
+    logLineSendFailure_(context, logMessage, errorText);
+    return { sent: false, status: 0, error: errorText };
+  }
+
+  const status = Number(response.getResponseCode() || 0);
+  const bodyText = String(response.getContentText() || '');
+  const sent = status >= 200 && status < 300;
+  const result = {
+    target: String(context.target_id || ''),
+    sent: sent,
+    status: status,
+    response_body: bodyText,
+    error: sent ? '' : `LINE API 回應 ${status}: ${bodyText}`
+  };
+  appendLineSendLogs_(buildLineSendLogRows_(context, logMessage, [result]));
+  return result;
+}
+
 function sendLinePushSingle_(token, target, text) {
   const reqBody = {
     to: target,
@@ -1517,7 +2294,8 @@ function sendLineMessage(message, linTo, logContext) {
     trigger_source: '',
     message_type: '',
     function_name: 'sendLineMessage',
-    line_to_input: String(linTo || '')
+    line_to_input: String(linTo || ''),
+    respect_preferences: false
   }, logContext || {});
   const channelAccessToken = resolveLineToken();
   if (!channelAccessToken || channelAccessToken.includes('請在此貼上')) {
@@ -1526,9 +2304,17 @@ function sendLineMessage(message, linTo, logContext) {
     logLineSendFailure_(Object.assign({}, context, { resolved_target_count: 0 }), message, msg);
     return { status: 'error', error: msg };
   }
-  const targets = resolveLineTargetsForSend_(linTo);
+  const targets = resolveLineTargetsForSend_(linTo, {
+    message_type: context.message_type,
+    respect_preferences: context.respect_preferences
+  });
   if (!targets.length || targets.some(t => t.includes('請在此貼上'))) {
-    const msg = 'lin_to (LINE User ID / Group ID) 未設定。';
+    const hasDirectTarget = parseLineTargets_(linTo).length > 0;
+    const hasConfiguredTarget = parseLineTargets_(String(PropertiesService.getScriptProperties().getProperty(LINE_TO_PROPERTY_KEY) || '').trim()).length > 0;
+    const hasRecordedTarget = getRecordedLineTargets_().length > 0;
+    const msg = (!hasDirectTarget && !hasConfiguredTarget && hasRecordedTarget && context.respect_preferences)
+      ? '目前沒有符合此通知類型的訂閱對象。'
+      : 'lin_to (LINE User ID / Group ID) 未設定。';
     console.error(msg);
     logLineSendFailure_(Object.assign({}, context, { resolved_target_count: 0 }), message, msg);
     return { status: 'error', error: msg };
@@ -1559,7 +2345,8 @@ function dailyNotifyTomorrow_MessageAPI(linTo, logContext) { // 函式名稱維�
     return sendLineMessage(msg, linTo, Object.assign({
       trigger_source: 'manual_or_api',
       message_type: 'tomorrow_signup',
-      function_name: 'dailyNotifyTomorrow_MessageAPI'
+      function_name: 'dailyNotifyTomorrow_MessageAPI',
+      respect_preferences: !String(linTo || '').trim()
     }, logContext || {}));
   } catch (e) {
     console.error('[dailyNotify] 例外: ' + e.toString());
@@ -1640,7 +2427,8 @@ function sendMarqueeAnnouncementsToLine_MessageAPI(linTo, logContext) {
     const sendResult = sendLineMessage(fullMessage, linTo, Object.assign({
       trigger_source: 'manual_or_api',
       message_type: 'marquee_announcement',
-      function_name: 'sendMarqueeAnnouncementsToLine_MessageAPI'
+      function_name: 'sendMarqueeAnnouncementsToLine_MessageAPI',
+      respect_preferences: !String(linTo || '').trim()
     }, logContext || {}));
     sendResult.announcement_count = list.length;
     return sendResult;

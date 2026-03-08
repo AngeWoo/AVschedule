@@ -3137,6 +3137,24 @@
             </div>
 
             <div class="admin-panel">
+                <h4 style="margin-top: 0.25rem;"><span class="title-icon">&#x1F4C5;</span>行事曆連結維護</h4>
+                <p class="admin-panel-note">維護檔案區的「本月行事曆」與「次月行事曆」按鈕連結。儲存時需輸入管理密碼。</p>
+                <div class="inline-form admin-form-row row-calendar-links">
+                    <div class="form-group">
+                        <label for="calendar-link-current-input">本月行事曆連結</label>
+                        <input type="url" id="calendar-link-current-input" placeholder="請輸入本月行事曆 https:// 連結">
+                    </div>
+                    <div class="form-group">
+                        <label for="calendar-link-next-input">次月行事曆連結</label>
+                        <input type="url" id="calendar-link-next-input" placeholder="請輸入次月行事曆 https:// 連結">
+                    </div>
+                    <button id="save-calendar-links-btn" class="btn btn-icon-left" style="background-color: #2563eb; color: white;">
+                        <span class="icon">&#x1F4BE;</span><span>儲存行事曆連結</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="admin-panel">
                 <h4 style="margin-top: 0.25rem;"><span class="title-icon">&#x1F4CB;</span>LINE 發送 View Log</h4>
                 <p class="admin-panel-note">查看最近 LINE 發送紀錄，包含每日自動通知、跑馬燈公告與自訂訊息。</p>
                 <div class="inline-form admin-form-row row-log-controls">
@@ -3159,24 +3177,6 @@
                 </div>
                 <div id="line-send-log-table-wrap" class="line-log-table-wrap">
                     <div class="line-log-empty">尚未載入 LINE 發送紀錄。</div>
-                </div>
-            </div>
-
-            <div class="admin-panel">
-                <h4 style="margin-top: 0.25rem;"><span class="title-icon">&#x1F4C5;</span>行事曆連結維護</h4>
-                <p class="admin-panel-note">維護檔案區的「本月行事曆」與「次月行事曆」按鈕連結。儲存時需輸入管理密碼。</p>
-                <div class="inline-form admin-form-row row-calendar-links">
-                    <div class="form-group">
-                        <label for="calendar-link-current-input">本月行事曆連結</label>
-                        <input type="url" id="calendar-link-current-input" placeholder="請輸入本月行事曆 https:// 連結">
-                    </div>
-                    <div class="form-group">
-                        <label for="calendar-link-next-input">次月行事曆連結</label>
-                        <input type="url" id="calendar-link-next-input" placeholder="請輸入次月行事曆 https:// 連結">
-                    </div>
-                    <button id="save-calendar-links-btn" class="btn btn-icon-left" style="background-color: #2563eb; color: white;">
-                        <span class="icon">&#x1F4BE;</span><span>儲存行事曆連結</span>
-                    </button>
                 </div>
             </div>
         </div>

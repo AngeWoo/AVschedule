@@ -421,6 +421,18 @@
             align-items: center;
         }
 
+        .query-view-switcher {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 8px;
+            margin: 0 0 12px;
+        }
+
+        .query-view-switcher .btn {
+            min-width: 88px;
+        }
+
         .mobile-query-inline-actions {
             display: none;
         }
@@ -1696,6 +1708,17 @@
                 display: none;
             }
 
+            .query-view-switcher {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 6px;
+            }
+
+            .query-view-switcher .btn {
+                width: 100%;
+                min-width: 0;
+            }
+
             .mobile-query-inline-actions.visible {
                 display: flex;
                 gap: 8px;
@@ -2919,6 +2942,10 @@
                 </div>
             </div>
             <div id="query-summary-bar" class="query-summary-bar" aria-live="polite"></div>
+            <div id="query-view-switcher" class="query-view-switcher" aria-label="查詢結果顯示方式">
+                <button type="button" id="show-query-card-view-btn" class="btn view-switcher-btn">卡片</button>
+                <button type="button" id="show-query-list-view-btn" class="btn view-switcher-btn">清單</button>
+            </div>
             <div id="mobile-query-inline-actions" class="mobile-query-inline-actions" aria-label="查詢操作">
                 <button type="button" id="mobile-inline-query-search-btn" class="btn btn-primary">查詢</button>
                 <button type="button" id="mobile-inline-query-clear-btn" class="btn"
@@ -3224,6 +3251,7 @@
         let calendar = null, statsChart, performanceChart, allCalendarEvents = [], calendarEventsById = new Map(), currentDisplayDate = new Date(), lastQuery = { type: null, params: {}, data: [], sort: null }, lastStatsData = null, eventHandlingInProgress = false;
         const MOBILE_BREAKPOINT = 700;
         let isMobile = window.innerWidth <= MOBILE_BREAKPOINT;
+        let unifiedQueryViewMode = null;
         let currentCalendarOptions = { height: isMobile ? 'auto' : undefined, aspectRatio: isMobile ? 0.8 : 1.35 };
         let fullCalendarReadyPromise = null;
         let chartLibReadyPromise = null;
@@ -3317,6 +3345,27 @@
             summaryBar.classList.add('visible');
             setMobileInlineQueryActionsVisible(state !== 'idle' && state !== 'cleared');
         }
+        function getDefaultUnifiedQueryViewMode() {
+            return isMobile ? 'card' : 'list';
+        }
+        function getUnifiedQueryViewMode() {
+            return unifiedQueryViewMode || getDefaultUnifiedQueryViewMode();
+        }
+        function syncUnifiedQueryViewButtons() {
+            const cardBtn = document.getElementById('show-query-card-view-btn');
+            const listBtn = document.getElementById('show-query-list-view-btn');
+            if (!cardBtn || !listBtn) return;
+            const mode = getUnifiedQueryViewMode();
+            cardBtn.classList.toggle('active', mode === 'card');
+            listBtn.classList.toggle('active', mode === 'list');
+        }
+        function setUnifiedQueryViewMode(mode, rerender = true) {
+            unifiedQueryViewMode = mode === 'list' ? 'list' : 'card';
+            syncUnifiedQueryViewButtons();
+            if (rerender && lastQuery.type === 'unified' && Array.isArray(lastQuery.data) && lastQuery.data.length > 0) {
+                renderMySignupsTable(lastQuery.data);
+            }
+        }
         function setUnifiedQueryBusy(isBusy) {
             const controlIds = [
                 'unified-search-btn',
@@ -3394,12 +3443,16 @@
             if (nextIsMobile === isMobile) return;
             isMobile = nextIsMobile;
             currentCalendarOptions = { height: isMobile ? 'auto' : undefined, aspectRatio: isMobile ? 0.8 : 1.35 };
+            syncUnifiedQueryViewButtons();
             const lineTargetSelectEl = document.getElementById('line-target-select');
             if (lineTargetSelectEl && lineTargetSelectEl.multiple) {
                 lineTargetSelectEl.size = isMobile ? 4 : 1;
             }
             if (calendar && isCalendarTabVisible() && document.getElementById('full-calendar-view').style.display !== 'none') {
                 initializeFullCalendar().then(() => { if (calendar) calendar.updateSize(); }).catch(() => { });
+            }
+            if (lastQuery.type === 'unified' && Array.isArray(lastQuery.data) && lastQuery.data.length > 0 && !queryRequestInFlight) {
+                renderMySignupsTable(lastQuery.data);
             }
         }
         function setCalendarEvents(events) {
@@ -4418,6 +4471,7 @@
         function renderMySignupsTable(signups) {
             const resultDiv = document.getElementById('my-signups-result');
             const actionsContainer = document.getElementById('query-actions-container');
+            const currentViewMode = getUnifiedQueryViewMode();
             if (signupsTableObserver) {
                 signupsTableObserver.disconnect();
                 signupsTableObserver = null;
@@ -4450,6 +4504,7 @@
             if (lastQuery.sort && lastQuery.sort.key) {
                 rowsToRender = sortSignupsData(rowsToRender, lastQuery.sort.key, lastQuery.sort.dir, lastQuery.sort.type);
             }
+            syncUnifiedQueryViewButtons();
 
             const handleActionClick = (e) => {
                 const btn = e.target.closest('.signup-action-btn');
@@ -4465,7 +4520,7 @@
                 }
             };
 
-            if (isMobile) {
+            if (currentViewMode === 'card') {
                 let cardsHtml = '<div class="signup-mobile-list">';
                 rowsToRender.forEach((s, index) => {
                     cardsHtml += `
@@ -5610,6 +5665,11 @@
             if (mobileQueryClearBtn) mobileQueryClearBtn.addEventListener('click', clearUnifiedQuery);
             if (mobileInlineQuerySearchBtn) mobileInlineQuerySearchBtn.addEventListener('click', runUnifiedQuery);
             if (mobileInlineQueryClearBtn) mobileInlineQueryClearBtn.addEventListener('click', clearUnifiedQuery);
+            const showQueryCardViewBtn = document.getElementById('show-query-card-view-btn');
+            const showQueryListViewBtn = document.getElementById('show-query-list-view-btn');
+            if (showQueryCardViewBtn) showQueryCardViewBtn.addEventListener('click', () => setUnifiedQueryViewMode('card'));
+            if (showQueryListViewBtn) showQueryListViewBtn.addEventListener('click', () => setUnifiedQueryViewMode('list'));
+            syncUnifiedQueryViewButtons();
             setQuerySummaryBar('idle');
 
             const normalizeIconText = (value) => String(value || '').replace(/\uFE0F/g, '').trim();

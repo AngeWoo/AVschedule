@@ -5202,8 +5202,13 @@
                 `;
 
                 rows.forEach(row => {
-                    const targetLabel = row.target_alias
-                        ? `<div class="line-log-target-text">【${escapeHtml(row.target_alias)}】</div>`
+                    const targetIdText = String(row.target || '').trim();
+                    const aliasText = String(row.target_alias || '').trim();
+                    const targetParts = [];
+                    if (aliasText) targetParts.push(`【${escapeHtml(aliasText)}】`);
+                    if (targetIdText) targetParts.push(`<code style="word-break:break-all;">${escapeHtml(targetIdText)}</code>`);
+                    const targetLabel = targetParts.length
+                        ? `<div class="line-log-target-text">${targetParts.join('<br>')}</div>`
                         : `<div class="line-log-target-text">-</div>`;
                     const chunkLabel = Number(row.chunk_count || 0) > 1
                         ? `${Number(row.chunk_index || 0)}/${Number(row.chunk_count || 0)}`

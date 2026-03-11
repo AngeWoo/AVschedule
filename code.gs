@@ -1112,6 +1112,14 @@ function dedupeLineTargetIds_(items) {
   return out;
 }
 
+function isValidLineTargetId_(targetId) {
+  return /^[UCR][0-9a-fA-F]{32}$/.test(String(targetId || '').trim());
+}
+
+function findInvalidLineTargetIds_(targets) {
+  return dedupeLineTargetIds_((Array.isArray(targets) ? targets : []).filter(targetId => !isValidLineTargetId_(targetId)));
+}
+
 function normalizeLineSubscribedMessageTypes_(types) {
   let list = [];
   if (Array.isArray(types)) {
@@ -2319,6 +2327,20 @@ function sendLineMessage(message, linTo, logContext) {
     logLineSendFailure_(Object.assign({}, context, { resolved_target_count: 0 }), message, msg);
     return { status: 'error', error: msg };
   }
+  const invalidTargets = findInvalidLineTargetIds_(targets);
+  if (invalidTargets.length) {
+    const msg = `line_to 格式不正確：${invalidTargets.join(', ')}`;
+    console.error(msg);
+    logLineSendFailure_(Object.assign({}, context, {
+      resolved_target_count: targets.length
+    }), message, msg);
+    return {
+      status: 'error',
+      error: msg,
+      invalid_targets: invalidTargets,
+      targets: targets
+    };
+  }
   const results = targets.map(target => sendLinePushSingle_(channelAccessToken, target, message));
   appendLineSendLogs_(buildLineSendLogRows_(Object.assign({}, context, {
     resolved_target_count: targets.length
@@ -2610,6 +2632,19 @@ function sendCustomLineMessage_MessageAPI(message, linTo) {
       }, normalizedMessage, 'lin_to (LINE User ID / Group ID) 未設定。');
       return { status: 'error', error: 'lin_to (LINE User ID / Group ID) 未設定。' };
     }
+    const invalidTargets = findInvalidLineTargetIds_(targets);
+    if (invalidTargets.length) {
+      const errorText = `line_to 格式不正確：${invalidTargets.join(', ')}`;
+      logLineSendFailure_({
+        batch_id: batchId,
+        trigger_source: 'manual_custom_message',
+        message_type: 'custom_message',
+        function_name: 'sendCustomLineMessage_MessageAPI',
+        line_to_input: String(linTo || ''),
+        resolved_target_count: targets.length
+      }, normalizedMessage, errorText);
+      return { status: 'error', error: errorText, invalid_targets: invalidTargets, targets: targets };
+    }
 
     const chunks = splitLineMessageChunks_(normalizedMessage, 4900);
     const results = [];
@@ -2673,6 +2708,15 @@ function setupDaily20Trigger_MessageAPI(linTo) {
     const targets = resolveLineTargetsForSend_(linTo);
     if (!targets.length || targets.some(t => t.includes('請在此貼上'))) {
       return { status: 'error', error: 'lin_to (LINE User ID / Group ID) 未設定。' };
+    }
+    const invalidTargets = findInvalidLineTargetIds_(targets);
+    if (invalidTargets.length) {
+      return {
+        status: 'error',
+        error: `line_to 格式不正確：${invalidTargets.join(', ')}`,
+        invalid_targets: invalidTargets,
+        targets: targets
+      };
     }
     ensureLineSendLogSheet_();
     const triggers = ScriptApp.getProjectTriggers() || [];

@@ -1079,25 +1079,90 @@ function resolveLineToken() {
   return normalizeLineToken_(LINE_CHANNEL_ACCESS_TOKEN);
 }
 
+function normalizeLineTargetToken_(rawValue) {
+  const text = String(rawValue || '').trim();
+  if (!text) return '';
+  const compact = text.replace(/[\[\]\s,]/g, '').toLowerCase();
+  if (compact === 'object' || compact === 'objectobject') return '';
+  return text;
+}
+
+function extractLineTargetIds_(lineToRaw) {
+  if (lineToRaw == null) return [];
+
+  if (Array.isArray(lineToRaw)) {
+    return dedupeLineTargetIds_(lineToRaw.reduce((acc, item) => acc.concat(extractLineTargetIds_(item)), []));
+  }
+
+  if (typeof lineToRaw === 'object') {
+    const directId = normalizeLineTargetToken_(
+      lineToRaw.target_id ||
+      lineToRaw.targetId ||
+      lineToRaw.userId ||
+      lineToRaw.groupId ||
+      lineToRaw.roomId ||
+      lineToRaw.id ||
+      lineToRaw.value
+    );
+    if (directId) return [directId];
+    if (Array.isArray(lineToRaw.targets)) return extractLineTargetIds_(lineToRaw.targets);
+    if (Array.isArray(lineToRaw.items)) return extractLineTargetIds_(lineToRaw.items);
+    return [];
+  }
+
+  const text = String(lineToRaw || '').trim();
+  if (!text) return [];
+
+  if (/^[\[{]/.test(text)) {
+    try {
+      const parsed = JSON.parse(text);
+      const parsedTargets = extractLineTargetIds_(parsed);
+      if (parsedTargets.length) return parsedTargets;
+    } catch (e) {
+      // Ignore JSON parse errors and treat the input as a plain text list below.
+    }
+  }
+
+  return dedupeLineTargetIds_(
+    text
+      .split(/[\s,;\n\r]+/)
+      .map(item => normalizeLineTargetToken_(item))
+      .filter(Boolean)
+  );
+}
+
+function normalizeLineToValue_(lineToRaw) {
+  const targets = extractLineTargetIds_(lineToRaw);
+  if (targets.length) return targets.join('\n');
+
+  const text = String(lineToRaw || '').trim();
+  if (!text || /^[\[{]/.test(text)) return '';
+  return normalizeLineTargetToken_(text);
+}
+
 function resolveLineTo(linTo) {
-  const normalized = String(linTo || '').trim();
+  const props = PropertiesService.getScriptProperties();
+  const normalized = normalizeLineToValue_(linTo);
   if (normalized) {
-    PropertiesService.getScriptProperties().setProperty(LINE_TO_PROPERTY_KEY, normalized);
+    props.setProperty(LINE_TO_PROPERTY_KEY, normalized);
     return normalized;
   }
-  const saved = String(PropertiesService.getScriptProperties().getProperty(LINE_TO_PROPERTY_KEY) || '').trim();
-  if (saved) return saved;
+  const savedRaw = props.getProperty(LINE_TO_PROPERTY_KEY);
+  const saved = normalizeLineToValue_(savedRaw);
+  if (saved) {
+    if (saved !== String(savedRaw || '').trim()) {
+      props.setProperty(LINE_TO_PROPERTY_KEY, saved);
+    }
+    return saved;
+  }
+  if (String(savedRaw || '').trim()) {
+    props.deleteProperty(LINE_TO_PROPERTY_KEY);
+  }
   return String(LINE_USER_ID || '').trim();
 }
 
 function parseLineTargets_(lineToRaw) {
-  if (Array.isArray(lineToRaw)) {
-    return lineToRaw.map(v => String(v || '').trim()).filter(Boolean);
-  }
-  return String(lineToRaw || '')
-    .split(/[\s,;\n\r]+/)
-    .map(v => v.trim())
-    .filter(Boolean);
+  return extractLineTargetIds_(lineToRaw);
 }
 
 function dedupeLineTargetIds_(items) {
@@ -2212,7 +2277,7 @@ function sendLineReplyMessages_(replyToken, messages, logContext) {
     trigger_source: 'line_webhook',
     message_type: 'webhook_reply',
     function_name: 'sendLineReplyMessages_',
-    line_to_input: String(logContext && logContext.target_id || ''),
+    line_to_input: normalizeLineToValue_(logContext && logContext.target_id || ''),
     resolved_target_count: 1,
     target_id: String(logContext && logContext.target_id || '')
   }, logContext || {});
@@ -2302,7 +2367,7 @@ function sendLineMessage(message, linTo, logContext) {
     trigger_source: '',
     message_type: '',
     function_name: 'sendLineMessage',
-    line_to_input: String(linTo || ''),
+    line_to_input: normalizeLineToValue_(linTo),
     respect_preferences: false
   }, logContext || {});
   const channelAccessToken = resolveLineToken();
@@ -2377,7 +2442,7 @@ function dailyNotifyTomorrow_MessageAPI(linTo, logContext) { // 函式名稱維�
       trigger_source: 'manual_or_api',
       message_type: 'tomorrow_signup',
       function_name: 'dailyNotifyTomorrow_MessageAPI',
-      line_to_input: String(linTo || ''),
+      line_to_input: normalizeLineToValue_(linTo),
       resolved_target_count: 0
     }, logContext || {}), '', e.toString());
     return { status: 'error', error: e.toString() };
@@ -2461,7 +2526,7 @@ function sendMarqueeAnnouncementsToLine_MessageAPI(linTo, logContext) {
       trigger_source: 'manual_or_api',
       message_type: 'marquee_announcement',
       function_name: 'sendMarqueeAnnouncementsToLine_MessageAPI',
-      line_to_input: String(linTo || ''),
+      line_to_input: normalizeLineToValue_(linTo),
       resolved_target_count: 0
     }, logContext || {}), '', e.toString());
     return { status: 'error', error: e.toString(), announcement_count: 0 };
@@ -2601,7 +2666,7 @@ function sendCustomLineMessage_MessageAPI(message, linTo) {
         trigger_source: 'manual_custom_message',
         message_type: 'custom_message',
         function_name: 'sendCustomLineMessage_MessageAPI',
-        line_to_input: String(linTo || ''),
+        line_to_input: normalizeLineToValue_(linTo),
         resolved_target_count: 0
       }, normalizedMessage, '訊息內容不可為空。');
       return { status: 'error', error: '訊息內容不可為空。' };
@@ -2614,7 +2679,7 @@ function sendCustomLineMessage_MessageAPI(message, linTo) {
         trigger_source: 'manual_custom_message',
         message_type: 'custom_message',
         function_name: 'sendCustomLineMessage_MessageAPI',
-        line_to_input: String(linTo || ''),
+        line_to_input: normalizeLineToValue_(linTo),
         resolved_target_count: 0
       }, normalizedMessage, 'LINE_CHANNEL_ACCESS_TOKEN 未設定。');
       return { status: 'error', error: 'LINE_CHANNEL_ACCESS_TOKEN 未設定。' };
@@ -2627,7 +2692,7 @@ function sendCustomLineMessage_MessageAPI(message, linTo) {
         trigger_source: 'manual_custom_message',
         message_type: 'custom_message',
         function_name: 'sendCustomLineMessage_MessageAPI',
-        line_to_input: String(linTo || ''),
+        line_to_input: normalizeLineToValue_(linTo),
         resolved_target_count: 0
       }, normalizedMessage, 'lin_to (LINE User ID / Group ID) 未設定。');
       return { status: 'error', error: 'lin_to (LINE User ID / Group ID) 未設定。' };
@@ -2640,7 +2705,7 @@ function sendCustomLineMessage_MessageAPI(message, linTo) {
         trigger_source: 'manual_custom_message',
         message_type: 'custom_message',
         function_name: 'sendCustomLineMessage_MessageAPI',
-        line_to_input: String(linTo || ''),
+        line_to_input: normalizeLineToValue_(linTo),
         resolved_target_count: targets.length
       }, normalizedMessage, errorText);
       return { status: 'error', error: errorText, invalid_targets: invalidTargets, targets: targets };
@@ -2659,7 +2724,7 @@ function sendCustomLineMessage_MessageAPI(message, linTo) {
         trigger_source: 'manual_custom_message',
         message_type: 'custom_message',
         function_name: 'sendCustomLineMessage_MessageAPI',
-        line_to_input: String(linTo || ''),
+        line_to_input: normalizeLineToValue_(linTo),
         resolved_target_count: targets.length,
         chunk_index: chunkIndex + 1,
         chunk_count: chunks.length
@@ -2695,7 +2760,7 @@ function sendCustomLineMessage_MessageAPI(message, linTo) {
       trigger_source: 'manual_custom_message',
       message_type: 'custom_message',
       function_name: 'sendCustomLineMessage_MessageAPI',
-      line_to_input: String(linTo || ''),
+      line_to_input: normalizeLineToValue_(linTo),
       resolved_target_count: 0
     }, String(message || ''), e.toString());
     return { status: 'error', error: e.toString() };

@@ -1,6 +1,6 @@
-﻿// ====================================================================
+// ====================================================================
 //  檔案：code.gs (AV放送立願報名行事曆 - 後端 API)
-//  版本：0815_CSV_Confirmed (確認使用 CSV URL 讀取資料)
+//  版本：0426
 // ====================================================================
 
 const BACKEND_VERSION = "0815_Email_Ready"; // *** 後端版本號 ***
@@ -66,6 +66,7 @@ function doGet(e) {
       case 'getLineWebhookStatus': result = getLineWebhookStatus_(); break;
       case 'getLineSendLogs': result = getLineSendLogs_(params.limit); break;
       case 'deleteLineSendLog': result = deleteLineSendLog_(params.sheet_row); break;
+      case 'clearAllLineSendLogs': result = clearAllLineSendLogs_(); break;
       case 'getCalendarDownloadLinks': result = getCalendarDownloadLinks_(); break;
       case 'setCalendarDownloadLinks': result = setCalendarDownloadLinks_(params.current_month_url, params.next_month_url); break;
       case 'sendMarqueeAnnouncementsToLine': result = sendMarqueeAnnouncementsToLine_MessageAPI(params.lin_to); break;
@@ -1437,6 +1438,20 @@ function deleteLineSendLog_(sheetRow) {
     status: 'success',
     deleted_row: rowNumber,
     remaining_count: Math.max(sheet.getLastRow() - 1, 0)
+  };
+}
+
+function clearAllLineSendLogs_() {
+  const sheet = ensureLineSendLogSheet_();
+  const lastRow = sheet.getLastRow();
+  if (lastRow > 1) {
+    sheet.deleteRows(2, lastRow - 1);
+    SpreadsheetApp.flush();
+  }
+  return {
+    status: 'success',
+    deleted_count: lastRow > 1 ? lastRow - 1 : 0,
+    remaining_count: 0
   };
 }
 

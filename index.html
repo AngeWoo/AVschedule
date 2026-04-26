@@ -3182,6 +3182,9 @@
                     <button id="load-line-send-logs-btn" class="btn btn-icon-left" style="background-color: #475569; color: white;">
                         <span class="icon">&#x1F504;</span><span>重新載入紀錄</span>
                     </button>
+                    <button id="clear-line-send-logs-btn" class="btn btn-icon-left" style="background-color: #dc3545; color: white;">
+                        <span class="icon">&#x1F5D1;</span><span>刪除所有紀錄</span>
+                    </button>
                 </div>
                 <div id="line-send-log-table-wrap" class="line-log-table-wrap">
                     <div class="line-log-empty">尚未載入 LINE 發送紀錄。</div>
@@ -5002,6 +5005,7 @@
             const lineSendLogSummaryEl = document.getElementById('line-send-log-summary');
             const lineSendLogTableWrapEl = document.getElementById('line-send-log-table-wrap');
             const loadLineSendLogsBtnEl = document.getElementById('load-line-send-logs-btn');
+            const clearLineSendLogsBtnEl = document.getElementById('clear-line-send-logs-btn');
             const calendarLinkCurrentInputEl = document.getElementById('calendar-link-current-input');
             const calendarLinkNextInputEl = document.getElementById('calendar-link-next-input');
             const saveCalendarLinksBtnEl = document.getElementById('save-calendar-links-btn');
@@ -5478,6 +5482,47 @@
             if (loadLineSendLogsBtnEl) {
                 loadLineSendLogsBtnEl.addEventListener('click', async () => {
                     await loadLineSendLogs();
+                });
+            }
+            if (clearLineSendLogsBtnEl) {
+                clearLineSendLogsBtnEl.addEventListener('click', async () => {
+                    const { value: password, isConfirmed } = await Swal.fire({
+                        title: '刪除所有 LINE 發送紀錄',
+                        html: `
+                            <p>這會清空所有的 LINE 發送 Log。</p>
+                            <p style="margin-top: 1em;">請輸入密碼以確認：</p>
+                            <input type="password" id="swal-password-clear-logs" class="swal2-input" placeholder="請輸入密碼">
+                        `,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonText: '確認刪除',
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonText: '取消',
+                        focusConfirm: false,
+                        preConfirm: () => {
+                            const pw = document.getElementById('swal-password-clear-logs').value;
+                            if (pw !== '590314') {
+                                Swal.showValidationMessage('密碼錯誤！');
+                                return false;
+                            }
+                            return pw;
+                        }
+                    });
+                    if (!isConfirmed || !password) return;
+
+                    showLoading();
+                    try {
+                        const response = await callAppsScript('clearAllLineSendLogs');
+                        if (!response.data || response.data.status !== 'success') {
+                            throw new Error((response.data && response.data.error) ? response.data.error : (response.message || '刪除失敗'));
+                        }
+                        await loadLineSendLogs({ silent: true });
+                        Swal.fire('已刪除', '所有 LINE 發送紀錄已清空。', 'success');
+                    } catch (e) {
+                        Swal.fire('刪除失敗', e.message, 'error');
+                    } finally {
+                        hideLoading();
+                    }
                 });
             }
             if (saveCalendarLinksBtnEl) {

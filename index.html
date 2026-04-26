@@ -2955,6 +2955,11 @@
                     style="background:#6c757d;color:#fff;">清除</button>
             </div>
             <div id="my-signups-result"></div>
+            <div id="copy-clipboard-container" style="text-align: center; margin-top: 15px; margin-bottom: 15px; display: none;">
+                <button type="button" id="copy-query-result-btn" class="btn btn-success btn-icon-left" style="background-color: #28a745; border-color: #28a745; width: min(280px, 100%);">
+                    <span class="icon">&#x1F4CB;</span><span>複製到剪貼簿</span>
+                </button>
+            </div>
             <div id="mobile-query-bar" class="mobile-query-bar">
                 <button type="button" id="mobile-query-search-btn" class="btn btn-primary">查詢</button>
                 <button type="button" id="mobile-query-clear-btn" class="btn" style="background:#6c757d;color:#fff;">清除</button>
@@ -4499,10 +4504,14 @@
                     </div>
                 `;
                 lastQuery.data = [];
+                const copyBtnContainer = document.getElementById('copy-clipboard-container');
+                if(copyBtnContainer) copyBtnContainer.style.display = 'none';
                 return 0;
             }
 
             lastQuery.data = signups;
+            const copyBtnContainer = document.getElementById('copy-clipboard-container');
+            if(copyBtnContainer) copyBtnContainer.style.display = 'block';
             let rowsToRender = Array.isArray(signups) ? [...signups] : [];
             if (lastQuery.sort && lastQuery.sort.key) {
                 rowsToRender = sortSignupsData(rowsToRender, lastQuery.sort.key, lastQuery.sort.dir, lastQuery.sort.type);
@@ -4787,7 +4796,78 @@
             } catch (e) { Swal.fire('匯出失?', e.message, 'error'); } finally { hideLoading(); }
         }
 
+        async function copyQueryResultToClipboard() {
+            if (!lastQuery.data || lastQuery.data.length === 0) {
+                return Swal.fire('無資料', '沒有可複製的查詢結果。', 'info');
+            }
+            
+            let rowsToRender = [...lastQuery.data];
+            if (lastQuery.sort && lastQuery.sort.key) {
+                rowsToRender = sortSignupsData(rowsToRender, lastQuery.sort.key, lastQuery.sort.dir, lastQuery.sort.type);
+            }
+            
+            let textToCopy = '【法會立願】\n\n';
+            let groupedData = new Map();
+            
+            rowsToRender.forEach(s => {
+                const dateKey = `${s.eventDate || ''} ${s.eventDayOfWeek || ''}`.trim();
+                if (!groupedData.has(dateKey)) {
+                    groupedData.set(dateKey, new Map());
+                }
+                const dateGroup = groupedData.get(dateKey);
+                
+                const timeStr = s.startTime ? `${s.startTime}${s.endTime ? '~' + s.endTime : ''}` : '';
+                const eventKey = `${s.eventTitle || '未命名活動'}${timeStr ? ' (' + timeStr + ')' : ''}`;
+                
+                if (!dateGroup.has(eventKey)) {
+                    dateGroup.set(eventKey, []);
+                }
+                dateGroup.get(eventKey).push(`${s.position || '未知崗位'}：${s.user || '未知'}`);
+            });
+
+            groupedData.forEach((events, date) => {
+                textToCopy += `📅 ${date}\n`;
+                events.forEach((signups, eventInfo) => {
+                    textToCopy += `📌 ${eventInfo}\n`;
+                    signups.forEach(signup => {
+                        textToCopy += `   ${signup}\n`;
+                    });
+                });
+                textToCopy += `\n`;
+            });
+            textToCopy = textToCopy.trim();
+            
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(textToCopy);
+                } else {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = textToCopy;
+                    textArea.style.position = "fixed"; 
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                }
+                Swal.fire({
+                    icon: 'success',
+                    title: '複製成功！',
+                    text: '查詢結果已複製到剪貼簿，可直接貼上至 LINE。',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } catch (err) {
+                console.error('複製失敗:', err);
+                Swal.fire('複製失敗', '無法複製內容到剪貼簿，請手動選取複製。', 'error');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function () {
+            const copyQueryResultBtn = document.getElementById('copy-query-result-btn');
+            if (copyQueryResultBtn) {
+                copyQueryResultBtn.addEventListener('click', copyQueryResultToClipboard);
+            }
             const feVerEl = document.getElementById('frontend-version');
             if (feVerEl) feVerEl.textContent = FRONTEND_VERSION;
             window.scrollTo(0, 0);

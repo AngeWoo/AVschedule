@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-Hant">
 
 <head>
@@ -656,14 +656,16 @@
             padding: 12px 12px 10px;
         }
 
-        .event-mobile-card {
+        .event-mobile-card,
+        .signup-mobile-card {
             display: flex;
             flex-direction: column;
             min-height: 0;
             transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
         }
 
-        .event-mobile-card:hover {
+        .event-mobile-card:hover,
+        .signup-mobile-card:hover {
             transform: translateY(-2px);
             border-color: #c9d9f5;
             box-shadow: 0 14px 24px rgba(15, 76, 163, 0.14);
@@ -735,7 +737,7 @@
         }
 
         .simple-event-signup-btn {
-            margin-top: 8px;
+            margin-top: auto;
             align-self: center;
             width: min(220px, 100%);
             justify-content: center;
@@ -744,6 +746,7 @@
         .signup-mobile-actions {
             display: flex;
             gap: 8px;
+            margin-top: auto;
         }
 
         .signup-mobile-actions .btn {

@@ -3419,30 +3419,66 @@
             unifiedSignupsPromiseCache.clear();
         }
         async function getUnifiedSignups(searchText, startDateStr, endDateStr, forceRefresh = false) {
-            const key = getUnifiedSignupsCacheKey(searchText, startDateStr, endDateStr);
-            const cachedAt = unifiedSignupsCacheTime.get(key) || 0;
-            if (!forceRefresh && unifiedSignupsCache.has(key) && (Date.now() - cachedAt) < UNIFIED_SIGNUPS_CACHE_TTL_MS) {
-                return unifiedSignupsCache.get(key);
+            if (allCalendarEvents.length === 0 || forceRefresh) {
+                await fetchCalendarEvents(forceRefresh);
             }
-            if (!forceRefresh && unifiedSignupsPromiseCache.has(key)) {
-                return unifiedSignupsPromiseCache.get(key);
-            }
-            if (forceRefresh) {
-                unifiedSignupsPromiseCache.delete(key);
-            }
-            const promise = (async () => {
-                const response = await callAppsScriptWithRetry('getUnifiedSignups', { searchText, startDateStr, endDateStr });
-                const data = response.data || [];
-                unifiedSignupsCache.set(key, data);
-                unifiedSignupsCacheTime.set(key, Date.now());
-                return data;
-            })();
-            unifiedSignupsPromiseCache.set(key, promise);
-            try {
-                return await promise;
-            } finally {
-                unifiedSignupsPromiseCache.delete(key);
-            }
+            
+            const startTimestamp = startDateStr ? new Date(startDateStr.replace(/[./]/g, '-')).setHours(0,0,0,0) : 0;
+            const endTimestamp = endDateStr ? new Date(endDateStr.replace(/[./]/g, '-')).setHours(23,59,59,999) : Infinity;
+            
+            const results = [];
+            const searchLower = (searchText || '').trim().toLowerCase();
+            const DAYS = ['日', '一', '二', '三', '四', '五', '六'];
+
+            allCalendarEvents.forEach(event => {
+                const eventStart = new Date(event.start);
+                const eventTs = eventStart.getTime();
+                
+                if (startTimestamp > 0 && eventTs < startTimestamp) return;
+                if (endTimestamp !== Infinity && eventTs > endTimestamp) return;
+
+                const eventSignups = event.extendedProps && event.extendedProps.signups ? event.extendedProps.signups : [];
+                const eventDateFormatted = DATE_FMT_CA_TW.format(eventStart);
+                const eventDayOfWeek = DAYS[eventStart.getDay()];
+                const eventTitle = event.extendedProps && event.extendedProps.full_title ? event.extendedProps.full_title : event.title;
+                const eventDesc = event.extendedProps && event.extendedProps.description ? event.extendedProps.description : '';
+
+                eventSignups.forEach(signup => {
+                    if (searchLower) {
+                        const user = String(signup.user || '').toLowerCase();
+                        const position = String(signup.position || '').toLowerCase();
+                        const titleLower = String(eventTitle || '').toLowerCase();
+                        const descLower = String(eventDesc || '').toLowerCase();
+                        if (!user.includes(searchLower) && !position.includes(searchLower) && !titleLower.includes(searchLower) && !descLower.includes(searchLower)) {
+                            return;
+                        }
+                    }
+
+                    results.push({
+                        signupId: signup.signupId,
+                        eventId: String(event.id),
+                        eventTitle: eventTitle,
+                        eventDate: eventDateFormatted,
+                        eventDayOfWeek: eventDayOfWeek,
+                        startTime: event.extendedProps && event.extendedProps.startTime ? event.extendedProps.startTime : '',
+                        endTime: event.extendedProps && event.extendedProps.endTime ? event.extendedProps.endTime : '',
+                        user: signup.user,
+                        timestamp: signup.timestamp,
+                        position: signup.position
+                    });
+                });
+            });
+
+            results.sort((a, b) => {
+                const dateA = new Date(a.eventDate.replace(/[./]/g, '-')).getTime();
+                const dateB = new Date(b.eventDate.replace(/[./]/g, '-')).getTime();
+                if (dateA !== dateB) return dateA - dateB;
+                const timeA = a.startTime || '';
+                const timeB = b.startTime || '';
+                return timeA.localeCompare(timeB);
+            });
+
+            return results;
         }
         function syncViewportMode() {
             const nextIsMobile = window.innerWidth <= MOBILE_BREAKPOINT;

@@ -4696,7 +4696,103 @@
         }
         async function promptToDeleteSignup(signup) { const { value: password } = await Swal.fire({ title: '確定要刪除此筆報名嗎？', html: `<div style="text-align: left; margin: 1em auto; background: #f8f9fa; border-left: 4px solid #e74c3c; padding: 1em; border-radius: 4px; width: 90%;"><p><strong>活動日期:</strong> ${signup.eventDate || 'N/A'}</p><p><strong>活動名稱:</strong> ${signup.eventTitle || 'N/A'}</p><p><strong>報名人員:</strong> ${signup.user || 'N/A'}</p><p><strong>報名崗位:</strong> ${signup.position || 'N/A'}</p><p><strong>報名時間:</strong> ${signup.timestamp || 'N/A'}</p></div><div style="text-align: center; margin-top: 1.5em;"><p style="margin-bottom: 0.5em;">請輸入密碼以確認刪除：</p><input type="password" id="password-input" class="swal2-input" placeholder="請輸入密碼" style="width: 90%; margin: 0 auto;"></div>`, icon: 'warning', showCancelButton: true, confirmButtonText: '確認刪除', cancelButtonText: '取消', preConfirm: () => { const pw = document.getElementById('password-input').value; if (pw !== '0425') { Swal.showValidationMessage('密碼錯誤！'); return false; } return pw; } }); if (password) { showLoading(); try { const response = await callAppsScript('removeSignup', { eventId: signup.eventId, userName: signup.user }); await Swal.fire('刪除成功', response.data.message, 'success'); invalidateUnifiedSignupsCache(); if (lastQuery.type === 'unified') { await executeUnifiedSignupQuery(lastQuery.params.searchText, lastQuery.params.startDateStr, lastQuery.params.endDateStr, lastQuery.params.eventDate || '', lastQuery.params.eventTitle || '', lastQuery.params.startTime || '', lastQuery.params.keyword || '', true); } setupCalendarTab(true); } catch (e) { Swal.fire('刪除失敗', e.message, 'error'); } finally { hideLoading(); } } }
         function getMobileStatsChartMetrics(labels) { const safeLabels = Array.isArray(labels) ? labels : []; const longestLabelLength = safeLabels.reduce((max, label) => Math.max(max, String(label || '').trim().length), 0); const itemCount = safeLabels.length; const dynamicBottomPadding = Math.max(72, Math.min(132, 58 + Math.round(longestLabelLength * 3.1) + Math.max(0, itemCount - 8) * 2)); const dynamicHeight = Math.max(380, Math.min(500, 300 + dynamicBottomPadding + Math.max(0, itemCount - 8) * 5)); return { height: dynamicHeight, bottomPadding: dynamicBottomPadding, tickFontSize: longestLabelLength >= 15 ? 12 : 13, maxBarThickness: itemCount >= 10 ? 28 : 32 }; }
-        async function generateStatsReport() { showLoading(); const detailsContainer = document.getElementById('stats-details-container'); const statsCanvas = document.getElementById('stats-chart'); const statsChartContainer = document.getElementById('stats-chart-container'); detailsContainer.innerHTML = ''; try { await ensureChartLibReady(); const response = await callAppsScriptWithRetry('getStatsData', { startDateStr: document.getElementById('stats-start-date').value, endDateStr: document.getElementById('stats-end-date').value }); const data = response.data; lastStatsData = data; const ctx = statsCanvas.getContext('2d'); if (statsChart) statsChart.destroy(); if (!data || data.labels.length === 0) { statsCanvas.style.display = 'none'; if (statsChartContainer) { statsChartContainer.style.minWidth = '100%'; statsChartContainer.style.height = ''; } detailsContainer.innerHTML = '<p style="text-align:center; padding: 20px;">在選定的日期範圍?沒有任何報名記錄可供統計。</p>'; Swal.fire('提示', '在選定的日期範圍?沒有任何報名記錄可供統計。', 'info'); return; } statsCanvas.style.display = 'block'; const backgroundColors = data.labels.map(() => `rgba(${Math.floor(Math.random() * 200) + 50},${Math.floor(Math.random() * 200) + 50},${Math.floor(Math.random() * 200) + 50},0.8)`); const chartLabels = data.labels.map(label => { const parts = label.match(/(.*?)\s*\((.*?)\)/); return (parts && parts.length === 3) ? (isMobile ? parts[1].trim() : [parts[1].trim(), `(${parts[2]})`]) : label; }); const mobileMetrics = isMobile ? getMobileStatsChartMetrics(chartLabels) : null; if (statsChartContainer) { statsChartContainer.style.minWidth = '100%'; statsChartContainer.style.height = isMobile ? `${mobileMetrics.height}px` : '40vh'; } const chartOptions = { responsive: true, maintainAspectRatio: false, backgroundColor: 'white', plugins: { datalabels: { anchor: 'end', align: 'top', offset: 4, color: '#444', font: { weight: 'bold', size: 14 } }, tooltip: { callbacks: { title: (items) => data.fullDetails[items[0].dataIndex].eventInfo.title, label: (item) => { const d = data.fullDetails[item.dataIndex]; let l = [`日期: ${d.eventInfo.date}`, `時間: ${d.eventInfo.startTime}${d.eventInfo.endTime ? ' - ' + d.eventInfo.endTime : ''}`, `已報名: ${item.raw} / ${d.eventInfo.maxAttendees} 人`, '--- 崗位人員 ---']; d.signups.forEach(s => l.push(`${s.position}: ${s.user}`)); return l; } } } }, scales: { x: { ticks: { autoSkip: false } }, y: { grace: '10%' } }, layout: { padding: { top: 30, bottom: isMobile ? mobileMetrics.bottomPadding : 40 } } }; if (isMobile) { chartOptions.scales.x.ticks.maxRotation = 45; chartOptions.scales.x.ticks.minRotation = 45; chartOptions.scales.x.ticks.font = { size: mobileMetrics.tickFontSize }; } statsChart = new Chart(ctx, { type: 'bar', data: { labels: chartLabels, datasets: [{ label: '報名人數', data: data.data, backgroundColor: backgroundColors, borderColor: backgroundColors.map(c => c.replace('0.8', '1')), borderWidth: 1, maxBarThickness: isMobile ? mobileMetrics.maxBarThickness : 56 }] }, options: chartOptions }); let detailsHtml = '<h2>詳細活動報名資訊</h2>'; data.fullDetails.forEach((eventData, index) => { const dayOfWeekText = eventData.eventInfo.dayOfWeek ? `(${eventData.eventInfo.dayOfWeek})` : ''; detailsHtml += `<div class="stats-event-block"><h3>${index + 1}. ${eventData.eventInfo.title}</h3><p><strong>日期:</strong> ${eventData.eventInfo.date} ${dayOfWeekText}</p><p><strong>時間:</strong> ${eventData.eventInfo.startTime}${eventData.eventInfo.endTime ? ' - ' + eventData.eventInfo.endTime : ''}</p><p><strong>報名狀況:</strong> ${eventData.signups.length} / ${eventData.eventInfo.maxAttendees}</p>`; if (eventData.signups && eventData.signups.length > 0) { detailsHtml += '<ul>'; eventData.signups.forEach(signup => { detailsHtml += `<li><strong>${signup.position}:</strong> ${signup.user}</li>`; }); detailsHtml += '</ul>'; } else { detailsHtml += '<p>無人報名</p>'; } detailsHtml += '</div>'; }); detailsContainer.innerHTML = detailsHtml; setTimeout(() => { if (statsCanvas) statsCanvas.style.backgroundColor = 'white'; if (statsChart) statsChart.resize(); }, 100); } catch (e) { Swal.fire('產生失敗', e.message, 'error'); } finally { hideLoading(); } }
+        async function generateStatsReport() {
+            showLoading();
+            const detailsContainer = document.getElementById('stats-details-container');
+            const statsCanvas = document.getElementById('stats-chart');
+            const statsChartContainer = document.getElementById('stats-chart-container');
+            detailsContainer.innerHTML = '';
+            try {
+                await ensureChartLibReady();
+                const response = await callAppsScriptWithRetry('getStatsData', { startDateStr: document.getElementById('stats-start-date').value, endDateStr: document.getElementById('stats-end-date').value });
+                const data = response.data;
+                lastStatsData = data;
+                const ctx = statsCanvas.getContext('2d');
+                if (statsChart) statsChart.destroy();
+                if (!data || data.labels.length === 0) {
+                    statsCanvas.style.display = 'none';
+                    if (statsChartContainer) { statsChartContainer.style.minWidth = '100%'; statsChartContainer.style.height = ''; }
+                    detailsContainer.innerHTML = '<p style="text-align:center; padding: 20px;">在選定的日期範圍內沒有任何報名記錄可供統計。</p>';
+                    Swal.fire('提示', '在選定的日期範圍內沒有任何報名記錄可供統計。', 'info');
+                    return;
+                }
+                statsCanvas.style.display = 'block';
+                const backgroundColors = data.labels.map(() => `rgba(${Math.floor(Math.random() * 200) + 50},${Math.floor(Math.random() * 200) + 50},${Math.floor(Math.random() * 200) + 50},0.8)`);
+                const chartLabels = data.labels.map(label => {
+                    const parts = label.match(/(.*?)\s*\((.*?)\)/);
+                    return (parts && parts.length === 3) ? (isMobile ? parts[1].trim() : [parts[1].trim(), `(${parts[2]})`]) : label;
+                });
+                const mobileMetrics = isMobile ? getMobileStatsChartMetrics(chartLabels) : null;
+                if (statsChartContainer) { statsChartContainer.style.minWidth = '100%'; statsChartContainer.style.height = isMobile ? `${mobileMetrics.height}px` : '40vh'; }
+                const chartOptions = { responsive: true, maintainAspectRatio: false, backgroundColor: 'white', plugins: { datalabels: { anchor: 'end', align: 'top', offset: 4, color: '#444', font: { weight: 'bold', size: 14 } }, tooltip: { callbacks: { title: (items) => data.fullDetails[items[0].dataIndex].eventInfo.title, label: (item) => { const d = data.fullDetails[item.dataIndex]; let l = [`日期: ${d.eventInfo.date}`, `時間: ${d.eventInfo.startTime}${d.eventInfo.endTime ? ' - ' + d.eventInfo.endTime : ''}`, `已報名: ${item.raw} / ${d.eventInfo.maxAttendees} 人`, '--- 崗位人員 ---']; d.signups.forEach(s => l.push(`${s.position}: ${s.user}`)); return l; } } } }, scales: { x: { ticks: { autoSkip: false } }, y: { grace: '10%' } }, layout: { padding: { top: 30, bottom: isMobile ? mobileMetrics.bottomPadding : 40 } } };
+                if (isMobile) { chartOptions.scales.x.ticks.maxRotation = 45; chartOptions.scales.x.ticks.minRotation = 45; chartOptions.scales.x.ticks.font = { size: mobileMetrics.tickFontSize }; }
+                statsChart = new Chart(ctx, { type: 'bar', data: { labels: chartLabels, datasets: [{ label: '報名人數', data: data.data, backgroundColor: backgroundColors, borderColor: backgroundColors.map(c => c.replace('0.8', '1')), borderWidth: 1, maxBarThickness: isMobile ? mobileMetrics.maxBarThickness : 56 }] }, options: chartOptions });
+                
+                let detailsHtml = '<h2>詳細活動報名資訊</h2>';
+                data.fullDetails.forEach((eventData, index) => {
+                    const dayOfWeekText = eventData.eventInfo.dayOfWeek ? `(${eventData.eventInfo.dayOfWeek})` : '';
+                    
+                    let copyText = `【法會立願】\n\n`;
+                    copyText += `📅 ${eventData.eventInfo.date} ${dayOfWeekText}\n`;
+                    copyText += `📌 ${eventData.eventInfo.title} (${eventData.eventInfo.startTime}${eventData.eventInfo.endTime ? '~' + eventData.eventInfo.endTime : ''})\n`;
+                    if (eventData.signups && eventData.signups.length > 0) {
+                        eventData.signups.forEach(signup => {
+                            copyText += `   ${signup.position}：${signup.user}\n`;
+                        });
+                    } else {
+                        copyText += `   無人報名\n`;
+                    }
+                    const encodedCopyText = encodeURIComponent(copyText.trim());
+
+                    detailsHtml += `<div class="stats-event-block" style="position:relative; padding-top: 12px;">`;
+                    detailsHtml += `<button class="btn btn-sm btn-success" style="position:absolute; top:12px; right:12px; font-size:0.85rem; padding:6px 10px; z-index:10; background-color: #28a745; border-color: #28a745;" onclick="copyStatsEventToClipboard(decodeURIComponent('${encodedCopyText}'))"><span class="icon">&#x1F4CB;</span> 複製</button>`;
+                    detailsHtml += `<h3 style="padding-right: 70px;">${index + 1}. ${eventData.eventInfo.title}</h3><p><strong>日期:</strong> ${eventData.eventInfo.date} ${dayOfWeekText}</p><p><strong>時間:</strong> ${eventData.eventInfo.startTime}${eventData.eventInfo.endTime ? ' - ' + eventData.eventInfo.endTime : ''}</p><p><strong>報名狀況:</strong> ${eventData.signups.length} / ${eventData.eventInfo.maxAttendees}</p>`;
+                    if (eventData.signups && eventData.signups.length > 0) {
+                        detailsHtml += '<ul>';
+                        eventData.signups.forEach(signup => {
+                            detailsHtml += `<li><strong>${signup.position}:</strong> ${signup.user}</li>`;
+                        });
+                        detailsHtml += '</ul>';
+                    } else {
+                        detailsHtml += '<p>無人報名</p>';
+                    }
+                    detailsHtml += '</div>';
+                });
+                detailsContainer.innerHTML = detailsHtml;
+                setTimeout(() => { if (statsCanvas) statsCanvas.style.backgroundColor = 'white'; if (statsChart) statsChart.resize(); }, 100);
+            } catch (e) {
+                Swal.fire('產生失敗', e.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function copyStatsEventToClipboard(text) {
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                } else {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    textArea.style.position = "fixed"; 
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                }
+                Swal.fire({
+                    icon: 'success',
+                    title: '複製成功！',
+                    text: '活動資訊已複製到剪貼簿，可直接貼上至 LINE。',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } catch (err) {
+                console.error('複製失敗:', err);
+                Swal.fire('複製失敗', '無法複製內容到剪貼簿，請手動選取複製。', 'error');
+            }
+        }
         async function generatePerformanceReport() {
             showLoading();
             const detailsContainer = document.getElementById('performance-details-container');

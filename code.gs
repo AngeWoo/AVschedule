@@ -1,6 +1,6 @@
 // ====================================================================
 //  檔案：code.gs (AV放送立願報名行事曆 - 後端 API)
-//  版本：0426
+//  版本：0517
 // ====================================================================
 
 const BACKEND_VERSION = "0815_Email_Ready"; // *** 後端版本號 ***
@@ -2438,7 +2438,11 @@ function dailyNotifyTomorrow_MessageAPI(linTo, logContext) { // 函式名稱維�
     const res = getSignupsAsTextForTomorrow();
     let msg = '';
     if (!res || res.status === 'nodata') {
-      msg = '\n（提醒）明日無報名資料。';
+      return {
+        status: 'skipped',
+        reason: 'no_tomorrow_signups',
+        message: '明日無報名資料，不發送 LINE 訊息。'
+      };
     } else if (res.status !== 'success' || !res.text) {
       msg = '\n取得明日報名文字失敗。';
     } else {
@@ -2473,6 +2477,21 @@ function dailyNotifyTomorrowAndMarqueeSeparate_MessageAPI(linTo) {
       message_type: 'tomorrow_signup',
       function_name: 'dailyNotifyTomorrow_MessageAPI'
     });
+    if (tomorrowResult && tomorrowResult.status === 'skipped' && tomorrowResult.reason === 'no_tomorrow_signups') {
+      return {
+        status: 'skipped',
+        reason: 'no_tomorrow_signups',
+        message: '明日無報名資料，不發送明天名單與跑馬燈公告。',
+        results: {
+          tomorrow: tomorrowResult,
+          marquee: {
+            status: 'skipped',
+            reason: 'no_tomorrow_signups',
+            message: '明日無報名資料，跑馬燈公告未發送。'
+          }
+        }
+      };
+    }
     const marqueeResult = sendMarqueeAnnouncementsToLine_MessageAPI(linTo, {
       batch_id: executionBatchId + '-marquee',
       trigger_source: 'daily_auto_trigger',

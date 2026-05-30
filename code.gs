@@ -1807,7 +1807,7 @@ function buildAnnouncementsReplyMessages_() {
   if (!announcements.length) {
     return [buildLineTextMessage_('目前沒有最新公告。')];
   }
-  const body = `【跑馬燈公告】\n更新時間：${formatInScriptTimeZone_(new Date(), 'yyyy/MM/dd HH:mm')}\n\n${announcements.map((item, index) => `${index + 1}. ${item}`).join('\n')}`;
+  const body = `【跑馬燈公告】\n\n${announcements.map((item, index) => `${index + 1}. ${item}`).join('\n')}`;
   return buildLineTextMessagesFromLongText_(body, [
     buildLineQuickReplyItem_('本月行事曆', '本月行事曆'),
     buildLineQuickReplyItem_('次月行事曆', '次月行事曆'),
@@ -2529,8 +2529,6 @@ function sendMarqueeAnnouncementsToLine_MessageAPI(linTo, logContext) {
   try {
     const announcements = getNewsAnnouncements();
     const list = Array.isArray(announcements) ? announcements : [];
-    const scriptTimeZone = Session.getScriptTimeZone() || 'Asia/Taipei';
-    const generatedAt = Utilities.formatDate(new Date(), scriptTimeZone, 'yyyy/MM/dd HH:mm');
     let messageBody = '';
 
     if (!list.length) {
@@ -2539,7 +2537,7 @@ function sendMarqueeAnnouncementsToLine_MessageAPI(linTo, logContext) {
       messageBody = list.map((item, index) => `${index + 1}. ${item}`).join('\n');
     }
 
-    let fullMessage = `【跑馬燈公告】\n更新時間：${generatedAt}\n\n${messageBody}`;
+    let fullMessage = `【跑馬燈公告】\n\n${messageBody}`;
     if (fullMessage.length > 4900) {
       fullMessage = fullMessage.slice(0, 4868) + '\n...(內容過長已截斷)';
     }

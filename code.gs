@@ -187,8 +187,60 @@ function fetchAndParseCsvWithCache(url, cacheKey) {
 function invalidateMasterDataCache_() {
   const cache = CacheService.getScriptCache();
   ['events_data', 'signups_data'].forEach(cacheKey => cache.remove(cacheKey));
-  console.log('invalidateMasterDataCache_: 已清除 events_data / signups_data 快取。');
+  removeLargeCache_(EVENTS_AND_SIGNUPS_CACHE_KEY);
+  console.log('invalidateMasterDataCache_: 已清除 events_data / signups_data / 行事曆快取。');
 }
+
+// ---- 大型資料快取：CacheService 單筆上限 100KB，行事曆資料約 120KB+，所以切塊存 ----
+// 所有報名寫入（新增/備援/刪除/修改/批次）都會呼叫 invalidateMasterDataCache_ 立即清除；
+// 直接在試算表手動改 Events 的話，最多 EVENTS_AND_SIGNUPS_CACHE_SECONDS 秒後才會反映。
+const EVENTS_AND_SIGNUPS_CACHE_KEY = 'events_and_signups_v1';
+const EVENTS_AND_SIGNUPS_CACHE_SECONDS = 600;
+const LARGE_CACHE_CHUNK_CHARS = 25000; // 中文 UTF-8 一字 3 bytes，25000 字 ≈ 75KB < 100KB
+
+function putLargeCache_(key, value, seconds) {
+  try {
+    const chunks = [];
+    for (let i = 0; i < value.length; i += LARGE_CACHE_CHUNK_CHARS) {
+      chunks.push(value.slice(i, i + LARGE_CACHE_CHUNK_CHARS));
+    }
+    const entries = {};
+    chunks.forEach((chunk, idx) => { entries[`${key}__${idx}`] = chunk; });
+    entries[`${key}__count`] = String(chunks.length);
+    CacheService.getScriptCache().putAll(entries, seconds);
+  } catch (e) {
+    console.warn(`putLargeCache_ ${key} 失敗（略過快取）: ${e.message}`);
+  }
+}
+
+function getLargeCache_(key) {
+  try {
+    const cache = CacheService.getScriptCache();
+    const count = parseInt(cache.get(`${key}__count`), 10);
+    if (!count) return null;
+    const keys = [];
+    for (let i = 0; i < count; i++) keys.push(`${key}__${i}`);
+    const parts = cache.getAll(keys);
+    let joined = '';
+    for (let i = 0; i < count; i++) {
+      const part = parts[`${key}__${i}`];
+      if (part === undefined || part === null) return null; // 有任一塊過期就視為沒快取
+      joined += part;
+    }
+    return joined;
+  } catch (e) {
+    console.warn(`getLargeCache_ ${key} 失敗: ${e.message}`);
+    return null;
+  }
+}
+
+function removeLargeCache_(key) {
+  // 只要刪掉 count，讀取端就會視為沒快取；殘留的切塊會自然過期
+  const cache = CacheService.getScriptCache();
+  cache.remove(`${key}__count`);
+  cache.put(EVENTS_CACHE_GEN_KEY, String(Date.now()) + Math.random(), 21600);
+}
+const EVENTS_CACHE_GEN_KEY = 'events_cache_gen';
 
 
 // -------------------- 資料獲取與處理函式 (已修改為 CSV 模式) --------------------
@@ -301,6 +353,21 @@ function getMasterData() {
 }
 
 function getEventsAndSignups() {
+  const cached = getLargeCache_(EVENTS_AND_SIGNUPS_CACHE_KEY);
+  if (cached) {
+    try { return JSON.parse(cached); } catch (e) { removeLargeCache_(EVENTS_AND_SIGNUPS_CACHE_KEY); }
+  }
+  // 讀表期間若剛好有人報名（快取被清），就不要把這份可能過時的結果寫回快取
+  const cache = CacheService.getScriptCache();
+  const genBefore = cache.get(EVENTS_CACHE_GEN_KEY);
+  const result = buildEventsAndSignups_();
+  if (cache.get(EVENTS_CACHE_GEN_KEY) === genBefore) {
+    putLargeCache_(EVENTS_AND_SIGNUPS_CACHE_KEY, JSON.stringify(result), EVENTS_AND_SIGNUPS_CACHE_SECONDS);
+  }
+  return result;
+}
+
+function buildEventsAndSignups_() {
   try {
     const { eventsData, signupsData } = getMasterData();
     const scriptTimeZone = Session.getScriptTimeZone();

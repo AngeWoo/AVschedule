@@ -2,20 +2,19 @@
 <html lang="zh-Hant">
 
 <head>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Noto+Sans+TC:wght@400;600;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20,500,0,0&display=swap"
-        rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-
     <title>AV放送立願表</title>
-    <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- HTML 快取由 nginx 的 Cache-Control: no-cache + ETag 控制；外部套件都鎖定版本號，瀏覽器可長效快取 -->
+    <link rel="preconnect" href="https://script.google.com">
+    <link rel="preconnect" href="https://script.googleusercontent.com">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- 中文改用系統字型（Noto Sans TC 網路字型拆成上百個分片，CSS 就 370KB） -->
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- 圖示字型只載入頁面用到的圖示（約 10KB）；新增圖示時要把名稱依字母順序加進 icon_names，並同步更新下方 iconMap -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20,500,0,0&amp;icon_names=arrow_back,arrow_downward,arrow_upward,article,bar_chart,cable,calendar_month,campaign,check_circle,close,computer,delete,description,download,folder,image,key,lightbulb,mail,manage_search,menu_book,monitoring,movie,photo_camera,refresh,schedule,search,settings,tune,videocam&amp;display=block" rel="stylesheet">
+    <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.25/dist/sweetalert2.all.min.js"></script>
 
     <style>
         :root {
@@ -52,7 +51,7 @@
         }
 
         body {
-            font-family: 'Manrope', 'Noto Sans TC', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            font-family: 'Manrope', 'PingFang TC', 'Microsoft JhengHei', 'Noto Sans TC', 'Noto Sans CJK TC', 'Segoe UI', system-ui, -apple-system, sans-serif;
             background: radial-gradient(circle at 10% 20%, rgba(31, 122, 236, 0.06), transparent 25%), radial-gradient(circle at 90% 0%, rgba(245, 158, 11, 0.08), transparent 22%), linear-gradient(180deg, #f7f9ff 0%, #f4f7fd 100%);
             color: var(--text-color);
             line-height: 1.7;
@@ -737,10 +736,34 @@
         }
 
         .simple-event-signup-btn {
-            margin-top: auto;
-            align-self: center;
             width: min(220px, 100%);
             justify-content: center;
+        }
+
+        .event-card-actions {
+            margin-top: auto;
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .event-card-actions .simple-event-signup-btn {
+            flex: 1 1 auto;
+        }
+
+        .event-share-btn {
+            flex: 0 0 auto;
+            justify-content: center;
+            background: #fff;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .swal2-footer .event-share-btn {
+            font-size: 0.95rem;
+            padding: 6px 14px;
+            border-radius: 999px;
+            cursor: pointer;
         }
 
         .signup-mobile-actions {
@@ -2871,7 +2894,7 @@
     <header class="page-header">
         <h1>
             <span class="brand-icon" id="reload-system-btn" title="重新整理">
-                <img src="cam.png" alt="攝影機">
+                <img src="cam-96.png" alt="攝影機" width="44" height="51">
             </span>
             AV放送立願表
             <span id="toggle-marquee-btn" title="切換公告欄顯示">&#128276;</span>
@@ -3199,7 +3222,7 @@
     </div>
 
     <div id="event-popover" class="event-popover"></div>
-    <audio id="dog-audio" src="dog.wav" preload="metadata" playsinline></audio>
+    <audio id="dog-audio" src="dog.mp3" preload="none" playsinline></audio>
     <footer class="page-footer">
         <p>2026 AV 放送立願系統. All Rights Reserved.</p>
         <span id="frontend-version" style="display:none;"></span>
@@ -3249,7 +3272,7 @@
         const FRONTEND_VERSION = "0717";
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1dCHAzjMNklN96jXKpWYcTv-NvzKoB8J6CcY30L55dAtaAf0bTRWTJTc20Fk2MZbgeQ/exec";
         const FULLCALENDAR_URL = "https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js";
-        const CHART_JS_URL = "https://cdn.jsdelivr.net/npm/chart.js";
+        const CHART_JS_URL = "https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js";
         const CHART_DATALABELS_URL = "https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js";
         const DATE_FMT_CA_TW = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Taipei' });
         const DATE_FMT_WEEKDAY_ZH_TW = new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', weekday: 'short' });
@@ -3509,6 +3532,123 @@
         function getCalendarEventById(eventId) {
             return calendarEventsById.get(String(eventId));
         }
+
+        // ---- 活動資料本機快取：先用上次的資料立即顯示，再背景向後端取最新（後端一次約 1~3 秒）----
+        const EVENTS_CACHE_KEY = 'av_events_cache_v1';
+        const EVENTS_CACHE_MAX_AGE_MS = 14 * 24 * 60 * 60 * 1000;
+        let lastEventsJson = '';
+        function readCachedCalendarEvents() {
+            try {
+                const raw = localStorage.getItem(EVENTS_CACHE_KEY);
+                if (!raw) return null;
+                const cached = JSON.parse(raw);
+                if (!cached || !Array.isArray(cached.events) || Date.now() - cached.savedAt > EVENTS_CACHE_MAX_AGE_MS) return null;
+                return cached.events;
+            } catch (e) { return null; }
+        }
+        function writeCachedCalendarEvents(events, json) {
+            try {
+                localStorage.setItem(EVENTS_CACHE_KEY, `{"savedAt":${Date.now()},"events":${json || JSON.stringify(events)}}`);
+            } catch (e) { /* 空間不足或隱私模式：忽略 */ }
+        }
+
+        // ---- 分享單場法會的報名連結：開啟 ?event=<id> 會直接跳出該場的報名視窗 ----
+        const DEEP_LINK_EVENT_PARAM = 'event';
+        let pendingDeepLinkEventId = new URLSearchParams(location.search).get(DEEP_LINK_EVENT_PARAM) || '';
+        function buildEventShareUrl(eventId) {
+            const url = new URL(location.origin + location.pathname);
+            url.searchParams.set(DEEP_LINK_EVENT_PARAM, eventId);
+            return url.toString();
+        }
+        function buildEventShareText(eventObject) {
+            const props = eventObject.extendedProps || {};
+            const dateObj = new Date(eventObject.start);
+            const dateText = `${DATE_FMT_CA_TW.format(dateObj).replace(/-/g, '/')}(${DATE_FMT_WEEKDAY_ZH_TW.format(dateObj).replace('週', '')})`;
+            const timeText = props.startTime ? ` ${props.startTime}${props.endTime ? '~' + props.endTime : ''}` : '';
+            return `【AV放送立願】${dateText}${timeText} ${String(eventObject.title || '').trim()}\n點連結直接報名👇`;
+        }
+        function buildEventShareFooterHtml(eventId) {
+            return `<button type="button" class="btn event-share-btn" data-share-event-id="${escapeHtml(eventId)}">🔗 分享此場報名連結</button>`;
+        }
+        async function copyTextToClipboard(text) {
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                    return true;
+                }
+            } catch (e) { /* 改用舊方法 */ }
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.setAttribute('readonly', '');
+            ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+            document.body.appendChild(ta);
+            ta.select();
+            let ok = false;
+            try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+            document.body.removeChild(ta);
+            return ok;
+        }
+        async function shareEventLink(eventId, triggerBtn) {
+            const eventObject = getCalendarEventById(eventId);
+            if (!eventObject) return;
+            const url = buildEventShareUrl(eventId);
+            const text = buildEventShareText(eventObject);
+            const isCoarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+            // 手機用系統分享選單（可直接選 LINE），電腦則複製到剪貼簿
+            if (navigator.share && isCoarse) {
+                try {
+                    await navigator.share({ title: 'AV放送立願報名', text, url });
+                    return;
+                } catch (e) {
+                    if (e && e.name === 'AbortError') return;
+                }
+            }
+            const ok = await copyTextToClipboard(`${text}\n${url}`);
+            if (triggerBtn) {
+                const original = triggerBtn.dataset.originalText || triggerBtn.textContent;
+                triggerBtn.dataset.originalText = original;
+                triggerBtn.textContent = ok ? '✅ 已複製，可貼到 LINE' : '❌ 複製失敗';
+                clearTimeout(triggerBtn._resetTimer);
+                triggerBtn._resetTimer = setTimeout(() => { triggerBtn.textContent = original; }, 2200);
+            }
+            if (!ok) { try { window.prompt('請手動複製以下連結：', url); } catch (e) { /* 不支援 prompt 的環境 */ } }
+        }
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.event-share-btn[data-share-event-id]');
+            if (!btn) return;
+            e.preventDefault();
+            e.stopPropagation();
+            shareEventLink(btn.dataset.shareEventId, btn);
+        }, true);
+        function clearDeepLinkFromUrl() {
+            const url = new URL(location.href);
+            if (!url.searchParams.has(DEEP_LINK_EVENT_PARAM)) return;
+            url.searchParams.delete(DEEP_LINK_EVENT_PARAM);
+            history.replaceState(null, '', url.pathname + (url.search || '') + url.hash);
+        }
+        // isFreshData：資料是否已是後端最新；用快取資料找不到時先等最新資料再判斷
+        async function handlePendingDeepLink(isFreshData) {
+            if (!pendingDeepLinkEventId) return;
+            const eventId = pendingDeepLinkEventId;
+            const eventObject = getCalendarEventById(eventId);
+            if (!eventObject) {
+                if (!isFreshData) return;
+                pendingDeepLinkEventId = '';
+                clearDeepLinkFromUrl();
+                await Swal.fire({ icon: 'warning', title: '找不到這場法會', text: '連結可能已失效或活動已被移除，請直接從行事曆選擇。' });
+                return;
+            }
+            pendingDeepLinkEventId = '';
+            clearDeepLinkFromUrl();
+            const startDate = new Date(eventObject.start);
+            if (!Number.isNaN(startDate.getTime()) && (startDate.getFullYear() !== currentDisplayDate.getFullYear() || startDate.getMonth() !== currentDisplayDate.getMonth())) {
+                currentDisplayDate = new Date(startDate.getFullYear(), startDate.getMonth(), 1);
+                if (calendar) calendar.gotoDate(currentDisplayDate);
+                if (document.getElementById('simple-list-view').style.display === 'block') renderSimpleListView();
+                if (document.getElementById('compact-list-view').style.display === 'block') renderCompactListView();
+            }
+            if (window.Swal) handleEventClick({ event: { id: eventId, ...eventObject } });
+        }
         function loadExternalScript(src, globalName) {
             if (globalName && window[globalName]) return Promise.resolve();
             return new Promise((resolve, reject) => {
@@ -3607,24 +3747,28 @@
 
             syncViewportMode();
         }
-        async function promptForName() { let currentUserName = localStorage.getItem('av_signup_username') || ''; const { value: name } = await Swal.fire({ title: "請輸入您的姓名", input: "text", inputValue: currentUserName, inputPlaceholder: "請輸入姓名", showCancelButton: true, inputValidator: (v) => !v && "姓名不能為空！" }); if (name) { localStorage.setItem('av_signup_username', name); } return name; }
+        async function promptForName(extraOptions = {}) { let currentUserName = localStorage.getItem('av_signup_username') || ''; const { value: name } = await Swal.fire({ title: "請輸入您的姓名", input: "text", inputValue: currentUserName, inputPlaceholder: "請輸入姓名", showCancelButton: true, inputValidator: (v) => !v && "姓名不能為空！", ...extraOptions }); if (name) { localStorage.setItem('av_signup_username', name); } return name; }
         async function handleEventClick(info) {
             if (eventHandlingInProgress) return;
             eventHandlingInProgress = true;
             try {
-                const eventObject = getCalendarEventById(info.event.id); if (!eventObject) { eventHandlingInProgress = false; return; }
-                const props = eventObject.extendedProps;
+                let eventObject = getCalendarEventById(info.event.id); if (!eventObject) { eventHandlingInProgress = false; return; }
+                let props = eventObject.extendedProps;
+                const shareFooter = buildEventShareFooterHtml(info.event.id);
                 const eventEndDateTime = eventObject.end ? new Date(eventObject.end) : new Date(eventObject.start);
                 if (!eventObject.end) { eventEndDateTime.setHours(23, 59, 59, 999); }
                 if (new Date() > eventEndDateTime) { await Swal.fire({ icon: 'warning', title: '活動已結束', text: '此活動的報名時間已截止，無法進行操作。', confirmButtonColor: '#d33' }); eventHandlingInProgress = false; return; }
-                const name = await promptForName(); if (!name) { eventHandlingInProgress = false; return; }
+                const name = await promptForName({ footer: shareFooter }); if (!name) { eventHandlingInProgress = false; return; }
+                // 輸入姓名期間背景資料可能已更新（先顯示快取、再向後端取最新），改用最新的報名狀態判斷
+                eventObject = getCalendarEventById(info.event.id) || eventObject;
+                props = eventObject.extendedProps;
                 const existingSignup = props.signups.find(s => s.user === name);
-                if (existingSignup) { await Swal.fire({ icon: 'info', title: '您已報名過此活動', html: `<div style="text-align: left; padding: 0 1em;"><p><strong>活動：</strong> ${props.full_title}</p><p><strong>日期：</strong> ${DATE_FMT_CA_TW.format(new Date(eventObject.start))}</p><p><strong>您報名的崗位：</strong> ${existingSignup.position}</p></div>` }); eventHandlingInProgress = false; return; }
+                if (existingSignup) { await Swal.fire({ icon: 'info', footer: shareFooter, title: '您已報名過此活動', html: `<div style="text-align: left; padding: 0 1em;"><p><strong>活動：</strong> ${props.full_title}</p><p><strong>日期：</strong> ${DATE_FMT_CA_TW.format(new Date(eventObject.start))}</p><p><strong>您報名的崗位：</strong> ${existingSignup.position}</p></div>` }); eventHandlingInProgress = false; return; }
                 const allBackendPositions = props.positions;
                 if (!allBackendPositions || allBackendPositions.length === 0) { await Swal.fire('無可報名崗位', '此活動尚未設定任何可報名的崗位。', 'info'); eventHandlingInProgress = false; return; }
                 const positionOptions = allBackendPositions.reduce((obj, pos) => ({ ...obj, [pos]: pos }), {});
                 let timeText = `<b>開始時間:</b> ${props.startTime}${props.endTime ? '<br><b>結束時間:</b> ' + props.endTime : ''}`;
-                const { value: selectedPosition } = await Swal.fire({ title: props.full_title, html: `${timeText}<br><br><b>說明:</b> ${props.description || '無'}<br><br><p style="color: red; font-weight: bold;">當立願崗位重複時，在法會當天奉仕讀經結束後，因準備工作需要，始可由其他人員遞補。您的立願崗位優先保留至奉仕讀經結束。</p>`, input: 'select', inputOptions: positionOptions, inputPlaceholder: '選擇崗位', showCancelButton: true, confirmButtonText: '確認報名', cancelButtonText: '取消', preConfirm: p => !p ? Swal.showValidationMessage('請選擇一個崗位') : p });
+                const { value: selectedPosition } = await Swal.fire({ title: props.full_title, html: `${timeText}<br><br><b>說明:</b> ${props.description || '無'}<br><br><p style="color: red; font-weight: bold;">當立願崗位重複時，在法會當天奉仕讀經結束後，因準備工作需要，始可由其他人員遞補。您的立願崗位優先保留至奉仕讀經結束。</p>`, input: 'select', inputOptions: positionOptions, inputPlaceholder: '選擇崗位', footer: shareFooter, showCancelButton: true, confirmButtonText: '確認報名', cancelButtonText: '取消', preConfirm: p => !p ? Swal.showValidationMessage('請選擇一個崗位') : p });
                 if (selectedPosition) {
                     showLoading();
                     try {
@@ -3801,7 +3945,10 @@
                             <div>已報：${signupCount}</div>
                         </div>
                         <div class="event-mobile-signups"><strong>報名：</strong>${signupsDetail}</div>
-                        <button class="btn btn-primary simple-event-signup-btn" data-event-id="${event.id}">我要報名</button>
+                        <div class="event-card-actions">
+                            <button class="btn btn-primary simple-event-signup-btn" data-event-id="${event.id}">我要報名</button>
+                            <button type="button" class="btn event-share-btn" data-share-event-id="${event.id}" title="分享此場報名連結">🔗 分享</button>
+                        </div>
                     </article>
                 `;
             });
@@ -3809,6 +3956,7 @@
             container.innerHTML = cardsHtml;
 
             container._mobileEventClickHandler = (e) => {
+                if (e.target.closest('.event-share-btn')) return; // 分享按鈕由全域委派處理
                 const trigger = e.target.closest('.simple-event-signup-btn,[data-event-id]');
                 if (!trigger || !container.contains(trigger)) return;
                 const eventId = trigger.dataset.eventId || (trigger.closest('[data-event-id]') ? trigger.closest('[data-event-id]').dataset.eventId : '');
@@ -4436,41 +4584,86 @@
 
             prevBtn._isInitialized = true;
         }
+        let calendarEventsFetchSeq = 0;
+        let lastEventsFetchChanged = false;
         async function fetchCalendarEvents(forceRefresh = false) {
             if (!forceRefresh && allCalendarEvents.length > 0) return allCalendarEvents;
-            if (calendarEventsLoadPromise) return calendarEventsLoadPromise;
+            // forceRefresh（例如報名後）一定要發新請求，不能沿用報名前就已送出的舊請求
+            if (!forceRefresh && calendarEventsLoadPromise) return calendarEventsLoadPromise;
 
-            calendarEventsLoadPromise = (async () => {
+            const fetchSeq = ++calendarEventsFetchSeq;
+            const loadPromise = (async () => {
                 const response = await callAppsScriptWithRetry('getEventsAndSignups');
-                setCalendarEvents(response.data);
+                if (fetchSeq === calendarEventsFetchSeq) {
+                    const events = Array.isArray(response.data) ? response.data : [];
+                    const json = JSON.stringify(events);
+                    lastEventsFetchChanged = json !== lastEventsJson;
+                    lastEventsJson = json;
+                    setCalendarEvents(events);
+                    writeCachedCalendarEvents(events, json);
+                }
                 return allCalendarEvents;
             })();
+            calendarEventsLoadPromise = loadPromise;
 
             try {
-                return await calendarEventsLoadPromise;
+                return await loadPromise;
             } finally {
-                calendarEventsLoadPromise = null;
+                if (calendarEventsLoadPromise === loadPromise) calendarEventsLoadPromise = null;
             }
+        }
+        async function renderCalendarTabData(shouldRenderCalendar, rebuild) {
+            const simpleViewVisible = document.getElementById('simple-list-view').style.display === 'block';
+            const compactViewVisible = document.getElementById('compact-list-view').style.display === 'block';
+            if (!shouldRenderCalendar && rebuild && calendar) {
+                calendar.destroy();
+                calendar = null;
+            }
+            if (shouldRenderCalendar) {
+                ensureCalendarToolbarInitialized();
+                if (compactViewVisible || simpleViewVisible || shouldDefaultCalendarToCardView()) {
+                    if (rebuild && calendar) {
+                        calendar.destroy();
+                        calendar = null;
+                    }
+                    await switchCalendarView(compactViewVisible ? 'compact' : 'simple');
+                } else {
+                    await switchCalendarView('full', rebuild || !calendar);
+                }
+            }
+            populateEventSelect();
+        }
+        async function revalidateCalendarEvents() {
+            try {
+                await fetchCalendarEvents(true);
+            } catch (e) {
+                console.warn('背景更新活動資料失敗，暫時顯示快取資料：', e);
+                return;
+            }
+            if (lastEventsFetchChanged) {
+                await renderCalendarTabData(isCalendarTabVisible(), true);
+            }
+            handlePendingDeepLink(true);
         }
         async function setupCalendarTab(forceRefresh = false, renderCalendar = null) {
             const shouldRenderCalendar = renderCalendar === null ? isCalendarTabVisible() : Boolean(renderCalendar);
-            const fullViewVisible = document.getElementById('full-calendar-view').style.display !== 'none';
-            const simpleViewVisible = document.getElementById('simple-list-view').style.display === 'block';
-            const compactViewVisible = document.getElementById('compact-list-view').style.display === 'block';
 
             if (!forceRefresh && allCalendarEvents.length > 0) {
-                if (shouldRenderCalendar) {
-                    ensureCalendarToolbarInitialized();
-                    if (compactViewVisible) {
-                        await switchCalendarView('compact');
-                    } else if (simpleViewVisible || shouldDefaultCalendarToCardView()) {
-                        await switchCalendarView('simple');
-                    } else {
-                        await switchCalendarView('full', !calendar);
-                    }
-                }
-                populateEventSelect();
+                await renderCalendarTabData(shouldRenderCalendar, false);
                 return;
+            }
+
+            // 第一次載入：有本機快取就先畫面上顯示，背景再更新，不讓使用者等後端
+            if (!forceRefresh) {
+                const cachedEvents = readCachedCalendarEvents();
+                if (cachedEvents && cachedEvents.length > 0) {
+                    setCalendarEvents(cachedEvents);
+                    lastEventsJson = JSON.stringify(cachedEvents);
+                    await renderCalendarTabData(shouldRenderCalendar, false);
+                    handlePendingDeepLink(false);
+                    revalidateCalendarEvents();
+                    return;
+                }
             }
 
             showLoading();
@@ -4478,36 +4671,13 @@
             try {
                 await fetchCalendarEvents(forceRefresh);
                 if (setupSeq !== calendarTabSetupSeq) return;
-                if (!shouldRenderCalendar && forceRefresh && calendar) {
-                    calendar.destroy();
-                    calendar = null;
-                }
-
-                if (shouldRenderCalendar) {
-                    ensureCalendarToolbarInitialized();
-                    if (compactViewVisible) {
-                        if (forceRefresh && calendar) {
-                            calendar.destroy();
-                            calendar = null;
-                        }
-                        await switchCalendarView('compact');
-                    } else if (simpleViewVisible || shouldDefaultCalendarToCardView()) {
-                        if (forceRefresh && calendar) {
-                            calendar.destroy();
-                            calendar = null;
-                        }
-                        await switchCalendarView('simple');
-                    } else {
-                        await switchCalendarView('full', true);
-                    }
-                }
-
-                populateEventSelect();
+                await renderCalendarTabData(shouldRenderCalendar, forceRefresh);
             } catch (error) {
                 Swal.fire('載入失敗', error.message, 'error');
             } finally {
                 hideLoading();
             }
+            handlePendingDeepLink(true);
         }
 
         function updateSearchDebug() { return; }
@@ -5702,6 +5872,7 @@
                 marqueeTimer = null;
             };
 
+            let newsAnnouncementsPromise = null;
             async function setupMarquee(forceLoad = false) {
                 if (!marqueeTextEl) return;
                 const shouldLoad = forceLoad || localStorage.getItem('av_marquee_visible') !== 'false';
@@ -5716,8 +5887,12 @@
                     return;
                 }
                 try {
-                    const response = await callAppsScript('getNewsAnnouncements');
-                    marqueeMessages = response.data;
+                    // 啟動時 setupMarquee() 與公告開關的初始化會同時呼叫，共用同一個請求
+                    if (!newsAnnouncementsPromise) {
+                        newsAnnouncementsPromise = callAppsScript('getNewsAnnouncements').finally(() => { newsAnnouncementsPromise = null; });
+                    }
+                    const response = await newsAnnouncementsPromise;
+                    marqueeMessages = response.data || [];
                     if (marqueeMessages && marqueeMessages.length > 0) {
                         cycleMarquee();
                         startMarqueeTimer();
@@ -6367,21 +6542,20 @@
                 window.addEventListener('scroll', onScroll, { passive: true });
                 updateFabVisibility();
             }
-            const savedTab = localStorage.getItem('av_active_tab') || 'calendar-tab';
+            // 分享連結 (?event=) 進來時一律開在行事曆分頁
+            const savedTab = pendingDeepLinkEventId ? 'calendar-tab' : (localStorage.getItem('av_active_tab') || 'calendar-tab');
+            // 桌機預設是月曆檢視：FullCalendar 套件與活動資料同時下載，不要等資料回來才開始載
+            if (savedTab === 'calendar-tab' && !shouldDefaultCalendarToCardView()) {
+                ensureFullCalendarReady().catch(() => { });
+            }
             const tabBtn = document.querySelector(`.tab-button[data-tab="${savedTab}"]`);
             if (tabBtn) {
                 openTab({ currentTarget: tabBtn }, savedTab);
-                if (savedTab === 'calendar-tab' && !shouldDefaultCalendarToCardView()) {
-                    setTimeout(() => {
-                        if (activeTabName === 'calendar-tab') {
-                            switchCalendarView('full', true).catch(() => { });
-                        }
-                    }, 1200);
-                }
             } else {
                 setupCalendarTab(false, true);
             }
-            loadCalendarDownloadLinks({ silent: true });
+            // 行事曆下載連結只在「檔案」分頁用到，且點擊時會自動載入；延後到閒置時再抓，避免和首屏資料搶 GAS
+            setTimeout(() => { if (!hasLoadedCalendarDownloadLinks) loadCalendarDownloadLinks({ silent: true }); }, 5000);
             const handleDocDownload = (docType) => {
                 const docMap = {
                     poster: { action: 'open', url: '01.pdf', filename: 'AV招生海報.pdf' },

@@ -3269,7 +3269,7 @@
     </div>
 
     <script>
-        const FRONTEND_VERSION = "0717";
+        const FRONTEND_VERSION = "1021_ModifySignup_Fix";
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1dCHAzjMNklN96jXKpWYcTv-NvzKoB8J6CcY30L55dAtaAf0bTRWTJTc20Fk2MZbgeQ/exec";
         const FULLCALENDAR_URL = "https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js";
         const CHART_JS_URL = "https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js";
@@ -3534,7 +3534,7 @@
         }
 
         // ---- 活動資料本機快取：先用上次的資料立即顯示，再背景向後端取最新（後端一次約 1~3 秒）----
-        const EVENTS_CACHE_KEY = 'av_events_cache_v1';
+        const EVENTS_CACHE_KEY = 'av_events_cache_v2';
         const EVENTS_CACHE_MAX_AGE_MS = 14 * 24 * 60 * 60 * 1000;
         let lastEventsJson = '';
         function readCachedCalendarEvents() {
@@ -4835,7 +4835,51 @@
             }
             return rowsToRender.length;
         }
-        async function promptToModifySignup(signup) { const eventDetails = getCalendarEventById(signup.eventId); if (!eventDetails) { return Swal.fire('錯誤', '找不到此報名的相關活動資訊，無法修改。', 'error'); } const allPositions = eventDetails.extendedProps.positions; if (!allPositions || allPositions.length === 0) { return Swal.fire('錯誤', '此活動沒有可用的崗位列表。', 'error'); } let optionsHtml = allPositions.map(pos => `<option value="${pos}" ${pos === signup.position ? 'selected' : ''}>${pos}</option>`).join(''); const { value: newPosition } = await Swal.fire({ title: '修改報名崗位', html: ` <div style="text-align: left; margin: 1em 0; line-height: 1.8;"><p><strong>活動:</strong> ${signup.eventTitle}</p><p><strong>日期:</strong> ${signup.eventDate}</p><p><strong>時間:</strong> ${eventDetails.extendedProps.startTime || ''}${eventDetails.extendedProps.endTime ? ' - ' + eventDetails.extendedProps.endTime : ''}</p><p><strong>姓名:</strong> ${signup.user}</p><hr style="margin: 1rem 0; height: 1px; background: #ddd; border: none;"><p style="margin-top: 1em;"><strong>修改崗位為:</strong></p><select id="swal-position-select" class="swal2-select" style="width: 100%; max-width: 300px; margin-top: 0.5em;">${optionsHtml}</select></div>`, width: isMobile ? '90vw' : '500px', focusConfirm: false, showCancelButton: true, confirmButtonText: '確認修改', cancelButtonText: '取消', preConfirm: () => document.getElementById('swal-position-select').value }); if (newPosition && newPosition !== signup.position) { showLoading(); try { const response = await callAppsScript('modifySignup', { signupId: signup.signupId, newPosition: newPosition }); await Swal.fire('修改成功', response.data.message, 'success'); invalidateUnifiedSignupsCache(); await executeUnifiedSignupQuery(lastQuery.params.searchText, lastQuery.params.startDateStr, lastQuery.params.endDateStr, lastQuery.params.eventDate || '', lastQuery.params.eventTitle || '', lastQuery.params.startTime || '', lastQuery.params.keyword || '', true); setupCalendarTab(true); } catch (e) { Swal.fire('修改失敗', e.message, 'error'); } finally { hideLoading(); } } }
+        async function promptToModifySignup(signup) {
+            if (!signup || !signup.signupId) {
+                return Swal.fire('無法修改', '報名資料不完整，請重新整理頁面後再試。', 'error');
+            }
+            const eventDetails = getCalendarEventById(signup.eventId);
+            if (!eventDetails) {
+                return Swal.fire('錯誤', '找不到此報名的相關活動資訊，無法修改。', 'error');
+            }
+            const allPositions = eventDetails.extendedProps.positions;
+            if (!allPositions || allPositions.length === 0) {
+                return Swal.fire('錯誤', '此活動沒有可用的崗位列表。', 'error');
+            }
+            const optionsHtml = allPositions.map(pos => `<option value="${pos}" ${pos === signup.position ? 'selected' : ''}>${pos}</option>`).join('');
+            const { value: newPosition } = await Swal.fire({
+                title: '修改報名崗位',
+                html: `<div style="text-align: left; margin: 1em 0; line-height: 1.8;"><p><strong>活動:</strong> ${signup.eventTitle}</p><p><strong>日期:</strong> ${signup.eventDate}</p><p><strong>時間:</strong> ${eventDetails.extendedProps.startTime || ''}${eventDetails.extendedProps.endTime ? ' - ' + eventDetails.extendedProps.endTime : ''}</p><p><strong>姓名:</strong> ${signup.user}</p><hr style="margin: 1rem 0; height: 1px; background: #ddd; border: none;"><p style="margin-top: 1em;"><strong>修改崗位為:</strong></p><select id="swal-position-select" class="swal2-select" style="width: 100%; max-width: 300px; margin-top: 0.5em;">${optionsHtml}</select></div>`,
+                width: isMobile ? '90vw' : '500px',
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: '確認修改',
+                cancelButtonText: '取消',
+                preConfirm: () => document.getElementById('swal-position-select').value
+            });
+            if (!newPosition || newPosition === signup.position) return;
+
+            showLoading();
+            try {
+                const response = await callAppsScript('modifySignup', {
+                    signupId: signup.signupId,
+                    newPosition: newPosition
+                });
+                // 同時檢查操作結果，避免舊版後端將失敗包在外層 success 中。
+                if (!response || !response.data || response.data.status !== 'success') {
+                    throw new Error(response && response.data && response.data.message || '修改報名失敗，請稍後再試。');
+                }
+                await Swal.fire('修改成功', response.data.message, 'success');
+                invalidateUnifiedSignupsCache();
+                await executeUnifiedSignupQuery(lastQuery.params.searchText, lastQuery.params.startDateStr, lastQuery.params.endDateStr, lastQuery.params.eventDate || '', lastQuery.params.eventTitle || '', lastQuery.params.startTime || '', lastQuery.params.keyword || '', true);
+                setupCalendarTab(true);
+            } catch (e) {
+                await Swal.fire('修改失敗', e.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
         function normalizeDateStr(input) { if (!input) return ''; const sanitized = input.replace(/[./]/g, '-'); const parsed = new Date(sanitized); if (isNaN(parsed.getTime())) { return sanitized.slice(0, 10); } return DATE_FMT_CA_TW.format(parsed); }
         async function executeUnifiedSignupQuery(searchText, startDateStr, endDateStr, eventDate = '', eventTitle = '', startTime = '', keyword = '', forceRefresh = false) {
             showLoading();

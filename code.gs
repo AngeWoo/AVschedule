@@ -3,7 +3,7 @@
 //  版本：0517
 // ====================================================================
 
-const BACKEND_VERSION = "0815_Email_Ready"; // *** 後端版本號 ***
+const BACKEND_VERSION = "1021_ModifySignup_Fix"; // *** 後端版本號 ***
 
 // --- 全域設定 ---
 // [重要] SHEET_ID 仍然需要，用於所有寫入、修改、刪除操作
@@ -47,7 +47,12 @@ function doGet(e) {
       case 'addSignup': result = addSignup(params.eventId, params.userName, params.position); break;
       case 'addBackupSignup': result = addBackupSignup(params.eventId, params.userName, params.position); break;
       case 'removeSignup': result = removeSignup(params.eventId, params.userName); break;
-      case 'modifySignup': result = modifySignup(params.signupId, params.newPosition); break;
+      case 'modifySignup':
+        result = modifySignup(params.signupId, params.newPosition);
+        if (!result || result.status !== 'success') {
+          throw new Error(result && result.message || '修改報名失敗。');
+        }
+        break;
       case 'createTempSheetAndExport': result = createTempSheetAndExport(params.startDateStr, params.endDateStr); break;
       // --- 分享功能依賴讀取函式，會自動使用新方法 ---
       case 'getSignupsAsTextForToday': result = getSignupsAsTextForToday(); break;
@@ -194,7 +199,7 @@ function invalidateMasterDataCache_() {
 // ---- 大型資料快取：CacheService 單筆上限 100KB，行事曆資料約 120KB+，所以切塊存 ----
 // 所有報名寫入（新增/備援/刪除/修改/批次）都會呼叫 invalidateMasterDataCache_ 立即清除；
 // 直接在試算表手動改 Events 的話，最多 EVENTS_AND_SIGNUPS_CACHE_SECONDS 秒後才會反映。
-const EVENTS_AND_SIGNUPS_CACHE_KEY = 'events_and_signups_v1';
+const EVENTS_AND_SIGNUPS_CACHE_KEY = 'events_and_signups_v2';
 const EVENTS_AND_SIGNUPS_CACHE_SECONDS = 600;
 const LARGE_CACHE_CHUNK_CHARS = 25000; // 中文 UTF-8 一字 3 bytes，25000 字 ≈ 75KB < 100KB
 
@@ -376,7 +381,14 @@ function buildEventsAndSignups_() {
       const eventId = row[1]; // Column B: EventID
       if (!eventId) return;
       if (!signupsByEventId.has(eventId)) { signupsByEventId.set(eventId, []); }
-      signupsByEventId.get(eventId).push({ user: row[2], position: row[4] }); // Column C: User, Column E: Position
+      signupsByEventId.get(eventId).push({
+        signupId: row[0], // Column A: SignupID，查詢頁修改崗位時需要
+        user: row[2],
+        timestamp: row[3] instanceof Date
+          ? Utilities.formatDate(row[3], scriptTimeZone, 'yyyy/MM/dd HH:mm:ss')
+          : (row[3] || ''),
+        position: row[4]
+      });
     });
 
     return eventsData.map(row => {

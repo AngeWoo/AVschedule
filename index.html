@@ -2901,6 +2901,8 @@
         /* ---- 奉仕滿意度調查 ---- */
         .survey-layout {
             display: grid;
+            /* minmax(0,1fr)：避免內部表格的最小寬度把卡片撐出手機螢幕 */
+            grid-template-columns: minmax(0, 1fr);
             gap: 18px;
             max-width: 760px;
             margin: 0 auto;
@@ -3386,6 +3388,69 @@
 
             .survey-kpi .value {
                 font-size: 1.45rem;
+            }
+
+            .survey-kpi {
+                padding: 10px 12px;
+            }
+
+            .survey-chart-head {
+                flex-wrap: wrap;
+            }
+
+            /* 各場法會表格在手機改成一場一張小卡，不需左右滑動 */
+            .survey-table {
+                min-width: 0;
+            }
+
+            .survey-table thead {
+                display: none;
+            }
+
+            .survey-table,
+            .survey-table tbody {
+                display: block;
+            }
+
+            .survey-table tr {
+                display: grid;
+                grid-template-columns: auto minmax(0, 1fr);
+                gap: 4px 10px;
+                padding: 10px 0;
+                border-bottom: 1px solid var(--sv-grid);
+            }
+
+            .survey-table td {
+                display: block;
+                padding: 0;
+                border: 0;
+            }
+
+            .survey-table td.ev-date {
+                color: var(--sv-muted);
+                text-align: left;
+            }
+
+            .survey-table td.ev-title {
+                font-weight: 700;
+                word-break: break-word;
+            }
+
+            .survey-table td.ev-count {
+                text-align: left;
+                color: var(--sv-muted);
+            }
+
+            .survey-table td.ev-count::after {
+                content: " 份";
+            }
+
+            .survey-table td.ev-dist {
+                grid-column: 1 / -1;
+            }
+
+            .survey-table .survey-likert {
+                min-width: 0;
             }
         }
 
@@ -3984,7 +4049,7 @@
     </div>
 
     <script>
-        const FRONTEND_VERSION = "1101_SurveyCharts";
+        const FRONTEND_VERSION = "1101_SurveyMobile";
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1dCHAzjMNklN96jXKpWYcTv-NvzKoB8J6CcY30L55dAtaAf0bTRWTJTc20Fk2MZbgeQ/exec";
         const FULLCALENDAR_URL = "https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js";
         const CHART_JS_URL = "https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js";
@@ -4713,11 +4778,11 @@
                         <thead><tr><th>日期</th><th>法會</th><th class="num">份數</th><th>平均（滿分 5）</th><th>分布</th></tr></thead>
                         <tbody>${byEvent.map(e => `
                             <tr>
-                                <td class="num" style="text-align:left;">${escapeHtml(String(e.serviceDate || '').replace(/-/g, '/'))}</td>
-                                <td>${escapeHtml(e.eventTitle || '（未指定）')}</td>
-                                <td class="num">${Number(e.count || 0)}</td>
-                                <td><div class="avg-cell"><b>${Number(e.average || 0).toFixed(2)}</b><div class="avg-track"><span style="width:${(Number(e.average || 0) / 5) * 100}%"></span></div></div></td>
-                                <td>${buildSurveyLikertBar((e.distribution || []).map(n => Number(n || 0)), false)}</td>
+                                <td class="num ev-date" style="text-align:left;">${escapeHtml(String(e.serviceDate || '').replace(/-/g, '/'))}</td>
+                                <td class="ev-title">${escapeHtml(e.eventTitle || '（未指定）')}</td>
+                                <td class="num ev-count">${Number(e.count || 0)}</td>
+                                <td class="ev-avg"><div class="avg-cell"><b>${Number(e.average || 0).toFixed(2)}</b><div class="avg-track"><span style="width:${(Number(e.average || 0) / 5) * 100}%"></span></div></div></td>
+                                <td class="ev-dist">${buildSurveyLikertBar((e.distribution || []).map(n => Number(n || 0)), false)}</td>
                             </tr>`).join('')}</tbody>
                     </table></div>
                 </div>` : '';

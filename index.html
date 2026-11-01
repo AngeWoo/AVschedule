@@ -13,7 +13,7 @@
     <!-- 中文改用系統字型（Noto Sans TC 網路字型拆成上百個分片，CSS 就 370KB） -->
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&display=swap" rel="stylesheet">
     <!-- 圖示字型只載入頁面用到的圖示（約 10KB）；新增圖示時要把名稱依字母順序加進 icon_names，並同步更新下方 iconMap -->
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20,500,0,0&amp;icon_names=arrow_back,arrow_downward,arrow_upward,article,bar_chart,cable,calendar_month,campaign,check_circle,close,computer,delete,description,download,folder,image,key,lightbulb,mail,manage_search,menu_book,monitoring,movie,photo_camera,refresh,schedule,search,settings,tune,videocam&amp;display=block" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20,500,0,0&amp;icon_names=arrow_back,arrow_downward,arrow_upward,article,bar_chart,cable,calendar_month,campaign,check_circle,close,computer,delete,description,download,folder,image,key,lightbulb,link,mail,manage_search,menu_book,monitoring,movie,photo_camera,rate_review,refresh,schedule,search,send,settings,tune,videocam&amp;display=block" rel="stylesheet">
     <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11.26.25/dist/sweetalert2.all.min.js"></script>
 
     <style>
@@ -372,6 +372,11 @@
 
         .tab-button:nth-child(6) {
             background: linear-gradient(145deg, #06b6d4, #0891b2);
+            color: #fff;
+        }
+
+        .tab-button:nth-child(7) {
+            background: linear-gradient(145deg, #64748b, #475569);
             color: #fff;
         }
 
@@ -1595,6 +1600,11 @@
                 color: #fff;
             }
 
+            .tab-button:nth-child(7) {
+                background: linear-gradient(145deg, #64748b, #475569);
+                color: #fff;
+            }
+
             .tab-button.active {
                 box-shadow: 0 10px 20px rgba(0, 0, 0, 0.18), 0 0 0 3px rgba(255, 255, 255, 0.7), 0 0 0 6px rgba(31, 122, 236, 0.35);
                 transform: translateY(-2px);
@@ -1663,10 +1673,12 @@
                 margin: 0 !important;
             }
 
+            /* 開始／結束日期在手機上並排一列（需蓋過上方 .form-group 的 100% !important） */
+            .inline-form>.form-group.form-group-date,
             .inline-form .form-group-date {
                 flex: 0 0 calc(50% - 4px);
-                width: calc(50% - 4px);
-                max-width: calc(50% - 4px);
+                width: calc(50% - 4px) !important;
+                max-width: calc(50% - 4px) !important;
                 min-width: 0;
                 padding: 0 1px;
             }
@@ -2886,6 +2898,631 @@
             }
         }
 
+        /* ---- 奉仕滿意度調查 ---- */
+        .survey-layout {
+            display: grid;
+            gap: 18px;
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        .survey-card {
+            background: var(--surface-elevated);
+            border: 1px solid var(--card-border);
+            border-radius: var(--border-radius);
+            box-shadow: 0 8px 22px var(--card-shadow-light);
+            padding: 20px 22px;
+        }
+
+        .survey-card h4 {
+            justify-content: center;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .survey-intro {
+            text-align: center;
+            color: var(--text-light);
+            font-size: 0.92rem;
+            margin-bottom: 16px;
+        }
+
+        .survey-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .survey-question {
+            margin-top: 18px;
+            border: 0;
+        }
+
+        .survey-question legend,
+        .survey-question > label {
+            display: block;
+            font-weight: 800;
+            color: var(--text-color);
+            margin-bottom: 10px;
+        }
+
+        .survey-question .q-no {
+            display: inline-block;
+            min-width: 1.8em;
+            color: var(--primary-color);
+        }
+
+        .survey-question .q-hint {
+            font-weight: 500;
+            color: var(--text-light);
+            font-size: 0.85rem;
+            margin-left: 4px;
+        }
+
+        .survey-required {
+            color: var(--danger-color);
+            margin-left: 2px;
+        }
+
+        .survey-rating {
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .survey-rating input,
+        .survey-chips input {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .survey-rating label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 10px 4px;
+            border: 1.5px solid var(--card-border);
+            border-radius: 14px;
+            background: var(--surface-soft);
+            cursor: pointer;
+            transition: var(--transition-fast);
+            text-align: center;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-light);
+            line-height: 1.2;
+        }
+
+        .survey-rating .face {
+            font-size: 1.7rem;
+            line-height: 1;
+            filter: grayscale(0.7);
+            transition: var(--transition-fast);
+        }
+
+        .survey-rating .score {
+            font-size: 1rem;
+            color: var(--text-color);
+        }
+
+        .survey-rating label:hover {
+            border-color: var(--primary-color);
+        }
+
+        .survey-rating input:checked + label {
+            border-color: var(--primary-color);
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            box-shadow: 0 0 0 3px var(--ring-color);
+        }
+
+        .survey-rating input:checked + label .face {
+            filter: none;
+            transform: scale(1.15);
+        }
+
+        .survey-rating input:focus-visible + label,
+        .survey-chips input:focus-visible + label {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+
+        .survey-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .survey-chips label {
+            padding: 7px 14px;
+            border: 1.5px solid var(--card-border);
+            border-radius: 999px;
+            background: var(--surface-soft);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-light);
+            transition: var(--transition-fast);
+        }
+
+        .survey-chips input:checked + label {
+            border-color: var(--primary-color);
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        .survey-feedback {
+            width: 100%;
+            min-height: 130px;
+            padding: 12px 14px;
+            border: 1.5px solid var(--card-border);
+            border-radius: 14px;
+            font: inherit;
+            font-size: 0.98rem;
+            line-height: 1.6;
+            resize: vertical;
+            background: #fff;
+            color: var(--text-color);
+        }
+
+        .survey-feedback:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px var(--ring-color);
+        }
+
+        .survey-feedback-count {
+            text-align: right;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+
+        .survey-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+
+        .survey-anonymous {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.92rem;
+            color: var(--text-color);
+            cursor: pointer;
+        }
+
+        .survey-anonymous input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary-color);
+        }
+
+        .survey-footer .btn {
+            min-width: 160px;
+        }
+
+        /* 調查結果圖表：1–5 分用紅↔灰↔藍的分歧色（已通過色盲辨識檢查），其餘單一藍色 */
+        #survey-results-card {
+            --sv-1: #a8201a;
+            --sv-2: #e8705f;
+            --sv-3: #c9c7c1;
+            --sv-4: #5f9de8;
+            --sv-5: #184f95;
+            --sv-bar: #2a78d6;
+            --sv-ink: #1f2a44;
+            --sv-ink-2: #4b5565;
+            --sv-muted: #6b7280;
+            --sv-grid: #e7e9ee;
+            --sv-surface: #fcfcfb;
+        }
+
+        .survey-kpis {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 10px;
+            margin: 16px 0 6px;
+        }
+
+        .survey-kpi {
+            background: var(--sv-surface);
+            border: 1px solid var(--sv-grid);
+            border-radius: 12px;
+            padding: 12px 14px;
+        }
+
+        .survey-kpi .label {
+            font-size: 0.78rem;
+            color: var(--sv-muted);
+            font-weight: 600;
+        }
+
+        .survey-kpi .value {
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: var(--sv-ink);
+            line-height: 1.2;
+            margin-top: 2px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .survey-kpi .value small {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--sv-muted);
+            margin-left: 2px;
+        }
+
+        .survey-kpi .sub {
+            font-size: 0.76rem;
+            color: var(--sv-muted);
+            margin-top: 2px;
+        }
+
+        .survey-chart {
+            margin-top: 22px;
+        }
+
+        .survey-chart-head {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--sv-grid);
+            padding-bottom: 6px;
+        }
+
+        .survey-chart-head h5 {
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--sv-ink);
+            margin: 0;
+        }
+
+        .survey-chart-head .caption {
+            font-size: 0.76rem;
+            color: var(--sv-muted);
+        }
+
+        /* 100% 堆疊的 Likert 長條：區段間 2px 間隙，兩端 4px 圓角 */
+        .survey-likert {
+            display: flex;
+            gap: 2px;
+            height: 30px;
+        }
+
+        .survey-likert .seg {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 0;
+            font-size: 0.78rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            overflow: hidden;
+            cursor: default;
+        }
+
+        .survey-likert .seg:first-child {
+            border-radius: 4px 0 0 4px;
+        }
+
+        .survey-likert .seg:last-child {
+            border-radius: 0 4px 4px 0;
+        }
+
+        .survey-likert .seg:only-child {
+            border-radius: 4px;
+        }
+
+        .survey-likert .seg:hover,
+        .survey-hbar .bar:hover {
+            filter: brightness(1.08);
+        }
+
+        .survey-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 16px;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: var(--sv-ink-2);
+        }
+
+        .survey-legend span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .survey-legend i,
+        .survey-score-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            flex: none;
+        }
+
+        /* 水平長條：從左側基線長出，資料端 4px 圓角 */
+        .survey-hbar {
+            display: grid;
+            grid-template-columns: 5.5em minmax(0, 1fr) 5.8em;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-size: 0.84rem;
+        }
+
+        .survey-hbar .name {
+            color: var(--sv-ink-2);
+            white-space: nowrap;
+        }
+
+        .survey-hbar .track {
+            border-left: 1px solid var(--sv-muted);
+            height: 18px;
+            display: flex;
+            align-items: center;
+        }
+
+        .survey-hbar .bar {
+            height: 14px;
+            background: var(--sv-bar);
+            border-radius: 0 4px 4px 0;
+            min-width: 2px;
+        }
+
+        .survey-hbar .val {
+            text-align: right;
+            color: var(--sv-ink);
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        .survey-hbar .val small {
+            color: var(--sv-muted);
+        }
+
+        .survey-table-wrap {
+            overflow-x: auto;
+        }
+
+        .survey-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.84rem;
+            min-width: 520px;
+        }
+
+        .survey-table th {
+            text-align: left;
+            font-weight: 700;
+            font-size: 0.76rem;
+            color: var(--sv-muted);
+            border-bottom: 1px solid var(--sv-grid);
+            padding: 6px 8px;
+            white-space: nowrap;
+        }
+
+        .survey-table td {
+            padding: 8px;
+            border-bottom: 1px solid var(--sv-grid);
+            color: var(--sv-ink);
+            vertical-align: middle;
+        }
+
+        .survey-table .num {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        .survey-table .avg-cell {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 120px;
+        }
+
+        .survey-table .avg-cell b {
+            width: 2.6em;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .survey-table .avg-track {
+            flex: 1;
+            height: 8px;
+            border-left: 1px solid var(--sv-muted);
+        }
+
+        .survey-table .avg-track span {
+            display: block;
+            height: 100%;
+            background: var(--sv-bar);
+            border-radius: 0 4px 4px 0;
+        }
+
+        .survey-table .survey-likert {
+            height: 12px;
+            min-width: 120px;
+        }
+
+        .survey-tooltip {
+            position: fixed;
+            z-index: 3000;
+            pointer-events: none;
+            background: #1f2a44;
+            color: #fff;
+            font-size: 0.78rem;
+            line-height: 1.5;
+            padding: 6px 10px;
+            border-radius: 8px;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+            white-space: pre-line;
+            display: none;
+        }
+
+        .survey-section-title {
+            font-weight: 800;
+            margin: 22px 0 8px;
+            font-size: 0.95rem;
+            color: var(--sv-ink, var(--text-color));
+        }
+
+        @media (max-width: 700px) {
+            .survey-kpis {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .survey-kpi .value {
+                font-size: 1.45rem;
+            }
+        }
+
+        .survey-comment {
+            border: 1px solid var(--card-border);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            background: #fff;
+        }
+
+        .survey-comment .meta {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            margin-bottom: 4px;
+        }
+
+        .survey-comment .text {
+            white-space: pre-wrap;
+            word-break: break-word;
+            line-height: 1.6;
+        }
+
+        .survey-share-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 8px;
+        }
+
+        .survey-share-row .btn {
+            font-size: 0.88rem;
+            padding: 8px 14px;
+        }
+
+        .survey-home-link {
+            display: none;
+            margin-top: 16px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        /* 開始／結束日期固定兩欄並排：用 grid 不受各瀏覽器日期欄位內建寬度影響（iPhone / LINE 內建瀏覽器） */
+        #survey-results-card .inline-form,
+        #stats-tab .inline-form,
+        #performance-tab .inline-form {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            grid-auto-flow: column;
+            grid-auto-columns: auto;
+            align-items: end;
+            gap: 12px;
+        }
+
+        #survey-results-card .inline-form>.form-group.form-group-date,
+        #stats-tab .inline-form>.form-group.form-group-date,
+        #performance-tab .inline-form>.form-group.form-group-date {
+            width: auto !important;
+            max-width: none !important;
+            min-width: 0;
+            flex: none;
+        }
+
+        #survey-results-card .inline-form input[type="date"],
+        #stats-tab .inline-form input[type="date"],
+        #performance-tab .inline-form input[type="date"] {
+            display: block;
+            width: 100% !important;
+            min-width: 0;
+            max-width: 100% !important;
+        }
+
+        @media (max-width: 700px) {
+            #survey-results-card .inline-form,
+            #stats-tab .inline-form,
+            #performance-tab .inline-form {
+                grid-auto-flow: row;
+                gap: 8px;
+            }
+
+            #survey-results-card .inline-form>.btn {
+                grid-column: 1 / -1;
+            }
+
+            #survey-results-card .inline-form input[type="date"],
+            #stats-tab .inline-form input[type="date"],
+            #performance-tab .inline-form input[type="date"] {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* 從 LINE 轉傳的調查連結 (?survey=) 進來：只顯示調查表本身 */
+        body.survey-link-mode #tabs-container,
+        body.survey-link-mode #survey-results-card,
+        body.survey-link-mode .survey-share-row {
+            display: none;
+        }
+
+        body.survey-link-mode .survey-home-link {
+            display: block;
+        }
+
+        .survey-empty {
+            text-align: center;
+            color: var(--text-light);
+            padding: 16px 0;
+        }
+
+        @media (max-width: 700px) {
+            .survey-card {
+                padding: 16px 14px;
+            }
+
+            .survey-meta-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .survey-rating {
+                gap: 5px;
+            }
+
+            .survey-rating label {
+                padding: 8px 2px;
+                font-size: 0.72rem;
+            }
+
+            .survey-rating .face {
+                font-size: 1.45rem;
+            }
+
+            .survey-footer .btn {
+                width: 100%;
+            }
+        }
+
     </style>
 </head>
 
@@ -2917,6 +3554,8 @@
                     class="tab-icon">&#x1F4C8;</span><span class="tab-label">績效</span></button>
             <button class="tab-button" data-tab="download-tab"><span
                     class="tab-icon">&#x1F4E5;</span><span class="tab-label">檔案</span></button>
+            <button class="tab-button" data-tab="survey-tab"><span
+                    class="tab-icon">&#x1F4DD;</span><span class="tab-label">調查</span></button>
             <button class="tab-button" data-tab="admin-tab"><span class="tab-icon">&#9881;</span><span
                     class="tab-label">管理</span></button>
         </div>
@@ -3073,6 +3712,82 @@
                         class="icon">&#x1F50E;</span><span>立願查詢SOP</span></button>
                 <button id="download-video-cable-wrap" class="btn btn-primary btn-icon-left"><span
                         class="icon">&#x1FAA2;</span><span>攝影師收線示範</span></button>
+            </div>
+        </div>
+        <div id="survey-tab" class="tab-content">
+            <div class="survey-layout">
+                <form id="survey-form" class="survey-card" novalidate>
+                    <h4><span class="title-icon">&#x1F4DD;</span>今日奉仕滿意度調查</h4>
+                    <p class="survey-intro">各位夥伴，感謝您本次的奉仕！請花費約 1 分鐘，您的回饋會幫助我們讓放送奉仕更順暢。<br>我們會完整的將您的意見轉交事務局，作為下次改善的建議，衷心感謝您的立願。</p>
+                    <div class="survey-meta-grid">
+                        <div class="form-group"><label for="survey-name">姓名<span class="survey-required">*</span></label><input
+                                type="text" id="survey-name" placeholder="請輸入姓名" autocomplete="name"></div>
+                        <div class="form-group"><label for="survey-date">奉仕日期<span class="survey-required">*</span></label><select
+                                id="survey-date">
+                                <option value="">-- 載入中 --</option>
+                            </select></div>
+                        <div class="form-group"><label for="survey-event">奉仕活動<span class="survey-required">*</span></label><select id="survey-event">
+                                <option value="">-- 請先選擇日期 --</option>
+                            </select></div>
+                        <div class="form-group"><label for="survey-position">崗位</label><select id="survey-position">
+                                <option value="">-- 請選擇 --</option>
+                            </select></div>
+                    </div>
+                    <div class="survey-share-row">
+                        <button type="button" id="survey-share-btn" class="btn btn-ghost btn-icon-left"><span
+                                class="icon">&#x1F517;</span><span>分享此場調查連結（LINE）</span></button>
+                    </div>
+
+                    <fieldset class="survey-question">
+                        <legend><span class="q-no">Q1</span>今日奉仕滿意度<span class="survey-required">*</span></legend>
+                        <div class="survey-rating" role="radiogroup" aria-label="今日奉仕滿意度">
+                            <input type="radio" name="survey-satisfaction" id="survey-sat-1" value="1"><label for="survey-sat-1"><span class="face">&#x1F61E;</span><span class="score">1</span>非常不滿意</label>
+                            <input type="radio" name="survey-satisfaction" id="survey-sat-2" value="2"><label for="survey-sat-2"><span class="face">&#x1F641;</span><span class="score">2</span>不滿意</label>
+                            <input type="radio" name="survey-satisfaction" id="survey-sat-3" value="3"><label for="survey-sat-3"><span class="face">&#x1F610;</span><span class="score">3</span>普通</label>
+                            <input type="radio" name="survey-satisfaction" id="survey-sat-4" value="4"><label for="survey-sat-4"><span class="face">&#x1F642;</span><span class="score">4</span>滿意</label>
+                            <input type="radio" name="survey-satisfaction" id="survey-sat-5" value="5"><label for="survey-sat-5"><span class="face">&#x1F604;</span><span class="score">5</span>非常滿意</label>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="survey-question">
+                        <legend><span class="q-no">Q2</span>回饋類別<span class="q-hint">（可複選）</span></legend>
+                        <div class="survey-chips" id="survey-categories">
+                            <input type="checkbox" id="survey-cat-1" value="設備器材"><label for="survey-cat-1">設備器材</label>
+                            <input type="checkbox" id="survey-cat-2" value="流程次第"><label for="survey-cat-2">流程次第</label>
+                            <input type="checkbox" id="survey-cat-3" value="人力安排"><label for="survey-cat-3">人力安排</label>
+                            <input type="checkbox" id="survey-cat-4" value="溝通協調"><label for="survey-cat-4">溝通協調</label>
+                            <input type="checkbox" id="survey-cat-5" value="教育訓練"><label for="survey-cat-5">教育訓練</label>
+                            <input type="checkbox" id="survey-cat-6" value="其他"><label for="survey-cat-6">其他</label>
+                        </div>
+                    </fieldset>
+
+                    <div class="survey-question">
+                        <label for="survey-feedback"><span class="q-no">Q3</span>問題回饋與建議</label>
+                        <textarea id="survey-feedback" class="survey-feedback" maxlength="1000"
+                            placeholder="今天遇到的問題、可改進之處，或想感謝的人事物，都歡迎寫下來"></textarea>
+                        <div class="survey-feedback-count"><span id="survey-feedback-count">0</span> / 1000</div>
+                    </div>
+
+                    <div class="survey-footer">
+                        <label class="survey-anonymous"><input type="checkbox" id="survey-anonymous">匿名顯示（統計結果不顯示姓名）</label>
+                        <button type="submit" id="survey-submit-btn" class="btn btn-primary btn-icon-left"><span
+                                class="icon">&#x1F4E8;</span><span>送出調查</span></button>
+                    </div>
+                    <a class="survey-home-link" href="./">← 回到 AV 放送立願表</a>
+                </form>
+
+                <div class="survey-card" id="survey-results-card">
+                    <h4><span class="title-icon">&#x1F4CA;</span>調查結果</h4>
+                    <div class="inline-form">
+                        <div class="form-group form-group-date"><label for="survey-summary-start">開始日期</label><input type="date"
+                                id="survey-summary-start"></div>
+                        <div class="form-group form-group-date"><label for="survey-summary-end">結束日期</label><input type="date"
+                                id="survey-summary-end"></div>
+                        <button type="button" id="survey-summary-btn" class="btn btn-primary btn-icon-left"><span
+                                class="icon">&#x1F50D;</span><span>查看結果</span></button>
+                    </div>
+                    <div id="survey-summary-result"><p class="survey-empty">選擇日期區間後按「查看結果」。</p></div>
+                </div>
             </div>
         </div>
         <div id="admin-tab" class="tab-content">
@@ -3269,7 +3984,7 @@
     </div>
 
     <script>
-        const FRONTEND_VERSION = "1021_ModifySignup_Fix";
+        const FRONTEND_VERSION = "1101_SurveyCharts";
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz1dCHAzjMNklN96jXKpWYcTv-NvzKoB8J6CcY30L55dAtaAf0bTRWTJTc20Fk2MZbgeQ/exec";
         const FULLCALENDAR_URL = "https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js";
         const CHART_JS_URL = "https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js";
@@ -3715,7 +4430,7 @@
                 return;
             }
 
-            if (tab !== activeTabName) {
+            if (tab !== activeTabName && !surveyLinkEventId) {
                 localStorage.setItem('av_active_tab', tab);
             }
             activeTabName = tab;
@@ -3743,9 +4458,322 @@
                 }
             } else if (tab === 'my-signups-tab' && allCalendarEvents.length === 0) {
                 setupCalendarTab(false, false);
+            } else if (tab === 'survey-tab') {
+                prepareSurveyTab();
             }
 
             syncViewportMode();
+        }
+
+        // ---- 奉仕滿意度調查 ----
+        // 單場調查連結：開啟 ?survey=<id> 會直接進入該場法會的調查表（可用 LINE 轉傳）
+        const SURVEY_LINK_PARAM = 'survey';
+        const surveyLinkEventId = new URLSearchParams(location.search).get(SURVEY_LINK_PARAM) || '';
+        let surveyLinkApplied = !surveyLinkEventId;
+        function buildSurveyShareUrl(eventId) {
+            const url = new URL(location.origin + location.pathname);
+            url.searchParams.set(SURVEY_LINK_PARAM, eventId);
+            return url.toString();
+        }
+        async function shareSurveyLink(triggerBtn) {
+            const eventObject = getCalendarEventById(document.getElementById('survey-event').value);
+            if (!eventObject) { Swal.fire('請先選擇奉仕日期與活動', '', 'warning'); return; }
+            const props = eventObject.extendedProps || {};
+            const dateObj = new Date(eventObject.start);
+            const dateText = `${DATE_FMT_CA_TW.format(dateObj).replace(/-/g, '/')}(${DATE_FMT_WEEKDAY_ZH_TW.format(dateObj).replace('週', '')})`;
+            const url = buildSurveyShareUrl(eventObject.id);
+            const text = `【AV奉仕滿意度調查】${dateText} ${String(props.full_title || eventObject.title || '').trim()}\n各位夥伴辛苦了，請點連結填寫（約 1 分鐘）👇`;
+            const isCoarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+            // 手機用系統分享選單（可直接選 LINE），電腦則複製到剪貼簿
+            if (navigator.share && isCoarse) {
+                try {
+                    await navigator.share({ title: 'AV奉仕滿意度調查', text, url });
+                    return;
+                } catch (e) {
+                    if (e && e.name === 'AbortError') return;
+                }
+            }
+            const ok = await copyTextToClipboard(`${text}\n${url}`);
+            const label = triggerBtn.querySelector('span:last-child') || triggerBtn;
+            const original = triggerBtn.dataset.originalText || label.textContent;
+            triggerBtn.dataset.originalText = original;
+            label.textContent = ok ? '已複製，可貼到 LINE' : '複製失敗';
+            clearTimeout(triggerBtn._resetTimer);
+            triggerBtn._resetTimer = setTimeout(() => { label.textContent = original; }, 2200);
+            if (!ok) { try { window.prompt('請手動複製以下連結：', url); } catch (e) { /* 不支援 prompt 的環境 */ } }
+        }
+        async function prepareSurveyTab() {
+            const nameInput = document.getElementById('survey-name');
+            if (nameInput && !nameInput.value) nameInput.value = localStorage.getItem('av_signup_username') || '';
+            if (allCalendarEvents.length === 0) {
+                try { await setupCalendarTab(false, false); } catch (e) { /* 載入失敗時下拉選單會顯示無活動 */ }
+            }
+            // 調查連結指定的法會不在本機快取時，向後端取最新資料再找一次
+            if (!surveyLinkApplied && !getCalendarEventById(surveyLinkEventId)) {
+                showLoading();
+                try { await fetchCalendarEvents(true); } catch (e) { /* 下方會提示找不到 */ } finally { hideLoading(); }
+                if (!getCalendarEventById(surveyLinkEventId)) {
+                    surveyLinkApplied = true;
+                    Swal.fire({ icon: 'warning', title: '找不到這場法會', text: '連結可能已失效，請直接從下拉選單選擇奉仕日期與活動。' });
+                }
+            }
+            refreshSurveyDateOptions();
+        }
+        function isSurveyUserSignedUp(event, userName) {
+            return Boolean(userName) && ((event.extendedProps || {}).signups || []).some(s => String(s.user || '').trim() === userName);
+        }
+        // 只列出 Events 工作表中「一個月前的今天」到「今天」的活動，新到舊排序
+        function getSurveyRecentEvents() {
+            const now = new Date();
+            const monthAgo = new Date(now);
+            monthAgo.setMonth(monthAgo.getMonth() - 1);
+            const todayStr = DATE_FMT_CA_TW.format(now);
+            const startStr = DATE_FMT_CA_TW.format(monthAgo);
+            return (allCalendarEvents || [])
+                .filter(event => event && event.start)
+                .map(event => ({ event, dateStr: DATE_FMT_CA_TW.format(new Date(event.start)) }))
+                // 調查連結指定的法會即使超出一個月範圍也列出
+                .filter(item => (item.dateStr >= startStr && item.dateStr <= todayStr) || (surveyLinkEventId && String(item.event.id) === surveyLinkEventId))
+                .sort((a, b) => new Date(b.event.start) - new Date(a.event.start));
+        }
+        function refreshSurveyDateOptions() {
+            const dateSelect = document.getElementById('survey-date');
+            const userName = document.getElementById('survey-name').value.trim();
+            const recent = getSurveyRecentEvents();
+            const dates = [];
+            recent.forEach(item => {
+                let entry = dates.find(d => d.dateStr === item.dateStr);
+                if (!entry) { entry = { dateStr: item.dateStr, start: item.event.start, titles: [] }; dates.push(entry); }
+                const props = item.event.extendedProps || {};
+                entry.titles.unshift(String(props.full_title || item.event.title || '').trim());
+            });
+            const previous = dateSelect.value;
+            if (!dates.length) {
+                dateSelect.innerHTML = '<option value="">-- 近一個月無活動 --</option>';
+            } else {
+                dateSelect.innerHTML = dates.map(d => {
+                    const weekday = DATE_FMT_WEEKDAY_ZH_TW.format(new Date(d.start)).replace('週', '');
+                    const label = `${d.dateStr.replace(/-/g, '/')}（${weekday}）${d.titles.filter(Boolean).join('、')}`;
+                    return `<option value="${d.dateStr}">${escapeHtml(label)}</option>`;
+                }).join('');
+                // 調查連結指定的法會優先，其次保留原選擇，再其次本人最近一次有立願的日期，否則選最近的日期
+                const linked = !surveyLinkApplied ? recent.find(item => String(item.event.id) === surveyLinkEventId) : null;
+                const mine = recent.find(item => isSurveyUserSignedUp(item.event, userName));
+                if (linked) dateSelect.value = linked.dateStr;
+                else if (previous && dates.some(d => d.dateStr === previous)) dateSelect.value = previous;
+                else if (mine) dateSelect.value = mine.dateStr;
+                else dateSelect.value = dates[0].dateStr;
+            }
+            refreshSurveyEventOptions();
+        }
+        function refreshSurveyEventOptions() {
+            const eventSelect = document.getElementById('survey-event');
+            const dateStr = document.getElementById('survey-date').value;
+            const userName = document.getElementById('survey-name').value.trim();
+            const events = getSurveyRecentEvents()
+                .filter(item => item.dateStr === dateStr)
+                .map(item => item.event)
+                .sort((a, b) => new Date(a.start) - new Date(b.start));
+            const previous = eventSelect.value;
+            if (!events.length) {
+                eventSelect.innerHTML = '<option value="">-- 此日期無活動 --</option>';
+            } else {
+                eventSelect.innerHTML = events.map(event => {
+                    const props = event.extendedProps || {};
+                    const label = `${props.startTime || ''} ${props.full_title || event.title || ''}`.trim();
+                    return `<option value="${escapeHtml(event.id)}">${escapeHtml(label)}</option>`;
+                }).join('');
+                // 調查連結指定的法會優先，其次本人當天有立願的活動，再其次保留原選擇，否則選第一場
+                const linked = !surveyLinkApplied ? events.find(event => String(event.id) === surveyLinkEventId) : null;
+                const mine = events.find(event => isSurveyUserSignedUp(event, userName));
+                if (linked) { eventSelect.value = String(linked.id); surveyLinkApplied = true; }
+                else if (mine) eventSelect.value = String(mine.id);
+                else if (previous && events.some(event => String(event.id) === previous)) eventSelect.value = previous;
+                else eventSelect.value = String(events[0].id);
+            }
+            refreshSurveyPositionOptions();
+        }
+        function refreshSurveyPositionOptions() {
+            const positionSelect = document.getElementById('survey-position');
+            const event = getCalendarEventById(document.getElementById('survey-event').value);
+            const userName = document.getElementById('survey-name').value.trim();
+            const props = (event && event.extendedProps) || {};
+            const positions = Array.isArray(props.positions) ? props.positions.filter(Boolean) : [];
+            const previous = positionSelect.value;
+            positionSelect.innerHTML = '<option value="">-- 請選擇 --</option>'
+                + positions.filter(p => p !== '其他').map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('')
+                + '<option value="其他">其他</option>';
+            const mySignup = userName ? (props.signups || []).find(s => String(s.user || '').trim() === userName) : null;
+            if (mySignup && positions.includes(mySignup.position)) positionSelect.value = mySignup.position;
+            else if (previous && (positions.includes(previous) || previous === '其他')) positionSelect.value = previous;
+        }
+        function resetSurveyAnswers() {
+            document.querySelectorAll('input[name="survey-satisfaction"]').forEach(el => { el.checked = false; });
+            document.querySelectorAll('#survey-categories input').forEach(el => { el.checked = false; });
+            document.getElementById('survey-feedback').value = '';
+            document.getElementById('survey-feedback-count').textContent = '0';
+            document.getElementById('survey-anonymous').checked = false;
+        }
+        async function submitSurveyForm(evt) {
+            if (evt) evt.preventDefault();
+            const userName = document.getElementById('survey-name').value.trim();
+            const serviceDate = document.getElementById('survey-date').value;
+            const satisfactionEl = document.querySelector('input[name="survey-satisfaction"]:checked');
+            if (!userName) { Swal.fire('請填寫姓名', '', 'warning'); return; }
+            const eventId = document.getElementById('survey-event').value;
+            const event = getCalendarEventById(eventId);
+            if (!serviceDate || !event) { Swal.fire('請選擇奉仕日期與活動', '只能填寫近一個月內的活動。', 'warning'); return; }
+            if (!satisfactionEl) { Swal.fire('請選擇今日奉仕滿意度', '1 分（非常不滿意）～ 5 分（非常滿意）', 'warning'); return; }
+            const params = {
+                userName,
+                serviceDate,
+                eventId,
+                eventTitle: event ? ((event.extendedProps || {}).full_title || event.title || '') : '',
+                position: document.getElementById('survey-position').value,
+                satisfaction: Number(satisfactionEl.value),
+                categories: Array.from(document.querySelectorAll('#survey-categories input:checked')).map(el => el.value),
+                feedback: document.getElementById('survey-feedback').value.trim(),
+                anonymous: document.getElementById('survey-anonymous').checked
+            };
+
+            const submitBtn = document.getElementById('survey-submit-btn');
+            submitBtn.disabled = true;
+            showLoading();
+            try {
+                const response = await callAppsScript('submitSurvey', params);
+                localStorage.setItem('av_signup_username', userName);
+                const updated = response && response.data && response.data.updated;
+                resetSurveyAnswers();
+                Swal.fire(updated ? '已更新您的回饋' : '感謝您的回饋！', updated ? '同一場活動先前填寫的內容已被這次取代。' : '您的意見已記錄，我們會持續改進。', 'success');
+            } catch (error) {
+                Swal.fire('送出失敗', error.message, 'error');
+            } finally {
+                hideLoading();
+                submitBtn.disabled = false;
+            }
+        }
+        async function loadSurveySummary() {
+            const startDateStr = document.getElementById('survey-summary-start').value;
+            const endDateStr = document.getElementById('survey-summary-end').value;
+            if (startDateStr && endDateStr && startDateStr > endDateStr) { Swal.fire('日期區間錯誤', '開始日期不可晚於結束日期。', 'warning'); return; }
+            const resultEl = document.getElementById('survey-summary-result');
+            showLoading();
+            try {
+                const response = await callAppsScript('getSurveySummary', { startDateStr, endDateStr });
+                renderSurveySummary(response.data || {});
+            } catch (error) {
+                resultEl.innerHTML = `<p class="survey-empty">載入失敗：${escapeHtml(error.message)}</p>`;
+            } finally {
+                hideLoading();
+            }
+        }
+        function renderSurveySummary(summary) {
+            const resultEl = document.getElementById('survey-summary-result');
+            const count = Number(summary.count || 0);
+            if (!count) { resultEl.innerHTML = '<p class="survey-empty">此區間尚無調查資料。</p>'; return; }
+            const distribution = Array.isArray(summary.distribution) ? summary.distribution.map(n => Number(n || 0)) : [0, 0, 0, 0, 0];
+            const pctText = (n, total) => `${total ? Math.round((n / total) * 100) : 0}%`;
+            const positive = distribution[3] + distribution[4];
+            const negative = distribution[0] + distribution[1];
+            const byEvent = Array.isArray(summary.byEvent) ? summary.byEvent : [];
+            const comments = Array.isArray(summary.comments) ? summary.comments : [];
+
+            const kpiHtml = `
+                <div class="survey-kpis">
+                    <div class="survey-kpi"><div class="label">填寫份數</div><div class="value">${count}</div><div class="sub">${byEvent.length ? `${byEvent.length} 場法會` : '&nbsp;'}</div></div>
+                    <div class="survey-kpi"><div class="label">平均滿意度</div><div class="value">${Number(summary.average || 0).toFixed(2)}<small>/ 5</small></div><div class="sub">1 非常不滿意 – 5 非常滿意</div></div>
+                    <div class="survey-kpi"><div class="label">滿意占比</div><div class="value">${pctText(positive, count)}</div><div class="sub">4–5 分，${positive} 份</div></div>
+                    <div class="survey-kpi"><div class="label">不滿意占比</div><div class="value">${pctText(negative, count)}</div><div class="sub">1–2 分，${negative} 份</div></div>
+                </div>`;
+
+            const likertHtml = `
+                <div class="survey-chart">
+                    <div class="survey-chart-head"><h5>滿意度分布</h5><span class="caption">n = ${count}，占全部份數</span></div>
+                    ${buildSurveyLikertBar(distribution, true)}
+                    <div class="survey-legend">${SURVEY_SCORE_LABELS.map((label, i) => `<span><i style="background:var(--sv-${i + 1})"></i>${i + 1} ${label}　${distribution[i]}（${pctText(distribution[i], count)}）</span>`).join('')}</div>
+                </div>`;
+
+            const categoryEntries = Object.entries(summary.categoryCounts || {}).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1]);
+            const categoryMax = categoryEntries.length ? categoryEntries[0][1] : 0;
+            const categoryHtml = `
+                <div class="survey-chart">
+                    <div class="survey-chart-head"><h5>回饋類別</h5><span class="caption">可複選，百分比為勾選份數 ÷ 全部份數</span></div>
+                    ${categoryEntries.length ? categoryEntries.map(([c, n]) => `
+                        <div class="survey-hbar">
+                            <span class="name">${escapeHtml(c)}</span>
+                            <div class="track"><div class="bar" style="width:${(n / categoryMax) * 100}%" data-tip="${escapeHtml(c)}\n${n} 份（${pctText(n, count)}）"></div></div>
+                            <span class="val">${n} <small>· ${pctText(n, count)}</small></span>
+                        </div>`).join('') : '<p class="survey-empty" style="padding:4px 0;">此區間沒有人勾選回饋類別。</p>'}
+                </div>`;
+
+            const eventHtml = byEvent.length ? `
+                <div class="survey-chart">
+                    <div class="survey-chart-head"><h5>各場法會滿意度</h5><span class="caption">依日期新到舊</span></div>
+                    <div class="survey-table-wrap"><table class="survey-table">
+                        <thead><tr><th>日期</th><th>法會</th><th class="num">份數</th><th>平均（滿分 5）</th><th>分布</th></tr></thead>
+                        <tbody>${byEvent.map(e => `
+                            <tr>
+                                <td class="num" style="text-align:left;">${escapeHtml(String(e.serviceDate || '').replace(/-/g, '/'))}</td>
+                                <td>${escapeHtml(e.eventTitle || '（未指定）')}</td>
+                                <td class="num">${Number(e.count || 0)}</td>
+                                <td><div class="avg-cell"><b>${Number(e.average || 0).toFixed(2)}</b><div class="avg-track"><span style="width:${(Number(e.average || 0) / 5) * 100}%"></span></div></div></td>
+                                <td>${buildSurveyLikertBar((e.distribution || []).map(n => Number(n || 0)), false)}</td>
+                            </tr>`).join('')}</tbody>
+                    </table></div>
+                </div>` : '';
+
+            const commentsHtml = comments.length
+                ? comments.map(c => {
+                    const meta = [c.serviceDate, c.eventTitle, c.position, c.userName || '匿名'].filter(Boolean).map(escapeHtml).join(' · ');
+                    const score = Number(c.satisfaction || 0);
+                    const scoreHtml = score ? `<span style="display:inline-flex;align-items:center;gap:5px;margin-right:6px;font-weight:700;color:var(--sv-ink);"><span class="survey-score-dot" style="background:var(--sv-${score})"></span>${score} 分</span>` : '';
+                    const cats = c.categories ? `<div class="meta">類別：${escapeHtml(c.categories)}</div>` : '';
+                    return `<div class="survey-comment"><div class="meta">${scoreHtml}${meta}</div>${cats}<div class="text">${escapeHtml(c.feedback)}</div></div>`;
+                }).join('')
+                : '<p class="survey-empty" style="padding:4px 0;">此區間沒有文字回饋。</p>';
+
+            resultEl.innerHTML = `${kpiHtml}${likertHtml}${categoryHtml}${eventHtml}
+                <div class="survey-chart-head" style="margin-top:22px;"><h5>問題回饋與建議（${comments.length}）</h5></div>
+                ${commentsHtml}`;
+            bindSurveyTooltip(resultEl);
+        }
+        const SURVEY_SCORE_LABELS = ['非常不滿意', '不滿意', '普通', '滿意', '非常滿意'];
+        // 1→5 分由左至右的 100% 堆疊長條；showLabels 時在夠寬的區段內直接標示百分比
+        function buildSurveyLikertBar(distribution, showLabels) {
+            const total = distribution.reduce((a, b) => a + b, 0);
+            if (!total) return '';
+            return `<div class="survey-likert" role="img" aria-label="${SURVEY_SCORE_LABELS.map((l, i) => `${i + 1} 分 ${distribution[i]} 份`).join('，')}">${distribution.map((n, i) => {
+                if (!n) return '';
+                const pct = (n / total) * 100;
+                const textColor = (i === 0 || i === 4) ? '#fff' : '#1f2a44';
+                const label = showLabels && pct >= 8 ? `${Math.round(pct)}%` : '';
+                return `<div class="seg" style="flex:${n} 1 0;background:var(--sv-${i + 1});color:${textColor};" data-tip="${i + 1} 分 ${SURVEY_SCORE_LABELS[i]}\n${n} 份（${Math.round(pct)}%）">${label}</div>`;
+            }).join('')}</div>`;
+        }
+        function bindSurveyTooltip(container) {
+            let tip = document.getElementById('survey-tooltip');
+            if (!tip) {
+                tip = document.createElement('div');
+                tip.id = 'survey-tooltip';
+                tip.className = 'survey-tooltip';
+                document.body.appendChild(tip);
+            }
+            if (container._surveyTipBound) return;
+            container._surveyTipBound = true;
+            const show = (e) => {
+                const target = e.target.closest('[data-tip]');
+                if (!target || !container.contains(target)) { tip.style.display = 'none'; return; }
+                tip.textContent = target.dataset.tip;
+                tip.style.display = 'block';
+                const point = e.touches ? e.touches[0] : e;
+                const x = Math.min(point.clientX + 12, window.innerWidth - tip.offsetWidth - 8);
+                const y = point.clientY - tip.offsetHeight - 12;
+                tip.style.left = `${Math.max(8, x)}px`;
+                tip.style.top = `${y < 8 ? point.clientY + 16 : y}px`;
+            };
+            container.addEventListener('mousemove', show);
+            container.addEventListener('touchstart', show, { passive: true });
+            container.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
         }
         async function promptForName(extraOptions = {}) { let currentUserName = localStorage.getItem('av_signup_username') || ''; const { value: name } = await Swal.fire({ title: "請輸入您的姓名", input: "text", inputValue: currentUserName, inputPlaceholder: "請輸入姓名", showCancelButton: true, inputValidator: (v) => !v && "姓名不能為空！", ...extraOptions }); if (name) { localStorage.setItem('av_signup_username', name); } return name; }
         async function handleEventClick(info) {
@@ -6163,6 +7191,9 @@
                 '🔍': 'search',
                 '📊': 'bar_chart',
                 '📈': 'monitoring',
+                '📝': 'rate_review',
+                '🔗': 'link',
+                '📨': 'send',
                 '📥': 'download',
                 '⚙': 'settings',
                 '🔄': 'refresh',
@@ -6202,6 +7233,20 @@
 
             document.getElementById('generate-stats').addEventListener('click', generateStatsReport);
             document.getElementById('generate-performance-report').addEventListener('click', generatePerformanceReport);
+            document.getElementById('survey-form').addEventListener('submit', submitSurveyForm);
+            document.getElementById('survey-date').addEventListener('change', refreshSurveyEventOptions);
+            document.getElementById('survey-name').addEventListener('change', refreshSurveyDateOptions);
+            document.getElementById('survey-event').addEventListener('change', refreshSurveyPositionOptions);
+            document.getElementById('survey-feedback').addEventListener('input', (e) => {
+                document.getElementById('survey-feedback-count').textContent = String(e.target.value.length);
+            });
+            document.getElementById('survey-summary-btn').addEventListener('click', loadSurveySummary);
+            document.getElementById('survey-share-btn').addEventListener('click', (e) => shareSurveyLink(e.currentTarget));
+            {
+                const { firstDayStr, lastDayStr } = getMonthDateRange();
+                document.getElementById('survey-summary-start').value = firstDayStr;
+                document.getElementById('survey-summary-end').value = lastDayStr;
+            }
             const resetStatsBtn = document.getElementById('reset-stats-btn');
             if (resetStatsBtn) {
                 resetStatsBtn.addEventListener('click', () => {
@@ -6586,8 +7631,9 @@
                 window.addEventListener('scroll', onScroll, { passive: true });
                 updateFabVisibility();
             }
-            // 分享連結 (?event=) 進來時一律開在行事曆分頁
-            const savedTab = pendingDeepLinkEventId ? 'calendar-tab' : (localStorage.getItem('av_active_tab') || 'calendar-tab');
+            // 分享連結 (?event=) 進來時一律開在行事曆分頁；調查連結 (?survey=) 直接開調查表
+            if (surveyLinkEventId) document.body.classList.add('survey-link-mode');
+            const savedTab = surveyLinkEventId ? 'survey-tab' : (pendingDeepLinkEventId ? 'calendar-tab' : (localStorage.getItem('av_active_tab') || 'calendar-tab'));
             // 桌機預設是月曆檢視：FullCalendar 套件與活動資料同時下載，不要等資料回來才開始載
             if (savedTab === 'calendar-tab' && !shouldDefaultCalendarToCardView()) {
                 ensureFullCalendarReady().catch(() => { });

@@ -3,7 +3,7 @@
 //  版本：0517
 // ====================================================================
 
-const BACKEND_VERSION = "1021_ModifySignup_Fix"; // *** 後端版本號 ***
+const BACKEND_VERSION = "1101_SurveyCharts"; // *** 後端版本號 ***
 
 // --- 全域設定 ---
 // [重要] SHEET_ID 仍然需要，用於所有寫入、修改、刪除操作
@@ -12,6 +12,10 @@ const EVENTS_SHEET_NAME = 'Events';
 const SIGNUPS_SHEET_NAME = 'Signups';
 const LOGS_SHEET_NAME = 'Logs';
 const LINE_SEND_LOGS_SHEET_NAME = 'LineSendLogs';
+const SURVEYS_SHEET_NAME = 'Surveys';
+const SURVEY_HEADERS = ['SurveyID', 'Timestamp', 'ServiceDate', 'EventID', 'EventTitle', 'UserName', 'Position', 'Satisfaction', 'Categories', 'Feedback', 'Anonymous'];
+const SURVEY_CATEGORIES = ['設備器材', '流程次第', '人力安排', '溝通協調', '教育訓練', '其他'];
+const SURVEY_FEEDBACK_MAX_LENGTH = 1000;
 
 // --- CSV 公開網址設定 (用於唯讀操作) ---
 const EVENTS_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRT5YNZcSXbE6ULGft15cba4Mx8kK1Eb7bLftucmkmUGmTxkrA8vw5uerAP2dYqptBHnbmq_3QNOOJx/pub?gid=795926947&single=true&output=csv';
@@ -54,6 +58,14 @@ function doGet(e) {
         }
         break;
       case 'createTempSheetAndExport': result = createTempSheetAndExport(params.startDateStr, params.endDateStr); break;
+      // --- 奉仕滿意度調查 ---
+      case 'submitSurvey':
+        result = submitSurvey(params);
+        if (!result || result.status !== 'success') {
+          throw new Error(result && result.message || '調查送出失敗。');
+        }
+        break;
+      case 'getSurveySummary': result = getSurveySummary(params.startDateStr, params.endDateStr); break;
       // --- 分享功能依賴讀取函式，會自動使用新方法 ---
       case 'getSignupsAsTextForToday': result = getSignupsAsTextForToday(); break;
       case 'getSignupsAsTextForTomorrow': result = getSignupsAsTextForTomorrow(); break;
@@ -1085,6 +1097,173 @@ function modifySignup(signupId, newPosition) {
   } finally {
     lock.releaseLock();
   }
+}
+
+// -------------------- 奉仕滿意度調查 --------------------
+
+function ensureSurveySheet_() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  let sheet = ss.getSheetByName(SURVEYS_SHEET_NAME);
+  if (!sheet) {
+    sheet = ss.insertSheet(SURVEYS_SHEET_NAME);
+  }
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(SURVEY_HEADERS);
+    sheet.setFrozenRows(1);
+    // ServiceDate 欄維持純文字，避免 Sheets 自動轉成日期格式
+    sheet.getRange('C:C').setNumberFormat('@');
+  }
+  return sheet;
+}
+
+function normalizeSurveyDate_(value) {
+  if (value instanceof Date) {
+    return Utilities.formatDate(value, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  }
+  const match = String(value || '').trim().match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+  if (!match) return '';
+  return `${match[1]}-${('0' + match[2]).slice(-2)}-${('0' + match[3]).slice(-2)}`;
+}
+
+/**
+ * 送出（或更新）一筆奉仕滿意度調查。
+ * 同一人對同一活動重複填寫時，會覆蓋先前的紀錄而不是新增一列。
+ */
+function submitSurvey(params) {
+  const p = params || {};
+  const userName = String(p.userName || '').trim();
+  const serviceDate = normalizeSurveyDate_(p.serviceDate);
+  const eventId = String(p.eventId || '').trim();
+  const eventTitle = String(p.eventTitle || '').trim();
+  const position = String(p.position || '').trim();
+  const satisfaction = parseInt(p.satisfaction, 10);
+  const categories = (Array.isArray(p.categories) ? p.categories : [])
+    .map(c => String(c || '').trim())
+    .filter(c => SURVEY_CATEGORIES.indexOf(c) !== -1);
+  const feedback = String(p.feedback || '').trim().slice(0, SURVEY_FEEDBACK_MAX_LENGTH);
+  const anonymous = Boolean(p.anonymous);
+
+  if (!userName) return { status: 'error', message: '請填寫姓名。' };
+  if (!serviceDate) return { status: 'error', message: '奉仕日期格式不正確。' };
+  if (!(satisfaction >= 1 && satisfaction <= 5)) return { status: 'error', message: '請選擇 1～5 分的滿意度。' };
+
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(15000)) {
+    return { status: 'error', message: '系統忙碌中，請稍後再試。' };
+  }
+  try {
+    const sheet = ensureSurveySheet_();
+    const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy/MM/dd HH:mm:ss');
+
+    let targetRow = 0;
+    let surveyId = '';
+    const lastRow = sheet.getLastRow();
+    if (lastRow > 1) {
+      const existing = sheet.getRange(2, 1, lastRow - 1, SURVEY_HEADERS.length).getValues();
+      for (let i = existing.length - 1; i >= 0; i--) {
+        const row = existing[i];
+        const sameEvent = eventId
+          ? String(row[3]) === eventId
+          : (!row[3] && normalizeSurveyDate_(row[2]) === serviceDate);
+        if (sameEvent && String(row[5]).trim() === userName) {
+          targetRow = i + 2;
+          surveyId = String(row[0]);
+          break;
+        }
+      }
+    }
+
+    const isUpdate = targetRow > 0;
+    if (!isUpdate) {
+      surveyId = 'SV' + Utilities.getUuid().replace(/-/g, '').slice(0, 10).toUpperCase();
+      targetRow = lastRow + 1;
+    }
+    const rowValues = [surveyId, timestamp, serviceDate, eventId, eventTitle, userName, position, satisfaction, categories.join(', '), feedback, anonymous ? 'TRUE' : 'FALSE'];
+    sheet.getRange(targetRow, 3).setNumberFormat('@');
+    sheet.getRange(targetRow, 1, 1, rowValues.length).setValues([rowValues]);
+    SpreadsheetApp.flush();
+
+    logOperation('submitSurvey', eventId, userName, position, '成功', `${isUpdate ? '更新' : '新增'} ${surveyId}，滿意度 ${satisfaction}`);
+    return { status: 'success', surveyId: surveyId, updated: isUpdate };
+  } catch (e) {
+    logOperation('submitSurvey', eventId, userName, position, '失敗', e.message);
+    return { status: 'error', message: '調查送出失敗：' + e.message };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * 取得日期區間內的調查統計：份數、平均分數、各分數分布、回饋類別次數與文字回饋列表。
+ * 勾選匿名者，回傳時不帶姓名。
+ */
+function getSurveySummary(startDateStr, endDateStr) {
+  const start = normalizeSurveyDate_(startDateStr);
+  const end = normalizeSurveyDate_(endDateStr);
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const sheet = ss.getSheetByName(SURVEYS_SHEET_NAME);
+  const summary = {
+    count: 0,
+    average: 0,
+    distribution: [0, 0, 0, 0, 0],
+    categoryCounts: SURVEY_CATEGORIES.reduce((acc, c) => { acc[c] = 0; return acc; }, {}),
+    byEvent: [],
+    comments: []
+  };
+  const eventMap = new Map();
+  if (!sheet || sheet.getLastRow() < 2) return summary;
+
+  const rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, SURVEY_HEADERS.length).getValues();
+  let total = 0;
+  rows.forEach(row => {
+    const serviceDate = normalizeSurveyDate_(row[2]);
+    if (!serviceDate) return;
+    if (start && serviceDate < start) return;
+    if (end && serviceDate > end) return;
+    const score = parseInt(row[7], 10);
+    if (!(score >= 1 && score <= 5)) return;
+
+    summary.count += 1;
+    total += score;
+    summary.distribution[score - 1] += 1;
+
+    // 依場次彙總；沒有 EventID 的舊資料以日期分組
+    const eventKey = String(row[3] || '') || `date:${serviceDate}`;
+    if (!eventMap.has(eventKey)) {
+      eventMap.set(eventKey, { eventId: String(row[3] || ''), serviceDate: serviceDate, eventTitle: String(row[4] || ''), count: 0, total: 0, distribution: [0, 0, 0, 0, 0] });
+    }
+    const eventStat = eventMap.get(eventKey);
+    eventStat.count += 1;
+    eventStat.total += score;
+    eventStat.distribution[score - 1] += 1;
+
+    String(row[8] || '').split(',').map(c => c.trim()).filter(Boolean).forEach(c => {
+      if (Object.prototype.hasOwnProperty.call(summary.categoryCounts, c)) summary.categoryCounts[c] += 1;
+    });
+
+    const feedback = String(row[9] || '').trim();
+    if (feedback) {
+      const isAnonymous = String(row[10]).toUpperCase() === 'TRUE';
+      summary.comments.push({
+        serviceDate: serviceDate,
+        eventTitle: String(row[4] || ''),
+        position: String(row[6] || ''),
+        satisfaction: score,
+        categories: String(row[8] || ''),
+        feedback: feedback,
+        userName: isAnonymous ? '' : String(row[5] || ''),
+        timestamp: row[1] instanceof Date
+          ? Utilities.formatDate(row[1], Session.getScriptTimeZone(), 'yyyy/MM/dd HH:mm:ss')
+          : String(row[1] || '')
+      });
+    }
+  });
+  summary.average = summary.count ? Math.round((total / summary.count) * 100) / 100 : 0;
+  summary.byEvent = Array.from(eventMap.values())
+    .map(e => ({ eventId: e.eventId, serviceDate: e.serviceDate, eventTitle: e.eventTitle, count: e.count, average: Math.round((e.total / e.count) * 100) / 100, distribution: e.distribution }))
+    .sort((a, b) => b.serviceDate.localeCompare(a.serviceDate));
+  summary.comments.sort((a, b) => (b.serviceDate + b.timestamp).localeCompare(a.serviceDate + a.timestamp));
+  return summary;
 }
 
 function createTempSheetAndExport(startDateStr, endDateStr) {
